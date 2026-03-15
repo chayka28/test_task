@@ -1,0 +1,55 @@
+services:
+  api:
+    build:
+      context: ./backend
+    container_name: trendsee_api
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: trendsee
+      POSTGRES_USER: trendsee
+      POSTGRES_PASSWORD: trendsee
+      REDIS_URL: redis://redis:6379/0
+      CACHE_TTL_SECONDS: 600
+      JWT_SECRET: super-secret-jwt-key
+      JWT_ALGORITHM: HS256
+      JWT_EXPIRE_MINUTES: 1440
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: trendsee_postgres
+    environment:
+      POSTGRES_DB: trendsee
+      POSTGRES_USER: trendsee
+      POSTGRES_PASSWORD: trendsee
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      - ./backend/app/db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U trendsee -d trendsee"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: trendsee_redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  pg_data:
