@@ -26,6 +26,18 @@ class UserRepository:
             row = await connection.fetchrow(query, user_id)
         return dict(row) if row else None
 
+    async def get_by_name(self, name: str) -> dict | None:
+        query = """
+            SELECT id, name, created_at, updated_at
+            FROM users
+            WHERE name = $1
+            ORDER BY id ASC
+            LIMIT 1
+        """
+        async with self.pool.acquire() as connection:
+            row = await connection.fetchrow(query, name)
+        return dict(row) if row else None
+
     async def update_name(self, user_id: int, name: str) -> dict | None:
         query = """
             UPDATE users

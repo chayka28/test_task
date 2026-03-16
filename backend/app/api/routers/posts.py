@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Response, status
+from fastapi import APIRouter, Depends, Query, Response, status
 
 from app.dependencies.auth import get_current_user_id
 from app.dependencies.services import get_post_service
@@ -61,6 +61,30 @@ async def delete_post(
 )
 async def get_posts_by_user(
     user_id: int,
+    limit: int = 10,
+    offset: int = 0,
     post_service: PostService = Depends(get_post_service),
 ) -> list[PostOut]:
-    return await post_service.get_posts_by_user(user_id=user_id)
+    return await post_service.get_posts_by_user(
+        user_id=user_id,
+        limit=limit,
+        offset=offset,
+    )
+
+
+@router.post(
+    "/demo-seed",
+    response_model=list[PostOut],
+    summary="Generate demo posts for the current user",
+)
+async def seed_demo_posts(
+    current_user_id: int = Depends(get_current_user_id),
+    post_service: PostService = Depends(get_post_service),
+    count: int = Query(default=12, ge=1, le=24),
+    append: bool = Query(default=False),
+) -> list[PostOut]:
+    return await post_service.seed_demo_posts(
+        user_id=current_user_id,
+        count=count,
+        append=append,
+    )

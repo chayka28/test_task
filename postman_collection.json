@@ -172,7 +172,7 @@
       "request": {
         "method": "GET",
         "url": {
-          "raw": "{{base_url}}/api/v1/posts/user/{{user_id}}",
+          "raw": "{{base_url}}/api/v1/posts/user/{{user_id}}?limit=8&offset=0",
           "host": [
             "{{base_url}}"
           ],
@@ -182,6 +182,16 @@
             "posts",
             "user",
             "{{user_id}}"
+          ],
+          "query": [
+            {
+              "key": "limit",
+              "value": "8"
+            },
+            {
+              "key": "offset",
+              "value": "0"
+            }
           ]
         }
       }

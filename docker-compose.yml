@@ -1,4 +1,14 @@
 services:
+  frontend:
+    build:
+      context: ./frontend
+    container_name: trendsee_frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      api:
+        condition: service_started
+
   api:
     build:
       context: ./backend
@@ -23,7 +33,7 @@ services:
         condition: service_healthy
 
   postgres:
-    image: postgres:16-alpine
+    image: mirror.gcr.io/library/postgres:16-alpine
     container_name: trendsee_postgres
     environment:
       POSTGRES_DB: trendsee
@@ -41,7 +51,7 @@ services:
       retries: 10
 
   redis:
-    image: redis:7-alpine
+    image: mirror.gcr.io/library/redis:7-alpine
     container_name: trendsee_redis
     ports:
       - "6379:6379"

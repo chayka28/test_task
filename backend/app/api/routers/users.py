@@ -1,10 +1,26 @@
 from fastapi import APIRouter, Depends, Response, status
 
 from app.dependencies.services import get_user_service
+from app.dependencies.services import get_post_service
 from app.schemas.user import TokenResponse, UserCreate, UserOut, UserUpdate, UserWithToken
+from app.services.post_service import PostService
 from app.services.user_service import UserService
 
 router = APIRouter(prefix="/users", tags=["Users"])
+
+
+@router.get(
+    "/demo",
+    response_model=UserOut,
+    summary="Get or create the public demo user",
+)
+async def get_demo_user(
+    user_service: UserService = Depends(get_user_service),
+    post_service: PostService = Depends(get_post_service),
+) -> UserOut:
+    user = await user_service.get_or_create_demo_user()
+    await post_service.seed_demo_posts(user_id=user["id"], count=24, append=False)
+    return user
 
 
 @router.post(

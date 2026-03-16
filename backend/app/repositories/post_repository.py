@@ -37,6 +37,16 @@ class PostRepository:
             rows = await connection.fetch(query, user_id)
         return [dict(row) for row in rows]
 
+    async def count_user_posts(self, user_id: int) -> int:
+        query = """
+            SELECT COUNT(*)
+            FROM posts
+            WHERE user_id = $1
+        """
+        async with self.pool.acquire() as connection:
+            value = await connection.fetchval(query, user_id)
+        return int(value or 0)
+
     async def update_post(
         self,
         post_id: int,

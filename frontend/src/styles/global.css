@@ -1,0 +1,38 @@
+:root {
+  --bg-base: #0f1014;
+  --bg-frame: #f4f5f8;
+  --bg-panel: #ffffff;
+  --bg-muted: #edf0f5;
+  --ink-main: #191b24;
+  --ink-secondary: #667085;
+  --ink-soft: #9398aa;
+  --stroke: #e6e9f2;
+  --brand: #3a43e6;
+  --brand-dark: #2f36b8;
+  --danger: #ff5f68;
+  --radius-lg: 18px;
+  --radius-md: 12px;
+  --radius-sm: 8px;
+  --shadow-soft: 0 20px 60px rgba(8, 15, 52, 0.18);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  margin: 0;
+  width: 100%;
+  min-height: 100%;
+}
+
+body {
+  font-family: "Inter", "Segoe UI", sans-serif;
+  background: #f4f5f6;
+  color: var(--ink-main);
+  overflow-x: hidden;
+}

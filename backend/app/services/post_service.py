@@ -8,6 +8,7 @@ from redis.asyncio import Redis
 from app.core.config import settings
 from app.repositories.post_repository import PostRepository
 from app.schemas.post import PostCreate, PostUpdate
+from app.utils.demo_posts import build_demo_posts
 
 
 class PostService:
@@ -89,13 +90,42 @@ class PostService:
         await self.post_repository.delete_post(post_id=post_id)
         await self._refresh_user_cache(user_id=current_user_id)
 
-    async def get_posts_by_user(self, user_id: int) -> list[dict]:
+    async def get_posts_by_user(
+        self,
+        user_id: int,
+        limit: int = 10,
+        offset: int = 0,
+    ) -> list[dict]:
         cached_posts = await self._get_posts_from_cache(user_id=user_id)
         if cached_posts is not None:
-            return cached_posts
+            return cached_posts[offset : offset + limit]
 
         # Required by task: Postgres path should emulate heavy query.
         await asyncio.sleep(2)
         posts = await self.post_repository.get_user_posts(user_id=user_id)
         await self._save_posts_to_cache(user_id=user_id, posts=posts)
-        return posts
+        return posts[offset : offset + limit]
+
+    async def seed_demo_posts(
+        self,
+        user_id: int,
+        count: int = 12,
+        append: bool = False,
+    ) -> list[dict]:
+        existing_count = await self.post_repository.count_user_posts(user_id=user_id)
+
+        if existing_count > 0 and not append:
+            return await self.post_repository.get_user_posts(user_id=user_id)
+
+        start_index = existing_count if append else 0
+        demo_posts = build_demo_posts(start_index=start_index, count=count)
+
+        for post in demo_posts:
+            await self.post_repository.create_post(
+                user_id=user_id,
+                title=post["title"],
+                text=post["text"],
+            )
+
+        await self._refresh_user_cache(user_id=user_id)
+        return await self.post_repository.get_user_posts(user_id=user_id)

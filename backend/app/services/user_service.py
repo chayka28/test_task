@@ -38,6 +38,12 @@ class UserService:
     async def get_user_by_id(self, user_id: int) -> dict | None:
         return await self.user_repository.get_by_id(user_id=user_id)
 
+    async def get_or_create_demo_user(self, name: str = "Trendsee Demo") -> dict:
+        user = await self.user_repository.get_by_name(name=name)
+        if user is not None:
+            return user
+        return await self.user_repository.create_user(name=name)
+
     async def update_user_name(self, user_id: int, name: str) -> dict:
         user = await self.user_repository.update_name(user_id=user_id, name=name)
         if user is None:
