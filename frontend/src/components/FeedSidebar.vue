@@ -2,14 +2,7 @@
   <aside class="sidebar" :class="{ 'sidebar--collapsed': collapsed }">
     <div class="sidebar-scroll">
       <header class="logo-row">
-        <div class="brand-lockup">
-          <div class="logo-mark" aria-hidden="true">
-            <img class="logo-outline" src="/assets/logo/logo-outline.png" alt="" />
-            <img class="logo-center" src="/assets/logo/logo-center.png" alt="" />
-          </div>
-          <span v-if="!collapsed" class="logo-text">trendsee</span>
-          <span v-if="!collapsed" class="logo-tag">Beta</span>
-        </div>
+        <BrandLogo :icon-only="collapsed" :show-tag="!collapsed" compact />
 
         <button class="collapse-btn" type="button" aria-label="Свернуть меню" @click="$emit('toggle-sidebar')">
           <span class="collapse-arrow" :class="{ 'collapse-arrow--collapsed': collapsed }">→</span>
@@ -104,6 +97,7 @@
 import { computed } from "vue";
 
 import AppAvatar from "./AppAvatar.vue";
+import BrandLogo from "./BrandLogo.vue";
 
 const props = defineProps({
   collapsed: {
@@ -267,61 +261,6 @@ function handleProfileAction() {
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-}
-
-.brand-lockup {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
-}
-
-.logo-mark {
-  position: relative;
-  width: 34px;
-  height: 28px;
-  flex: 0 0 34px;
-}
-
-.logo-outline,
-.logo-center {
-  filter: brightness(0) saturate(100%);
-}
-
-.logo-outline {
-  position: absolute;
-  left: 0;
-  top: 5px;
-  width: 34px;
-  height: 22px;
-  object-fit: contain;
-}
-
-.logo-center {
-  position: absolute;
-  left: 11px;
-  top: 0;
-  width: 14px;
-  height: 17px;
-  object-fit: contain;
-}
-
-.logo-text {
-  color: #1f2230;
-  font-size: 24px;
-  line-height: 1;
-  font-weight: 900;
-  letter-spacing: -0.04em;
-}
-
-.logo-tag {
-  border-radius: 12px;
-  background: #dce1e5;
-  color: #6e7d89;
-  font-size: 14px;
-  line-height: 1;
-  font-weight: 700;
-  padding: 5px 8px;
 }
 
 .collapse-btn {

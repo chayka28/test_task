@@ -1,20 +1,28 @@
 <template>
   <section class="top-panel">
     <div class="hero-card">
-      <div class="hero-bg">
-        <span class="hero-shape hero-shape--one"></span>
-        <span class="hero-shape hero-shape--two"></span>
-        <span class="hero-shape hero-shape--three"></span>
+      <div class="hero-bg" aria-hidden="true">
+        <span class="hero-shape hero-shape--dark"></span>
+        <span class="hero-shape hero-shape--cyan"></span>
+        <span class="hero-shape hero-shape--black"></span>
+        <span class="hero-shape hero-shape--light"></span>
       </div>
 
-      <button type="button" class="back-btn" @click="$emit('placeholder', 'Назад')">Назад</button>
+      <button type="button" class="back-btn" @click="$emit('placeholder', 'Назад')">← Назад</button>
 
       <div class="hero-head">
-        <div>
+        <div class="hero-title-row">
           <h2>Business history</h2>
-          <button type="button" class="radar-btn" @click="handleRestrictedAction('Добавить в радар')">
-            Добавить в радар
-          </button>
+
+          <div class="hero-actions">
+            <button type="button" class="radar-btn" @click="handleRestrictedAction('Добавить в радар')">
+              <img src="/assets/icons/top-plus.svg" alt="" />
+              <span>Добавить в радар</span>
+            </button>
+            <button type="button" class="icon-badge" @click="$emit('placeholder', 'Информация о подборке')">
+              <img src="/assets/icons/top-info.svg" alt="" />
+            </button>
+          </div>
         </div>
       </div>
 
@@ -34,34 +42,76 @@
         </div>
       </div>
 
-      <div class="search-shell">
-        <label class="search-input">
-          <input :value="query" type="text" placeholder="Новый поиск" @input="$emit('update:query', $event.target.value)" />
-        </label>
-        <button type="button" class="select-pill" @click="handleRestrictedAction('Тип видео')">
-          Reels
-        </button>
-        <button type="button" class="select-pill" @click="handleRestrictedAction('Язык видео')">
-          Русский
-        </button>
-        <button type="button" class="submit-btn" @click="handleSearch">Найти</button>
+      <div class="search-row">
+        <p class="search-label">Новый поиск</p>
+
+        <div class="search-shell">
+          <label class="search-input search-input--wide">
+            <span class="input-main">
+              <img src="/assets/icons/top-search-dark.svg" alt="" class="search-icon search-icon--light" />
+              <input :value="query" type="text" placeholder="Новый поиск" @input="$emit('update:query', $event.target.value)" />
+            </span>
+            <span class="input-sub">Введите ключевое слово, а мы найдем для вас видео</span>
+          </label>
+
+          <button type="button" class="select-pill" @click="handleRestrictedAction('Тип видео')">
+            <span class="input-main">
+              <img src="/assets/icons/top-reels.svg" alt="" class="pill-icon" />
+              <span>Reels</span>
+            </span>
+            <span class="input-sub">Тип видео</span>
+            <img src="/assets/icons/top-chevron.svg" alt="" class="chevron chevron--light" />
+          </button>
+
+          <button type="button" class="select-pill" @click="handleRestrictedAction('Язык видео')">
+            <span class="input-main">
+              <span class="flag-ru" aria-hidden="true"></span>
+              <span>Русский</span>
+            </span>
+            <span class="input-sub">Язык видео</span>
+            <img src="/assets/icons/top-chevron.svg" alt="" class="chevron chevron--light" />
+          </button>
+
+          <button type="button" class="submit-btn" @click="handleSearch">Найти</button>
+        </div>
       </div>
     </div>
 
     <div class="results-card">
       <div class="results-head">
-        <div class="results-query">Business history</div>
+        <div class="results-left">
+          <img src="/assets/icons/top-search-blue.svg" alt="" class="results-search-icon" />
+          <div class="results-query">Business history</div>
+
+          <button type="button" class="results-radar-btn" @click="handleRestrictedAction('Добавить в радар')">
+            <img src="/assets/icons/top-plus.svg" alt="" />
+            <span>Добавить в радар</span>
+          </button>
+
+          <button type="button" class="results-info-btn" @click="$emit('placeholder', 'Информация о подборке')">
+            <img src="/assets/icons/top-info.svg" alt="" />
+          </button>
+        </div>
+
         <div class="results-count">Загружено: {{ loadedCount }} видео</div>
       </div>
 
       <div class="hint-row">
-        Ролики собираются напрямую из поиска соцсетей. После регистрации можно сохранять результаты, добавлять в радар и
-        работать с подборкой.
+        <span>
+          Ролики собираются напрямую из поиска соц. сетей. Все видео из выдачи — актуальны и подгружаются прямо сейчас.
+        </span>
+        <button type="button" class="hint-close" @click="$emit('placeholder', 'Скрыть подсказку')">×</button>
       </div>
 
       <div class="filters-row">
-        <button type="button" class="filter-btn" @click="$emit('update:sortMode', 'all')">За все время</button>
-        <button type="button" class="filter-btn" @click="$emit('update:sortMode', 'likes')">По лайкам</button>
+        <button type="button" class="filter-btn" @click="$emit('update:sortMode', 'all')">
+          За все время
+          <img src="/assets/icons/top-chevron.svg" alt="" class="chevron" />
+        </button>
+        <button type="button" class="filter-btn" @click="$emit('update:sortMode', 'likes')">
+          По лайкам
+          <img src="/assets/icons/top-chevron.svg" alt="" class="chevron" />
+        </button>
       </div>
     </div>
   </section>
@@ -121,8 +171,8 @@ function handleRestrictedAction(label) {
   position: relative;
   overflow: hidden;
   border-radius: 16px;
-  padding: 20px 18px 18px;
-  background: linear-gradient(135deg, #6f5bff 0%, #5e36df 48%, #7b61ff 100%);
+  padding: 18px 16px 18px;
+  background: linear-gradient(135deg, #6c5cff 0%, #5f3ce3 42%, #7a66ff 100%);
 }
 
 .hero-bg {
@@ -132,39 +182,53 @@ function handleRestrictedAction(label) {
 
 .hero-shape {
   position: absolute;
-  border-radius: 50%;
   pointer-events: none;
 }
 
-.hero-shape--one {
-  width: 420px;
-  height: 420px;
-  top: -210px;
-  right: 120px;
-  background: rgba(18, 27, 83, 0.65);
+.hero-shape--dark {
+  width: 460px;
+  height: 460px;
+  border-radius: 50%;
+  top: -290px;
+  right: 180px;
+  background: rgba(25, 42, 118, 0.58);
 }
 
-.hero-shape--two {
-  width: 380px;
-  height: 380px;
-  left: 140px;
-  bottom: -230px;
-  background: radial-gradient(circle at 30% 30%, #7fe5ff 0%, #7fe5ff 20%, #5c84f0 65%, rgba(92, 132, 240, 0.05) 100%);
+.hero-shape--cyan {
+  width: 390px;
+  height: 390px;
+  border-radius: 50%;
+  left: 120px;
+  bottom: -250px;
+  background: radial-gradient(circle at 25% 25%, #8fe7ff 0%, #7fdfff 30%, #5b83f2 74%, rgba(91, 131, 242, 0.08) 100%);
 }
 
-.hero-shape--three {
+.hero-shape--black {
+  width: 400px;
+  height: 240px;
+  right: 140px;
+  top: -4px;
+  background: rgba(0, 0, 0, 0.86);
+  clip-path: ellipse(50% 44% at 50% 50%);
+}
+
+.hero-shape--light {
   width: 520px;
   height: 240px;
-  right: -120px;
+  right: -150px;
   bottom: -90px;
-  background: linear-gradient(180deg, rgba(188, 226, 255, 0.95) 0%, rgba(118, 175, 255, 0.75) 100%);
-  border-radius: 56% 44% 0 0;
+  background: linear-gradient(180deg, rgba(192, 225, 255, 0.94) 0%, rgba(125, 181, 255, 0.72) 100%);
+  border-radius: 60% 40% 0 0;
 }
 
 .back-btn,
 .radar-btn,
 .topic-chip,
-.filter-btn {
+.filter-btn,
+.icon-badge,
+.results-radar-btn,
+.results-info-btn,
+.hint-close {
   border: 0;
   cursor: pointer;
 }
@@ -173,39 +237,80 @@ function handleRestrictedAction(label) {
   position: relative;
   z-index: 1;
   background: transparent;
-  color: rgba(255, 255, 255, 0.85);
-  font-size: 13px;
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 12px;
+  line-height: 1;
   font-weight: 700;
 }
 
-.hero-head {
+.hero-head,
+.topic-row,
+.search-row {
   position: relative;
   z-index: 1;
-  margin-top: 12px;
+}
+
+.hero-head {
+  margin-top: 18px;
+}
+
+.hero-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
 }
 
 .hero-head h2 {
   margin: 0;
   color: #ffffff;
-  font-size: 28px;
+  font-size: 31px;
+  line-height: 1.1;
   font-weight: 800;
 }
 
-.radar-btn {
-  margin-top: 10px;
-  height: 32px;
-  padding: 0 14px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.92);
-  color: #4c4f67;
-  font-size: 13px;
-  font-weight: 700;
+.hero-actions,
+.results-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-.topic-row,
-.search-shell {
-  position: relative;
-  z-index: 1;
+.radar-btn,
+.results-radar-btn {
+  height: 30px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.96);
+  color: #454b63;
+  font-size: 12px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.radar-btn img,
+.results-radar-btn img {
+  width: 12px;
+  height: 12px;
+}
+
+.icon-badge,
+.results-info-btn {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: transparent;
+  display: grid;
+  place-items: center;
+  padding: 0;
+}
+
+.icon-badge img,
+.results-info-btn img {
+  width: 14px;
+  height: 14px;
 }
 
 .topic-row {
@@ -230,7 +335,7 @@ function handleRestrictedAction(label) {
   min-height: 30px;
   padding: 0 12px;
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(255, 255, 255, 0.96);
   color: #4b5563;
   font-size: 12px;
   font-weight: 700;
@@ -240,47 +345,117 @@ function handleRestrictedAction(label) {
   color: #2b31b3;
 }
 
+.search-row {
+  margin-top: 16px;
+}
+
+.search-label {
+  margin: 0 0 10px;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+}
+
 .search-shell {
-  margin-top: 18px;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 150px 150px 112px;
+  grid-template-columns: minmax(0, 1fr) 142px 142px 104px;
   gap: 10px;
 }
 
 .search-input,
 .select-pill {
-  height: 50px;
+  min-height: 62px;
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.16);
   display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  padding: 10px 14px;
+  position: relative;
+}
+
+.search-input--wide {
+  justify-content: space-between;
+}
+
+.input-main {
+  display: inline-flex;
   align-items: center;
+  gap: 8px;
+  min-height: 18px;
+}
+
+.search-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.search-icon--light {
+  filter: brightness(0) invert(1);
 }
 
 .search-input input {
   width: 100%;
-  height: 100%;
   border: 0;
   outline: none;
   background: transparent;
-  padding: 0 16px;
+  padding: 0;
   color: #ffffff;
   font-size: 14px;
+  line-height: 1;
 }
 
 .search-input input::placeholder {
-  color: rgba(255, 255, 255, 0.62);
+  color: rgba(255, 255, 255, 0.8);
 }
 
 .select-pill {
-  justify-content: center;
+  padding-right: 28px;
   color: #ffffff;
   font-size: 14px;
   font-weight: 700;
+  text-align: left;
+}
+
+.pill-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.input-sub {
+  display: block;
+  margin-top: 9px;
+  color: rgba(255, 255, 255, 0.58);
+  font-size: 11px;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
+.chevron {
+  width: 12px;
+  height: 8px;
+}
+
+.chevron--light {
+  position: absolute;
+  right: 12px;
+  top: 19px;
+  filter: brightness(0) invert(1);
+  opacity: 0.85;
+}
+
+.flag-ru {
+  width: 16px;
+  height: 12px;
+  border-radius: 2px;
+  display: inline-block;
+  background: linear-gradient(180deg, #ffffff 0 33.33%, #2749d8 33.33% 66.66%, #d43838 66.66% 100%);
 }
 
 .submit-btn {
-  height: 50px;
+  height: 62px;
   border-radius: 12px;
   background: #ffffff;
   color: #2b31b3;
@@ -302,6 +477,16 @@ function handleRestrictedAction(label) {
   gap: 12px;
 }
 
+.results-left {
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.results-search-icon {
+  width: 18px;
+  height: 18px;
+}
+
 .results-query {
   color: #101827;
   font-size: 22px;
@@ -312,6 +497,7 @@ function handleRestrictedAction(label) {
   color: #7b8794;
   font-size: 13px;
   font-weight: 600;
+  white-space: nowrap;
 }
 
 .hint-row {
@@ -322,6 +508,17 @@ function handleRestrictedAction(label) {
   padding: 12px 14px;
   font-size: 13px;
   line-height: 1.4;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.hint-close {
+  background: transparent;
+  color: #8791d0;
+  font-size: 18px;
+  line-height: 1;
 }
 
 .filters-row {
@@ -332,22 +529,26 @@ function handleRestrictedAction(label) {
 
 .filter-btn {
   height: 34px;
-  padding: 0 14px;
+  padding: 0 12px;
   border-radius: 10px;
   background: #f4f6fa;
   color: #4f5f70;
   font-size: 12px;
   font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
 @media (max-width: 1180px) {
-  .search-shell {
-    grid-template-columns: 1fr;
-  }
-
+  .hero-title-row,
   .results-head {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .search-shell {
+    grid-template-columns: 1fr;
   }
 }
 </style>

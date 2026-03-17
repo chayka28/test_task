@@ -3,10 +3,7 @@
     <div class="auth-card" role="dialog" aria-modal="true" aria-label="Авторизация">
       <button type="button" class="close-btn" aria-label="Закрыть" @click="$emit('close')">×</button>
 
-      <div class="logo-mark" aria-hidden="true">
-        <img src="/assets/logo/logo-outline.png" alt="" class="logo-outline" />
-        <img src="/assets/logo/logo-center.png" alt="" class="logo-center" />
-      </div>
+      <BrandLogo icon-only />
 
       <p class="overline">Trendsee</p>
       <h2>{{ mode === 'register' ? "Создайте аккаунт" : "Войдите в аккаунт" }}</h2>
@@ -122,6 +119,7 @@
 import { computed, reactive, ref, watch } from "vue";
 
 import AvatarPicker from "./AvatarPicker.vue";
+import BrandLogo from "./BrandLogo.vue";
 
 const props = defineProps({
   isLoading: {
@@ -261,34 +259,6 @@ function submitLogin() {
   font-size: 22px;
   line-height: 1;
   cursor: pointer;
-}
-
-.logo-mark {
-  position: relative;
-  width: 34px;
-  height: 34px;
-}
-
-.logo-outline,
-.logo-center {
-  filter: brightness(0) saturate(100%);
-}
-
-.logo-outline {
-  position: absolute;
-  inset: 3px 0 0 0;
-  width: 34px;
-  height: 24px;
-  object-fit: contain;
-}
-
-.logo-center {
-  position: absolute;
-  left: 11px;
-  top: 1px;
-  width: 14px;
-  height: 17px;
-  object-fit: contain;
 }
 
 .overline {
