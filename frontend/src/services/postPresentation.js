@@ -74,6 +74,26 @@ export function buildPostMetrics(postId) {
   };
 }
 
+export function buildPostMetricValues(postId) {
+  const seed = seededValue(Number(postId || 1));
+  const views = 60_000 + (seed % 3_200_000);
+  const likes = Math.round(views * 0.17);
+  const comments = Math.round(views * 0.036);
+  const shares = Math.round(views * 0.011);
+
+  return {
+    views,
+    likes,
+    comments,
+    shares,
+  };
+}
+
 export function buildMediaPalette(postId) {
   return mediaPalettes[Math.abs(Number(postId || 0)) % mediaPalettes.length];
+}
+
+export function buildPostTopic(postId) {
+  const topics = ["Базы данных", "ИИ", "Чат-боты", "Программирование", "Айти", "Макбук", "Кофе"];
+  return topics[Math.abs(Number(postId || 0)) % topics.length];
 }

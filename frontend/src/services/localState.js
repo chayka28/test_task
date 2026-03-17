@@ -1,6 +1,5 @@
 const SESSION_KEY = "trendsee-session";
-const LIKES_KEY = "trendsee-liked-posts";
-
+const FAVORITES_KEY = "trendsee-favorite-posts";
 function readJson(key, fallbackValue) {
   try {
     const rawValue = window.localStorage.getItem(key);
@@ -31,10 +30,25 @@ export function clearSession() {
   window.localStorage.removeItem(SESSION_KEY);
 }
 
-export function loadLikedPostIds() {
-  return new Set(readJson(LIKES_KEY, []));
+export function loadFavoritePostIds(userId) {
+  if (!userId) return new Set();
+
+  const favoriteMap = readJson(FAVORITES_KEY, {});
+  return new Set(Array.isArray(favoriteMap[userId]) ? favoriteMap[userId] : []);
 }
 
-export function saveLikedPostIds(postIds) {
-  window.localStorage.setItem(LIKES_KEY, JSON.stringify([...postIds]));
+export function saveFavoritePostIds(userId, postIds) {
+  if (!userId) return;
+
+  const favoriteMap = readJson(FAVORITES_KEY, {});
+  favoriteMap[userId] = [...postIds];
+  window.localStorage.setItem(FAVORITES_KEY, JSON.stringify(favoriteMap));
+}
+
+export function clearFavoritePostIds(userId) {
+  if (!userId) return;
+
+  const favoriteMap = readJson(FAVORITES_KEY, {});
+  delete favoriteMap[userId];
+  window.localStorage.setItem(FAVORITES_KEY, JSON.stringify(favoriteMap));
 }

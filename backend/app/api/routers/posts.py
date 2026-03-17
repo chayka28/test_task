@@ -1,11 +1,16 @@
-from fastapi import APIRouter, Depends, Query, Response, status
+from typing import Annotated
+
+from fastapi import APIRouter, Depends, Path, Query, Response, status
 
 from app.dependencies.auth import get_current_user_id
-from app.dependencies.services import get_post_service
+from app.dependencies.services import get_post_service, get_user_service
 from app.schemas.post import PostCreate, PostOut, PostUpdate
 from app.services.post_service import PostService
+from app.services.user_service import UserService
 
 router = APIRouter(prefix="/posts", tags=["Posts"])
+PositivePostId = Annotated[int, Path(ge=1, description="Positive post id")]
+PositiveUserId = Annotated[int, Path(ge=1, description="Positive user id")]
 
 
 @router.post(
@@ -28,7 +33,7 @@ async def create_post(
     summary="Update post (author only)",
 )
 async def update_post(
-    post_id: int,
+    post_id: PositivePostId,
     payload: PostUpdate,
     current_user_id: int = Depends(get_current_user_id),
     post_service: PostService = Depends(get_post_service),
@@ -46,7 +51,7 @@ async def update_post(
     summary="Delete post (author only)",
 )
 async def delete_post(
-    post_id: int,
+    post_id: PositivePostId,
     current_user_id: int = Depends(get_current_user_id),
     post_service: PostService = Depends(get_post_service),
 ) -> Response:
@@ -60,9 +65,9 @@ async def delete_post(
     summary="Get all posts of a user (Redis 10m cache, then Postgres + 2s delay)",
 )
 async def get_posts_by_user(
-    user_id: int,
-    limit: int = 10,
-    offset: int = 0,
+    user_id: PositiveUserId,
+    limit: int = Query(default=10, ge=1, le=50),
+    offset: int = Query(default=0, ge=0),
     post_service: PostService = Depends(get_post_service),
 ) -> list[PostOut]:
     return await post_service.get_posts_by_user(
@@ -85,6 +90,25 @@ async def seed_demo_posts(
 ) -> list[PostOut]:
     return await post_service.seed_demo_posts(
         user_id=current_user_id,
+        count=count,
+        append=append,
+    )
+
+
+@router.post(
+    "/demo-seed/public",
+    response_model=list[PostOut],
+    summary="Generate or extend starter posts for the public feed",
+)
+async def seed_public_demo_posts(
+    count: int = Query(default=12, ge=1, le=24),
+    append: bool = Query(default=True),
+    post_service: PostService = Depends(get_post_service),
+    user_service: UserService = Depends(get_user_service),
+) -> list[PostOut]:
+    demo_user = await user_service.get_or_create_demo_user()
+    return await post_service.seed_demo_posts(
+        user_id=demo_user["id"],
         count=count,
         append=append,
     )

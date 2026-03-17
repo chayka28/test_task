@@ -62,7 +62,7 @@ class UserService:
         }
 
     async def issue_token_by_user_id(self, user_id: int) -> dict:
-        # Отдельная точка входа из ТЗ для ручного тестирования.
+        # Отдельная точка входа для ручного тестирования.
         user = await self.user_repository.get_by_id(user_id=user_id)
         if user is None:
             raise HTTPException(

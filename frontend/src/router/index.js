@@ -8,6 +8,13 @@ const routes = [
     path: "/",
     name: "feed",
     component: FeedPage,
+    props: { viewMode: "feed" },
+  },
+  {
+    path: "/favorites",
+    name: "favorites",
+    component: FeedPage,
+    props: { viewMode: "favorites" },
   },
   {
     path: "/mobile-preview",

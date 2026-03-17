@@ -30,7 +30,17 @@ async function buildRequestError(response) {
 
   try {
     const parsedPayload = JSON.parse(rawPayload);
-    const detail = typeof parsedPayload?.detail === "string" ? parsedPayload.detail : rawPayload;
+    let detail = rawPayload;
+
+    if (typeof parsedPayload?.detail === "string") {
+      detail = parsedPayload.detail;
+    } else if (Array.isArray(parsedPayload?.detail)) {
+      detail = parsedPayload.detail
+        .map((item) => item?.msg)
+        .filter(Boolean)
+        .join(" ");
+    }
+
     return new Error(normalizeErrorMessage(detail, response.status));
   } catch {
     return new Error(normalizeErrorMessage(rawPayload, response.status));
@@ -95,6 +105,25 @@ export async function loginUser({ email, password }) {
   });
 }
 
+export async function fetchTokenByUserId(userId) {
+  return request(`/users/${userId}/token`);
+}
+
+export async function updateUserName({ userId, name }) {
+  return request(`/users/${userId}`, {
+    method: "PATCH",
+    body: {
+      name,
+    },
+  });
+}
+
+export async function deleteUserById(userId) {
+  return request(`/users/${userId}`, {
+    method: "DELETE",
+  });
+}
+
 export async function updateMyProfile({ token, name, avatarData }) {
   return request("/users/me/profile", {
     method: "PATCH",
@@ -110,6 +139,41 @@ export async function fetchDemoUser() {
   return request("/users/demo");
 }
 
+export async function createPost({ token, title, text, videoUrl, posterUrl, sourceUrl }) {
+  return request("/posts", {
+    method: "POST",
+    token,
+    body: {
+      title,
+      text,
+      video_url: videoUrl || null,
+      poster_url: posterUrl || null,
+      source_url: sourceUrl || null,
+    },
+  });
+}
+
+export async function updatePost({ token, postId, title, text, videoUrl, posterUrl, sourceUrl }) {
+  return request(`/posts/${postId}`, {
+    method: "PATCH",
+    token,
+    body: {
+      ...(title !== undefined ? { title } : {}),
+      ...(text !== undefined ? { text } : {}),
+      ...(videoUrl !== undefined ? { video_url: videoUrl || null } : {}),
+      ...(posterUrl !== undefined ? { poster_url: posterUrl || null } : {}),
+      ...(sourceUrl !== undefined ? { source_url: sourceUrl || null } : {}),
+    },
+  });
+}
+
+export async function deletePost({ token, postId }) {
+  return request(`/posts/${postId}`, {
+    method: "DELETE",
+    token,
+  });
+}
+
 export async function seedDemoPosts({ token, count = 12, append = false }) {
   const params = new URLSearchParams({
     count: String(count),
@@ -119,5 +183,16 @@ export async function seedDemoPosts({ token, count = 12, append = false }) {
   return request(`/posts/demo-seed?${params.toString()}`, {
     method: "POST",
     token,
+  });
+}
+
+export async function seedPublicDemoPosts({ count = 12, append = true } = {}) {
+  const params = new URLSearchParams({
+    count: String(count),
+    append: String(append),
+  });
+
+  return request(`/posts/demo-seed/public?${params.toString()}`, {
+    method: "POST",
   });
 }

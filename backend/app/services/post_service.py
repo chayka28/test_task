@@ -42,6 +42,9 @@ class PostService:
             user_id=user_id,
             title=payload.title,
             text=payload.text,
+            video_url=str(payload.video_url) if payload.video_url else None,
+            poster_url=str(payload.poster_url) if payload.poster_url else None,
+            source_url=str(payload.source_url) if payload.source_url else None,
         )
         await self._refresh_user_cache(user_id=user_id)
         return post
@@ -69,6 +72,9 @@ class PostService:
             post_id=post_id,
             title=payload.title,
             text=payload.text,
+            video_url=str(payload.video_url) if payload.video_url else None,
+            poster_url=str(payload.poster_url) if payload.poster_url else None,
+            source_url=str(payload.source_url) if payload.source_url else None,
         )
         await self._refresh_user_cache(user_id=current_user_id)
         return updated
@@ -100,7 +106,7 @@ class PostService:
         if cached_posts is not None:
             return cached_posts[offset : offset + limit]
 
-        # По ТЗ чтение из Postgres должно имитировать тяжелый запрос.
+        # Чтение из Postgres намеренно имитирует тяжелый запрос.
         await asyncio.sleep(2)
         posts = await self.post_repository.get_user_posts(user_id=user_id)
         await self._save_posts_to_cache(user_id=user_id, posts=posts)
@@ -125,6 +131,9 @@ class PostService:
                 user_id=user_id,
                 title=post["title"],
                 text=post["text"],
+                video_url=post.get("video_url"),
+                poster_url=post.get("poster_url"),
+                source_url=post.get("source_url"),
             )
 
         await self._refresh_user_cache(user_id=user_id)

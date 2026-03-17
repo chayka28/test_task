@@ -16,9 +16,9 @@
             :key="item.label"
             type="button"
             class="shortcut-item"
-            :class="{ 'shortcut-item--active': item.isActive }"
+            :class="{ 'shortcut-item--active': isRouteActive(item.route, item.isActive) }"
             :title="item.label"
-            @click="$emit('placeholder', item.label)"
+            @click="handleMenuAction(item)"
           >
             <img :src="item.icon" :alt="item.label" class="shortcut-icon" />
           </button>
@@ -34,7 +34,8 @@
               :key="item.label"
               type="button"
               class="menu-item"
-              @click="$emit('placeholder', item.label)"
+              :class="{ 'menu-item--active': isRouteActive(item.route) }"
+              @click="handleMenuAction(item)"
             >
               <img :src="item.icon" :alt="item.label" class="menu-icon" />
               <span class="menu-label">{{ item.label }}</span>
@@ -140,15 +141,19 @@ const props = defineProps({
     type: Number,
     default: 1,
   },
+  activeView: {
+    type: String,
+    default: "feed",
+  },
 });
 
-const emit = defineEmits(["toggle-sidebar", "toggle-creative", "open-auth", "open-profile", "placeholder"]);
+const emit = defineEmits(["toggle-sidebar", "toggle-creative", "open-auth", "open-profile", "placeholder", "navigate"]);
 
 const sections = computed(() => [
   {
     title: "Поиск контента",
     items: [
-      { label: "Главная", icon: "/assets/icons/home.svg" },
+      { label: "Главная", icon: "/assets/icons/home.svg", route: "feed" },
       { label: "Видео", icon: "/assets/icons/Vector.png" },
       { label: "Шпионаж", icon: "/assets/icons/Vector-1.png" },
       { label: "Контент радар", icon: "/assets/icons/Vector-2.png", badge: String(props.radarCount) },
@@ -175,7 +180,7 @@ const sections = computed(() => [
   {
     title: "Идеи",
     items: [
-      { label: "Избранные", icon: "/assets/icons/menu-favorites.png" },
+      { label: "Избранные", icon: "/assets/icons/menu-favorites.png", route: "favorites" },
       { label: "История", icon: "/assets/icons/menu-history.png", badge: "Скоро", badgeSoft: true, chevron: true },
       { label: "Закладки", icon: "/assets/icons/menu-bookmark.png", badge: "Скоро", badgeSoft: true },
     ],
@@ -192,15 +197,15 @@ const sections = computed(() => [
 ]);
 
 const shortcutItems = [
-  { label: "Главная", icon: "/assets/icons/home.svg" },
-  { label: "Поиск", icon: "/assets/icons/search.svg", isActive: true },
+  { label: "Главная", icon: "/assets/icons/home.svg", route: "feed" },
+  { label: "Поиск", icon: "/assets/icons/search.svg", isActive: true, route: "feed" },
   { label: "Контент радар", icon: "/assets/icons/Vector-2.png" },
   { label: "Идеи", icon: "/assets/icons/ghost.svg" },
   { label: "Анализ видео", icon: "/assets/icons/Vector-7.png" },
   { label: "Анализ профиля", icon: "/assets/icons/Vector-8.png" },
   { label: "Черновик", icon: "/assets/icons/Vector-9.png" },
   { label: "Контент план", icon: "/assets/icons/Vector-10.png" },
-  { label: "Избранные", icon: "/assets/icons/menu-favorites.png" },
+  { label: "Избранные", icon: "/assets/icons/menu-favorites.png", route: "favorites" },
   { label: "Закладки", icon: "/assets/icons/menu-bookmark.png" },
 ];
 
@@ -220,6 +225,20 @@ function handleProfileAction() {
   }
 
   emit("open-auth");
+}
+
+function handleMenuAction(item) {
+  if (item.route) {
+    emit("navigate", item.route);
+    return;
+  }
+
+  emit("placeholder", item.label);
+}
+
+function isRouteActive(routeName, fallback = false) {
+  if (!routeName) return Boolean(fallback);
+  return props.activeView === routeName;
 }
 </script>
 
@@ -319,6 +338,10 @@ function handleProfileAction() {
 }
 
 .menu-item:hover {
+  background: #eceef2;
+}
+
+.menu-item--active {
   background: #eceef2;
 }
 
@@ -504,6 +527,7 @@ function handleProfileAction() {
   font-weight: 700;
   cursor: pointer;
 }
+
 
 .profile-row {
   margin-top: 14px;

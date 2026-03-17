@@ -5,6 +5,7 @@
         :collapsed="isSidebarCollapsed"
         :creative-expanded="isCreativeExpanded"
         :is-authenticated="isAuthenticated"
+        :active-view="viewMode"
         :radar-count="radarCount"
         :token-used="tokenUsed"
         :token-total="tokenTotal"
@@ -16,6 +17,7 @@
         @toggle-creative="isCreativeExpanded = !isCreativeExpanded"
         @open-auth="openAuthModal('register')"
         @open-profile="isProfileModalOpen = true"
+        @navigate="handleNavigate"
         @placeholder="handlePlaceholder"
       />
 
@@ -24,11 +26,11 @@
           v-model:query="searchQuery"
           v-model:selectedTopic="selectedTopic"
           :loaded-count="visiblePosts.length"
-          :can-interact="isAuthenticated"
+          :sort-mode="sortMode"
+          :results-title="resultsTitle"
           @update:sortMode="sortMode = $event"
           @search="handleSearch"
           @placeholder="handlePlaceholder"
-          @auth-required="handleAuthRequired"
         />
 
         <section class="post-grid">
@@ -40,8 +42,8 @@
             :can-interact="isAuthenticated"
             @open="openPost"
             @toggle-like="toggleLike"
-            @placeholder="handlePlaceholder"
             @auth-required="handleAuthRequired"
+            @placeholder="handlePlaceholder"
           />
         </section>
 
@@ -49,7 +51,7 @@
           <LoadingIndicator v-if="isInitialLoading" label="Загружаем публикации..." />
           <LoadingIndicator v-else-if="isLoadingMore" label="Подгружаем еще..." />
           <p v-else-if="errorText" class="error-state">{{ errorText }}</p>
-          <p v-else-if="!visiblePosts.length" class="empty-state">По текущему фильтру публикации не найдены</p>
+          <p v-else-if="!visiblePosts.length" class="empty-state">{{ emptyStateText }}</p>
           <p v-else-if="!hasMore" class="empty-state">Больше публикаций нет</p>
         </div>
 
@@ -70,10 +72,13 @@
       <PostDetailsModal
         v-if="selectedPost"
         :post="selectedPost"
-        :can-interact="isAuthenticated"
+        :can-manage-post="canManageSelectedPost"
+        :is-saving="isPostSaving"
+        :is-deleting="isPostDeleting"
         @close="selectedPost = null"
+        @edit="openPostEditor('edit', $event)"
+        @delete="handleDeletePost"
         @placeholder="handlePlaceholder"
-        @auth-required="handleAuthRequired"
       />
     </Transition>
 
@@ -93,10 +98,25 @@
       <ProfileModal
         v-if="isProfileModalOpen && session?.user"
         :user="session.user"
+        :posts-count="posts.length"
         :is-loading="isProfileSaving"
+        :is-deleting="isUserDeleting"
         @close="isProfileModalOpen = false"
         @save="handleProfileSave"
+        @create-post="openPostEditor('create')"
+        @delete-account="handleDeleteAccount"
         @logout="handleLogout"
+      />
+    </Transition>
+
+    <Transition name="auth-fade">
+      <PostEditorModal
+        v-if="isPostEditorOpen"
+        :mode="postEditorMode"
+        :initial-post="postEditorInitialPost"
+        :is-loading="isPostSaving"
+        @close="closePostEditor"
+        @submit="handlePostEditorSubmit"
       />
     </Transition>
 
@@ -110,6 +130,7 @@
 
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
+import { useRouter } from "vue-router";
 
 import AuthModal from "../components/AuthModal.vue";
 import FeedPostCard from "../components/FeedPostCard.vue";
@@ -117,10 +138,33 @@ import FeedSidebar from "../components/FeedSidebar.vue";
 import FeedTopPanel from "../components/FeedTopPanel.vue";
 import LoadingIndicator from "../components/LoadingIndicator.vue";
 import PlaceholderToast from "../components/PlaceholderToast.vue";
+import PostEditorModal from "../components/PostEditorModal.vue";
 import PostDetailsModal from "../components/PostDetailsModal.vue";
 import ProfileModal from "../components/ProfileModal.vue";
-import { fetchDemoUser, fetchPostsByUser, loginUser, registerUser, seedDemoPosts, updateMyProfile } from "../services/postsApi";
-import { clearSession, loadLikedPostIds, loadSession, saveLikedPostIds, saveSession } from "../services/localState";
+import {
+  createPost,
+  deletePost,
+  deleteUserById,
+  fetchDemoUser,
+  fetchPostsByUser,
+  loginUser,
+  registerUser,
+  seedDemoPosts,
+  seedPublicDemoPosts,
+  updatePost,
+  updateUserName,
+} from "../services/postsApi";
+import { buildPostMetricValues, buildPostTopic } from "../services/postPresentation";
+import { clearFavoritePostIds, clearSession, loadFavoritePostIds, loadSession, saveFavoritePostIds, saveSession } from "../services/localState";
+
+const props = defineProps({
+  viewMode: {
+    type: String,
+    default: "feed",
+  },
+});
+
+const router = useRouter();
 
 const pageSize = 12;
 
@@ -129,12 +173,14 @@ const selectedPost = ref(null);
 const viewerUserId = ref(null);
 const publicViewer = ref(null);
 const session = ref(loadSession());
-const likedPostIds = ref(loadLikedPostIds());
 
 const isInitialLoading = ref(false);
 const isLoadingMore = ref(false);
 const isAuthBusy = ref(false);
 const isProfileSaving = ref(false);
+const isUserDeleting = ref(false);
+const isPostSaving = ref(false);
+const isPostDeleting = ref(false);
 const hasMore = ref(true);
 const errorText = ref("");
 const authErrorText = ref("");
@@ -144,33 +190,68 @@ const isSidebarCollapsed = ref(false);
 const isCreativeExpanded = ref(false);
 const isAuthModalOpen = ref(false);
 const isProfileModalOpen = ref(false);
+const isPostEditorOpen = ref(false);
 const authMode = ref("register");
 const toastState = ref(null);
+const postEditorMode = ref("create");
+const postEditorInitialPost = ref(null);
+const favoritePostIds = ref(loadFavoritePostIds(session.value?.user?.id));
 
 const searchQuery = ref("");
-const selectedTopic = ref("Базы данных");
+const selectedTopic = ref("");
 const sortMode = ref("all");
 
 let toastTimerId = null;
 
 const isAuthenticated = computed(() => Boolean(session.value?.accessToken));
 const activeViewer = computed(() => session.value?.user || publicViewer.value || null);
+const isFavoritesView = computed(() => props.viewMode === "favorites");
 
 const visiblePosts = computed(() => {
   const normalizedQuery = searchQuery.value.trim().toLowerCase();
   let result = [...posts.value];
 
+  if (isFavoritesView.value) {
+    result = result.filter((post) => favoritePostIds.value.has(post.id));
+  }
+
+  if (selectedTopic.value) {
+    result = result.filter((post) => buildPostTopic(post.id) === selectedTopic.value);
+  }
+
   if (normalizedQuery) {
     result = result.filter((post) => {
-      return `${post.title} ${post.text}`.toLowerCase().includes(normalizedQuery);
+      return `${post.title} ${post.text} ${buildPostTopic(post.id)}`.toLowerCase().includes(normalizedQuery);
     });
   }
 
   if (sortMode.value === "likes") {
-    result.sort((left, right) => right.id - left.id);
+    result.sort((left, right) => buildPostMetricValues(right.id).likes - buildPostMetricValues(left.id).likes);
+  } else {
+    result.sort((left, right) => new Date(right.created_at) - new Date(left.created_at));
   }
 
   return result;
+});
+
+const resultsTitle = computed(() => {
+  if (searchQuery.value.trim()) {
+    return searchQuery.value.trim();
+  }
+
+  return isFavoritesView.value ? "Избранные" : "Business history";
+});
+
+const emptyStateText = computed(() => {
+  if (isFavoritesView.value && !isAuthenticated.value) {
+    return "Войдите в аккаунт, чтобы сохранять публикации в избранное.";
+  }
+
+  if (isFavoritesView.value) {
+    return "В избранном пока нет публикаций.";
+  }
+
+  return "По текущему фильтру публикации не найдены";
 });
 
 const profileName = computed(() => {
@@ -196,6 +277,14 @@ const radarCount = computed(() => Math.min(999, 120 + posts.value.length * 7));
 const tokenTotal = computed(() => 4200 + (activeViewer.value?.id || 1) * 37);
 const tokenUsed = computed(() => Math.min(tokenTotal.value, 680 + posts.value.length * 19));
 const estimatedTotal = computed(() => (hasMore.value ? Math.max(3000, posts.value.length * 120) : posts.value.length));
+const canManageSelectedPost = computed(() => {
+  return Boolean(
+    isAuthenticated.value &&
+      session.value?.user?.id &&
+      selectedPost.value &&
+      session.value.user.id === selectedPost.value.user_id,
+  );
+});
 
 async function loadNextBatch() {
   if (!viewerUserId.value || !hasMore.value || isInitialLoading.value || isLoadingMore.value) return;
@@ -260,29 +349,28 @@ function openPost(post) {
   selectedPost.value = post;
 }
 
+function openPostEditor(mode, post = null) {
+  if (!session.value?.accessToken) {
+    handleAuthRequired(mode === "create" ? "Создание публикации" : "Редактирование публикации");
+    return;
+  }
+
+  isProfileModalOpen.value = false;
+  postEditorMode.value = mode;
+  postEditorInitialPost.value = post ? { ...post } : null;
+  isPostEditorOpen.value = true;
+}
+
+function closePostEditor() {
+  if (isPostSaving.value) return;
+  isPostEditorOpen.value = false;
+  postEditorInitialPost.value = null;
+}
+
 function openAuthModal(mode = "register") {
   authErrorText.value = "";
   authMode.value = mode;
   isAuthModalOpen.value = true;
-}
-
-function isPostLiked(postId) {
-  return likedPostIds.value.has(postId);
-}
-
-function toggleLike(postId) {
-  const nextLikedPostIds = new Set(likedPostIds.value);
-
-  if (nextLikedPostIds.has(postId)) {
-    nextLikedPostIds.delete(postId);
-    showToast("Публикация убрана из избранного", "Список сохранится в вашем аккаунте на этом устройстве.");
-  } else {
-    nextLikedPostIds.add(postId);
-    showToast("Публикация добавлена в избранное", "Избранное доступно только авторизованному пользователю.");
-  }
-
-  likedPostIds.value = nextLikedPostIds;
-  saveLikedPostIds(nextLikedPostIds);
 }
 
 async function handleRegister(form) {
@@ -306,6 +394,7 @@ async function handleRegister(form) {
 
     saveSession(nextSession);
     session.value = nextSession;
+    favoritePostIds.value = loadFavoritePostIds(response.user.id);
     publicViewer.value = null;
     viewerUserId.value = response.user.id;
 
@@ -344,6 +433,7 @@ async function handleLogin(form) {
 
     saveSession(nextSession);
     session.value = nextSession;
+    favoritePostIds.value = loadFavoritePostIds(response.user.id);
     publicViewer.value = null;
     viewerUserId.value = response.user.id;
 
@@ -358,15 +448,14 @@ async function handleLogin(form) {
 }
 
 async function handleProfileSave(payload) {
-  if (!session.value?.accessToken) return;
+  if (!session.value?.user?.id) return;
 
   isProfileSaving.value = true;
 
   try {
-    const updatedUser = await updateMyProfile({
-      token: session.value.accessToken,
+    const updatedUser = await updateUserName({
+      userId: session.value.user.id,
       name: payload.name,
-      avatarData: payload.avatarData,
     });
 
     const nextSession = {
@@ -386,46 +475,144 @@ async function handleProfileSave(payload) {
   }
 }
 
-async function handleFindMoreClick() {
-  if (!session.value?.accessToken) {
-    handleAuthRequired("Найти еще ролики");
-    return;
-  }
+async function handlePostEditorSubmit(payload) {
+  if (!session.value?.accessToken) return;
+
+  isPostSaving.value = true;
 
   try {
-    await seedDemoPosts({
-      token: session.value.accessToken,
-      count: 8,
-      append: true,
-    });
+    let nextPost;
+
+    if (postEditorMode.value === "create") {
+      nextPost = await createPost({
+        token: session.value.accessToken,
+        title: payload.title,
+        text: payload.text,
+        videoUrl: payload.videoUrl,
+        posterUrl: payload.posterUrl,
+        sourceUrl: payload.sourceUrl,
+      });
+      showToast("Публикация создана", "Новая карточка добавлена в вашу ленту.");
+    } else {
+      nextPost = await updatePost({
+        token: session.value.accessToken,
+        postId: postEditorInitialPost.value.id,
+        title: payload.title,
+        text: payload.text,
+        videoUrl: payload.videoUrl,
+        posterUrl: payload.posterUrl,
+        sourceUrl: payload.sourceUrl,
+      });
+      showToast("Публикация обновлена", "Изменения сохранены и уже отображаются в ленте.");
+    }
+
+    isPostEditorOpen.value = false;
+    postEditorInitialPost.value = null;
     await reloadFeed();
-    showToast("Подборка обновлена", "Мы добавили новую пачку роликов в ленту.");
+    selectedPost.value = nextPost;
   } catch (error) {
-    errorText.value = error.message;
+    showToast("Не удалось сохранить публикацию", error.message);
+  } finally {
+    isPostSaving.value = false;
+  }
+}
+
+async function handleDeletePost(post) {
+  if (!session.value?.accessToken || !post?.id) return;
+  if (!window.confirm("Удалить эту публикацию?")) return;
+
+  isPostDeleting.value = true;
+
+  try {
+    await deletePost({
+      token: session.value.accessToken,
+      postId: post.id,
+    });
+    selectedPost.value = null;
+    await reloadFeed();
+    showToast("Публикация удалена", "Карточка больше не отображается в вашей ленте.");
+  } catch (error) {
+    showToast("Не удалось удалить публикацию", error.message);
+  } finally {
+    isPostDeleting.value = false;
+  }
+}
+
+async function handleFindMoreClick() {
+  try {
+    if (session.value?.accessToken) {
+      await seedDemoPosts({
+        token: session.value.accessToken,
+        count: 8,
+        append: true,
+      });
+    } else {
+      await seedPublicDemoPosts({
+        count: 8,
+        append: true,
+      });
+    }
+
+    await reloadFeed();
+    showToast("Подборка обновлена", "В ленту добавлены новые ролики.");
+  } catch (error) {
+    showToast("Не удалось загрузить новые ролики", error.message);
   }
 }
 
 async function handleLogout() {
   clearSession();
   session.value = null;
-  likedPostIds.value = new Set();
-  saveLikedPostIds(new Set());
-  isCreativeExpanded.value = false;
   isProfileModalOpen.value = false;
+  favoritePostIds.value = new Set();
+
+  if (isFavoritesView.value) {
+    router.push("/");
+  }
 
   try {
     await loadPublicFeed();
     await reloadFeed();
-    showToast("Вы вышли из аккаунта", "Избранное и расширенные действия снова недоступны.");
+    showToast("Вы вышли из аккаунта", "На главной странице остались только функции, доступные без авторизации.");
   } catch (error) {
     errorText.value = error.message;
   }
 }
 
+async function handleDeleteAccount() {
+  if (!session.value?.user?.id) return;
+  if (!window.confirm("Удалить аккаунт и связанные публикации?")) return;
+
+  isUserDeleting.value = true;
+
+  try {
+    const currentUserId = session.value.user.id;
+    await deleteUserById(currentUserId);
+    clearFavoritePostIds(currentUserId);
+    clearSession();
+    session.value = null;
+    isProfileModalOpen.value = false;
+    selectedPost.value = null;
+    favoritePostIds.value = new Set();
+
+    if (isFavoritesView.value) {
+      router.push("/");
+    }
+
+    await loadPublicFeed();
+    await reloadFeed();
+    showToast("Аккаунт удален", "Вы вернулись в публичный режим просмотра.");
+  } catch (error) {
+    showToast("Не удалось удалить аккаунт", error.message);
+  } finally {
+    isUserDeleting.value = false;
+  }
+}
+
 function handlePlaceholder(label) {
   const payload = {
-    title: `${label} пока в разработке`,
-    text: "Элемент сохранен как интерактивная заглушка, чтобы сценарий страницы читался как полноценный продукт.",
+    title: `${label} недоступно`,
+    text: "Функция пока недоступна.",
   };
 
   showToast(payload.title, payload.text);
@@ -436,8 +623,52 @@ function handleAuthRequired(reason) {
   showToast("Нужно войти в аккаунт", `${reason} доступно только после регистрации или входа.`);
 }
 
+function isPostLiked(postId) {
+  return favoritePostIds.value.has(postId);
+}
+
+function toggleLike(post) {
+  if (!session.value?.user?.id) {
+    handleAuthRequired("Избранное");
+    return;
+  }
+
+  const nextSet = new Set(favoritePostIds.value);
+
+  if (nextSet.has(post.id)) {
+    nextSet.delete(post.id);
+    showToast("Удалено из избранного", "Публикация убрана из сохраненного списка.");
+  } else {
+    nextSet.add(post.id);
+    showToast("Добавлено в избранное", "Публикация сохранена в избранном.");
+  }
+
+  favoritePostIds.value = nextSet;
+  saveFavoritePostIds(session.value.user.id, nextSet);
+}
+
+function handleNavigate(target) {
+  if (target === "favorites" && !isAuthenticated.value) {
+    handleAuthRequired("Избранное");
+    return;
+  }
+
+  if (target === "feed") {
+    router.push("/");
+    return;
+  }
+
+  if (target === "favorites") {
+    router.push("/favorites");
+  }
+}
+
 function handleSearch() {
-  showToast("Фильтр обновлен", `Показано ${visiblePosts.value.length} публикаций по вашему запросу.`);
+  if (!visiblePosts.value.length && hasMore.value && !isInitialLoading.value && !isLoadingMore.value) {
+    requestAnimationFrame(onScroll);
+  }
+
+  showToast("Лента обновлена", `По текущим фильтрам показано ${visiblePosts.value.length} публикаций.`);
 }
 
 function showToast(title, text = "") {
@@ -457,7 +688,9 @@ async function bootstrap() {
   try {
     if (isAuthenticated.value && session.value?.user?.id) {
       viewerUserId.value = session.value.user.id;
+      favoritePostIds.value = loadFavoritePostIds(session.value.user.id);
     } else {
+      favoritePostIds.value = new Set();
       await loadPublicFeed();
     }
 

@@ -1,4 +1,6 @@
-from fastapi import APIRouter, Depends, Response, status
+from typing import Annotated
+
+from fastapi import APIRouter, Depends, Path, Response, status
 
 from app.dependencies.auth import get_current_user_id
 from app.dependencies.services import get_post_service, get_user_service
@@ -15,6 +17,7 @@ from app.services.post_service import PostService
 from app.services.user_service import UserService
 
 router = APIRouter(prefix="/users", tags=["Users"])
+PositiveUserId = Annotated[int, Path(ge=1, description="Positive user id")]
 
 
 @router.get(
@@ -99,7 +102,7 @@ async def update_current_user_profile(
     summary="Get token by user id (for testing convenience)",
 )
 async def issue_token_by_user_id(
-    user_id: int,
+    user_id: PositiveUserId,
     user_service: UserService = Depends(get_user_service),
 ) -> TokenResponse:
     return await user_service.issue_token_by_user_id(user_id=user_id)
@@ -111,7 +114,7 @@ async def issue_token_by_user_id(
     summary="Update user name",
 )
 async def update_user_name(
-    user_id: int,
+    user_id: PositiveUserId,
     payload: UserUpdate,
     user_service: UserService = Depends(get_user_service),
 ) -> UserOut:
@@ -124,7 +127,7 @@ async def update_user_name(
     summary="Delete user",
 )
 async def delete_user(
-    user_id: int,
+    user_id: PositiveUserId,
     user_service: UserService = Depends(get_user_service),
 ) -> Response:
     await user_service.delete_user(user_id=user_id)

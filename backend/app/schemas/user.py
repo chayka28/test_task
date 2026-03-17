@@ -1,17 +1,17 @@
 from datetime import datetime
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, EmailStr, Field
 
 
 class UserCreate(BaseModel):
     name: str = Field(min_length=2, max_length=100, examples=["Alice"])
-    email: str = Field(min_length=5, max_length=255, examples=["alice@example.com"])
+    email: EmailStr = Field(examples=["alice@example.com"])
     password: str = Field(min_length=8, max_length=255, examples=["strong-password"])
     avatar_data: str | None = Field(default=None)
 
 
 class UserLogin(BaseModel):
-    email: str = Field(min_length=5, max_length=255, examples=["alice@example.com"])
+    email: EmailStr = Field(examples=["alice@example.com"])
     password: str = Field(min_length=8, max_length=255, examples=["strong-password"])
 
 
@@ -27,7 +27,7 @@ class UserProfileUpdate(BaseModel):
 class UserOut(BaseModel):
     id: int
     name: str
-    email: str | None = None
+    email: EmailStr | None = None
     avatar_data: str | None = None
     created_at: datetime
     updated_at: datetime

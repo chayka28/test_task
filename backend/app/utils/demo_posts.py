@@ -31,7 +31,7 @@ CTA_PATTERNS = [
 ]
 
 
-def build_demo_posts(start_index: int = 0, count: int = 12) -> list[dict[str, str]]:
+def build_demo_posts(start_index: int = 0, count: int = 12) -> list[dict[str, str | None]]:
     posts: list[dict[str, str]] = []
 
     for offset in range(count):
@@ -50,6 +50,14 @@ def build_demo_posts(start_index: int = 0, count: int = 12) -> list[dict[str, st
             f"CTA и упаковка: {cta}\n\n"
             f"Практический вывод: такой формат хорошо подходит для экспертных и полуэкспертных ниш, где важно одновременно обучать, удерживать и подводить к следующему действию."
         )
-        posts.append({"title": title, "text": text})
+        posts.append(
+            {
+                "title": title,
+                "text": text,
+                "video_url": None,
+                "poster_url": None,
+                "source_url": None,
+            }
+        )
 
     return posts

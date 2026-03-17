@@ -9,6 +9,7 @@
       @keydown.space.prevent="$emit('open', post)"
     >
       <div class="media" :style="mediaStyle">
+        <div v-if="post.poster_url" class="media-poster" :style="mediaPosterStyle"></div>
         <div class="media-glow media-glow--first"></div>
         <div class="media-glow media-glow--second"></div>
         <div class="media-grid"></div>
@@ -107,7 +108,7 @@ const props = defineProps({
 const emit = defineEmits(["open", "toggle-like", "placeholder", "auth-required"]);
 
 const isLikeAnimating = ref(false);
-let likeTimerId = null;
+let likeAnimationTimerId = null;
 
 const metrics = computed(() => buildPostMetrics(props.post.id));
 const handle = computed(() => buildHandle(props.post.user_id));
@@ -122,6 +123,14 @@ const mediaStyle = computed(() => {
     "--media-end": palette.end,
     "--media-glow": palette.glow,
     "--media-surface": palette.surface,
+  };
+});
+
+const mediaPosterStyle = computed(() => {
+  if (!props.post.poster_url) return {};
+
+  return {
+    backgroundImage: `url(${props.post.poster_url})`,
   };
 });
 
@@ -142,8 +151,8 @@ const formattedCreatedAt = computed(() => {
 });
 
 function handleRestrictedAction(label) {
-  if (!props.canInteract) {
-    emit("auth-required", label);
+  if (label === "Открыть источник" && props.post.source_url) {
+    window.open(props.post.source_url, "_blank", "noopener,noreferrer");
     return;
   }
 
@@ -156,24 +165,25 @@ function handleLikeClick() {
     return;
   }
 
-  if (isLikeAnimating.value) return;
+  if (!props.liked) {
+    isLikeAnimating.value = true;
 
-  if (props.liked) {
-    emit("toggle-like", props.post.id);
-    return;
+    if (likeAnimationTimerId) {
+      window.clearTimeout(likeAnimationTimerId);
+    }
+
+    likeAnimationTimerId = window.setTimeout(() => {
+      isLikeAnimating.value = false;
+      likeAnimationTimerId = null;
+    }, 720);
   }
 
-  isLikeAnimating.value = true;
-  likeTimerId = window.setTimeout(() => {
-    emit("toggle-like", props.post.id);
-    isLikeAnimating.value = false;
-    likeTimerId = null;
-  }, 560);
+  emit("toggle-like", props.post);
 }
 
 onBeforeUnmount(() => {
-  if (likeTimerId) {
-    window.clearTimeout(likeTimerId);
+  if (likeAnimationTimerId) {
+    window.clearTimeout(likeAnimationTimerId);
   }
 });
 </script>
@@ -203,6 +213,16 @@ onBeforeUnmount(() => {
   background:
     radial-gradient(circle at 24% 22%, var(--media-glow) 0, transparent 34%),
     linear-gradient(160deg, var(--media-start) 0%, var(--media-end) 100%);
+}
+
+.media-poster {
+  position: absolute;
+  inset: 0;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  filter: saturate(0.95) contrast(1.02);
+  opacity: 0.9;
 }
 
 .media-glow {
@@ -303,11 +323,12 @@ onBeforeUnmount(() => {
 }
 
 .like-btn.is-liked img {
-  filter: invert(17%) sepia(83%) saturate(4100%) hue-rotate(338deg) brightness(105%) contrast(103%);
+  filter: invert(16%) sepia(92%) saturate(7042%) hue-rotate(349deg) brightness(103%) contrast(95%);
 }
 
 .like-btn.is-animating img {
-  animation: heart-quarter-turn 0.56s linear forwards;
+  filter: brightness(0) invert(1);
+  animation: heart-quarter-turn 0.72s linear forwards;
 }
 
 .external-btn span {
@@ -446,15 +467,21 @@ onBeforeUnmount(() => {
 }
 
 @keyframes heart-quarter-turn {
-  0% { transform: rotate(0deg); }
-  24.99% { transform: rotate(0deg); }
-  25% { transform: rotate(90deg); }
-  49.99% { transform: rotate(90deg); }
-  50% { transform: rotate(180deg); }
-  74.99% { transform: rotate(180deg); }
-  75% { transform: rotate(270deg); }
-  99.99% { transform: rotate(270deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(90deg);
+  }
+  50% {
+    transform: rotate(180deg);
+  }
+  75% {
+    transform: rotate(270deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 @media (max-width: 840px) {

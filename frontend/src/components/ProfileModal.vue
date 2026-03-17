@@ -1,34 +1,61 @@
 <template>
   <div class="profile-overlay" @click.self="$emit('close')">
-    <div class="profile-card" role="dialog" aria-modal="true" aria-label="Профиль">
+    <div class="profile-card" role="dialog" aria-modal="true" aria-label="Профиль пользователя">
       <button type="button" class="close-btn" @click="$emit('close')">×</button>
 
-      <p class="overline">Профиль</p>
-      <h2>{{ localName || "Ваш аккаунт" }}</h2>
-      <p class="subline">{{ user.email }}</p>
+      <div class="profile-hero">
+        <AppAvatar :avatar="user.avatar_data" :seed="user.id" :size="72" alt="Пользователь" />
 
-      <AvatarPicker v-model="localAvatar" />
+        <div class="profile-copy">
+          <p class="overline">Профиль</p>
+          <h2>{{ localName || user.name }}</h2>
+          <p class="subline">{{ user.email }}</p>
+          <div class="hero-badges">
+            <span class="hero-badge">Личный кабинет</span>
+            <span class="hero-badge">{{ postsCount }} публикаций</span>
+          </div>
+        </div>
+      </div>
 
-      <label class="field">
-        <span>Имя</span>
-        <input v-model.trim="localName" type="text" maxlength="100" :disabled="isLoading" />
-      </label>
+      <p class="profile-note">Здесь можно обновить основные данные аккаунта и управлять своими публикациями.</p>
 
       <div class="meta-grid">
         <div class="meta-item">
-          <span class="meta-label">ID</span>
+          <span class="meta-label">ID пользователя</span>
           <strong>{{ user.id }}</strong>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Публикаций</span>
+          <strong>{{ postsCount }}</strong>
         </div>
         <div class="meta-item">
           <span class="meta-label">Создан</span>
           <strong>{{ createdAt }}</strong>
         </div>
+        <div class="meta-item">
+          <span class="meta-label">Статус</span>
+          <strong>Активный аккаунт</strong>
+        </div>
       </div>
 
-      <div class="actions">
-        <button type="button" class="ghost-btn" @click="$emit('logout')">Выйти</button>
+      <label class="field">
+        <span>Имя пользователя</span>
+        <input v-model.trim="localName" type="text" maxlength="100" :disabled="isLoading" />
+      </label>
+
+      <div class="primary-actions">
         <button type="button" class="save-btn" :disabled="isLoading || !isDirty" @click="handleSave">
-          {{ isLoading ? "Сохраняем..." : "Сохранить профиль" }}
+          {{ isLoading ? "Сохраняем..." : "Сохранить имя" }}
+        </button>
+        <button type="button" class="secondary-btn" :disabled="isLoading || isDeleting" @click="$emit('create-post')">
+          Создать публикацию
+        </button>
+      </div>
+
+      <div class="secondary-actions">
+        <button type="button" class="ghost-btn" @click="$emit('logout')">Выйти</button>
+        <button type="button" class="danger-btn" :disabled="isDeleting" @click="$emit('delete-account')">
+          {{ isDeleting ? "Удаляем аккаунт..." : "Удалить пользователя" }}
         </button>
       </div>
     </div>
@@ -38,36 +65,40 @@
 <script setup>
 import { computed, ref, watch } from "vue";
 
-import AvatarPicker from "./AvatarPicker.vue";
+import AppAvatar from "./AppAvatar.vue";
 
 const props = defineProps({
   user: {
     type: Object,
     required: true,
   },
+  postsCount: {
+    type: Number,
+    default: 0,
+  },
   isLoading: {
+    type: Boolean,
+    default: false,
+  },
+  isDeleting: {
     type: Boolean,
     default: false,
   },
 });
 
-const emit = defineEmits(["close", "save", "logout"]);
+const emit = defineEmits(["close", "save", "logout", "create-post", "delete-account"]);
 
 const localName = ref(props.user.name || "");
-const localAvatar = ref(props.user.avatar_data || "");
 
 watch(
   () => props.user,
   (nextUser) => {
     localName.value = nextUser.name || "";
-    localAvatar.value = nextUser.avatar_data || "";
   },
   { deep: true },
 );
 
-const isDirty = computed(() => {
-  return localName.value !== (props.user.name || "") || localAvatar.value !== (props.user.avatar_data || "");
-});
+const isDirty = computed(() => localName.value !== (props.user.name || ""));
 
 const createdAt = computed(() => {
   return new Intl.DateTimeFormat("ru-RU", {
@@ -80,7 +111,6 @@ const createdAt = computed(() => {
 function handleSave() {
   emit("save", {
     name: localName.value,
-    avatarData: localAvatar.value,
   });
 }
 </script>
@@ -100,7 +130,7 @@ function handleSave() {
 }
 
 .profile-card {
-  width: min(520px, 100%);
+  width: min(640px, 100%);
   position: relative;
   max-height: calc(100vh - 40px);
   overflow-y: auto;
@@ -126,6 +156,16 @@ function handleSave() {
   cursor: pointer;
 }
 
+.profile-hero {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.profile-copy {
+  min-width: 0;
+}
+
 .overline {
   margin: 0;
   color: #64748b;
@@ -136,7 +176,7 @@ function handleSave() {
 }
 
 h2 {
-  margin: 8px 0 0;
+  margin: 6px 0 0;
   color: #151c29;
   font-size: 30px;
   line-height: 1.08;
@@ -144,14 +184,65 @@ h2 {
 }
 
 .subline {
-  margin: 8px 0 18px;
+  margin: 8px 0 0;
   color: #64748b;
   font-size: 14px;
   line-height: 1.4;
 }
 
+.hero-badges {
+  margin-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.hero-badge {
+  border-radius: 999px;
+  background: #eef2ff;
+  color: #4352cc;
+  padding: 6px 10px;
+  font-size: 12px;
+  line-height: 1;
+  font-weight: 700;
+}
+
+.profile-note {
+  margin: 16px 0 0;
+  color: #5d6d7b;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.meta-grid {
+  margin-top: 18px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.meta-item {
+  border-radius: 18px;
+  background: #f5f7fb;
+  padding: 14px;
+  display: grid;
+  gap: 6px;
+}
+
+.meta-label {
+  color: #94a3b8;
+  font-size: 12px;
+  line-height: 1.2;
+}
+
+.meta-item strong {
+  color: #111827;
+  font-size: 15px;
+  line-height: 1.3;
+}
+
 .field {
-  margin-top: 14px;
+  margin-top: 18px;
   display: grid;
   gap: 8px;
 }
@@ -173,42 +264,22 @@ h2 {
   outline: none;
 }
 
-.meta-grid {
-  margin-top: 14px;
+.field input:focus {
+  border-color: #2b31b3;
+}
+
+.primary-actions,
+.secondary-actions {
+  margin-top: 16px;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
 }
 
-.meta-item {
-  border-radius: 16px;
-  background: #f5f7fb;
-  padding: 14px;
-}
-
-.meta-label {
-  display: block;
-  color: #94a3b8;
-  font-size: 12px;
-  line-height: 1;
-}
-
-.meta-item strong {
-  display: block;
-  margin-top: 6px;
-  color: #111827;
-  font-size: 15px;
-}
-
-.actions {
-  margin-top: 18px;
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-}
-
+.save-btn,
+.secondary-btn,
 .ghost-btn,
-.save-btn {
+.danger-btn {
   height: 48px;
   border-radius: 16px;
   padding: 0 18px;
@@ -217,19 +288,33 @@ h2 {
   cursor: pointer;
 }
 
-.ghost-btn {
-  border: 1px solid #d8deea;
-  background: #ffffff;
-  color: #526878;
-}
-
 .save-btn {
   border: 0;
   background: #2b31b3;
   color: #ffffff;
 }
 
-.save-btn:disabled {
+.secondary-btn {
+  border: 1px solid #d8deea;
+  background: #ffffff;
+  color: #2b31b3;
+}
+
+.ghost-btn {
+  border: 1px solid #d8deea;
+  background: #ffffff;
+  color: #526878;
+}
+
+.danger-btn {
+  border: 1px solid #f1c7ce;
+  background: #fff3f5;
+  color: #c14558;
+}
+
+.save-btn:disabled,
+.secondary-btn:disabled,
+.danger-btn:disabled {
   opacity: 0.6;
   cursor: default;
 }
@@ -246,18 +331,19 @@ h2 {
     border-radius: 24px;
   }
 
-  .meta-grid {
-    grid-template-columns: 1fr;
+  .profile-hero,
+  .hero-badges {
+    align-items: flex-start;
   }
 
-  .actions {
+  .profile-hero {
     flex-direction: column;
   }
-}
 
-@media (max-height: 820px) {
-  .profile-overlay {
-    align-items: flex-start;
+  .meta-grid,
+  .primary-actions,
+  .secondary-actions {
+    grid-template-columns: 1fr;
   }
 }
 </style>

@@ -12,7 +12,7 @@
 
       <div class="hero-head">
         <div class="hero-title-row">
-          <h2>Business history</h2>
+          <h2>{{ resultsTitle }}</h2>
 
           <div class="hero-actions">
             <button type="button" class="radar-btn" @click="handleRestrictedAction('Добавить в радар')">
@@ -35,7 +35,7 @@
             type="button"
             class="topic-chip"
             :class="{ 'topic-chip--active': selectedTopic === topic }"
-            @click="$emit('update:selectedTopic', topic)"
+            @click="$emit('update:selectedTopic', selectedTopic === topic ? '' : topic)"
           >
             {{ topic }}
           </button>
@@ -49,7 +49,13 @@
           <label class="search-input search-input--wide">
             <span class="input-main">
               <img src="/assets/icons/top-search-dark.svg" alt="" class="search-icon search-icon--light" />
-              <input :value="query" type="text" placeholder="Новый поиск" @input="$emit('update:query', $event.target.value)" />
+              <input
+                :value="query"
+                type="text"
+                placeholder="Новый поиск"
+                @input="$emit('update:query', $event.target.value)"
+                @keydown.enter.prevent="handleSearch"
+              />
             </span>
             <span class="input-sub">Введите ключевое слово, а мы найдем для вас видео</span>
           </label>
@@ -81,7 +87,7 @@
       <div class="results-head">
         <div class="results-left">
           <img src="/assets/icons/top-search-blue.svg" alt="" class="results-search-icon" />
-          <div class="results-query">Business history</div>
+          <div class="results-query">{{ resultsTitle }}</div>
 
           <button type="button" class="results-radar-btn" @click="handleRestrictedAction('Добавить в радар')">
             <img src="/assets/icons/top-plus.svg" alt="" />
@@ -104,11 +110,21 @@
       </div>
 
       <div class="filters-row">
-        <button type="button" class="filter-btn" @click="$emit('update:sortMode', 'all')">
+        <button
+          type="button"
+          class="filter-btn"
+          :class="{ 'filter-btn--active': sortMode === 'all' }"
+          @click="$emit('update:sortMode', 'all')"
+        >
           За все время
           <img src="/assets/icons/top-chevron.svg" alt="" class="chevron" />
         </button>
-        <button type="button" class="filter-btn" @click="$emit('update:sortMode', 'likes')">
+        <button
+          type="button"
+          class="filter-btn"
+          :class="{ 'filter-btn--active': sortMode === 'likes' }"
+          @click="$emit('update:sortMode', 'likes')"
+        >
           По лайкам
           <img src="/assets/icons/top-chevron.svg" alt="" class="chevron" />
         </button>
@@ -125,37 +141,31 @@ const props = defineProps({
   },
   selectedTopic: {
     type: String,
-    default: "Базы данных",
+    default: "",
   },
   loadedCount: {
     type: Number,
     default: 0,
   },
-  canInteract: {
-    type: Boolean,
-    default: false,
+  sortMode: {
+    type: String,
+    default: "all",
+  },
+  resultsTitle: {
+    type: String,
+    default: "Business history",
   },
 });
 
-const emit = defineEmits(["update:query", "update:selectedTopic", "update:sortMode", "search", "placeholder", "auth-required"]);
+const emit = defineEmits(["update:query", "update:selectedTopic", "update:sortMode", "search", "placeholder"]);
 
 const topics = ["Базы данных", "ИИ", "Чат-боты", "Программирование", "Айти", "Макбук", "Кофе"];
 
 function handleSearch() {
-  if (!props.canInteract) {
-    emit("auth-required", "Поиск по ленте");
-    return;
-  }
-
   emit("search");
 }
 
 function handleRestrictedAction(label) {
-  if (!props.canInteract) {
-    emit("auth-required", label);
-    return;
-  }
-
   emit("placeholder", label);
 }
 </script>
@@ -538,6 +548,11 @@ function handleRestrictedAction(label) {
   display: inline-flex;
   align-items: center;
   gap: 6px;
+}
+
+.filter-btn--active {
+  background: #e6e9ff;
+  color: #2b31b3;
 }
 
 @media (max-width: 1180px) {

@@ -72,6 +72,7 @@ defineProps({
   width: auto;
   transform: translate(-49%, -51%);
   object-fit: contain;
+  filter: brightness(0) saturate(100%);
 }
 
 .brand-text {

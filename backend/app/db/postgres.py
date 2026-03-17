@@ -11,6 +11,10 @@ ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_data TEXT;
 CREATE UNIQUE INDEX IF NOT EXISTS idx_users_email_unique
     ON users (email)
     WHERE email IS NOT NULL;
+
+ALTER TABLE posts ADD COLUMN IF NOT EXISTS video_url TEXT;
+ALTER TABLE posts ADD COLUMN IF NOT EXISTS poster_url TEXT;
+ALTER TABLE posts ADD COLUMN IF NOT EXISTS source_url TEXT;
 """
 
 

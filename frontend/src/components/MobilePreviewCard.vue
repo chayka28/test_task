@@ -1,6 +1,7 @@
 <template>
   <article class="mobile-card">
     <div class="media" :style="mediaStyle">
+      <div v-if="sourcePost.poster_url" class="media-poster" :style="mediaPosterStyle"></div>
       <div class="media-glow media-glow--first"></div>
       <div class="media-glow media-glow--second"></div>
       <div class="media-grid"></div>
@@ -100,6 +101,14 @@ const mediaStyle = computed(() => {
   };
 });
 
+const mediaPosterStyle = computed(() => {
+  if (!sourcePost.value.poster_url) return {};
+
+  return {
+    backgroundImage: `url(${sourcePost.value.poster_url})`,
+  };
+});
+
 const previewText = computed(() => {
   const raw = sourcePost.value.text || "";
   if (raw.length <= 68) return raw;
@@ -133,6 +142,15 @@ const formattedCreatedAt = computed(() => {
   background:
     radial-gradient(circle at 24% 22%, var(--media-glow) 0, transparent 34%),
     linear-gradient(160deg, var(--media-start) 0%, var(--media-end) 100%);
+}
+
+.media-poster {
+  position: absolute;
+  inset: 0;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  opacity: 0.9;
 }
 
 .media-glow {

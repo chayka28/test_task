@@ -6,6 +6,7 @@
       <div class="top-layout">
         <aside class="left-col">
           <div class="preview-media" :style="mediaStyle">
+            <div v-if="post.poster_url" class="preview-poster" :style="previewPosterStyle"></div>
             <div class="preview-glow preview-glow--first"></div>
             <div class="preview-glow preview-glow--second"></div>
             <div class="preview-grid"></div>
@@ -95,6 +96,24 @@
               <span class="info-label">updated_at:</span>
               <span>{{ formatDateTime(post.updated_at) }}</span>
             </span>
+            <button
+              v-if="post.source_url"
+              type="button"
+              class="info-pill info-pill--link"
+              @click="openSource"
+            >
+              <span class="info-label">source:</span>
+              <span>Открыть</span>
+            </button>
+          </div>
+
+          <div v-if="canManagePost" class="manage-row">
+            <button type="button" class="manage-btn" :disabled="isSaving" @click="$emit('edit', post)">
+              {{ isSaving ? "Сохраняем..." : "Редактировать" }}
+            </button>
+            <button type="button" class="manage-btn manage-btn--danger" :disabled="isDeleting" @click="$emit('delete', post)">
+              {{ isDeleting ? "Удаляем..." : "Удалить" }}
+            </button>
           </div>
 
           <div class="chips">
@@ -105,6 +124,15 @@
             <span class="chip chip-yellow">Лид-магнит</span>
             <span class="chip chip-violet">Красота и здоровье</span>
           </div>
+
+          <section v-if="post.video_url" class="content-block">
+            <h3>Видео</h3>
+            <div class="video-shell">
+              <video class="video-player" controls playsinline preload="metadata" :poster="post.poster_url || undefined">
+                <source :src="post.video_url" />
+              </video>
+            </div>
+          </section>
 
           <section class="content-block">
             <div class="block-header">
@@ -149,13 +177,21 @@ const props = defineProps({
     type: Object,
     required: true,
   },
-  canInteract: {
+  canManagePost: {
+    type: Boolean,
+    default: false,
+  },
+  isSaving: {
+    type: Boolean,
+    default: false,
+  },
+  isDeleting: {
     type: Boolean,
     default: false,
   },
 });
 
-const emit = defineEmits(["close", "placeholder", "auth-required"]);
+const emit = defineEmits(["close", "placeholder", "edit", "delete"]);
 
 const metrics = computed(() => buildPostMetrics(props.post.id));
 const handle = computed(() => buildHandle(props.post.user_id));
@@ -172,6 +208,14 @@ const mediaStyle = computed(() => {
   };
 });
 
+const previewPosterStyle = computed(() => {
+  if (!props.post.poster_url) return {};
+
+  return {
+    backgroundImage: `url(${props.post.poster_url})`,
+  };
+});
+
 const cardDate = computed(() => {
   if (!props.post.created_at) return "—";
   const date = new Date(props.post.created_at);
@@ -183,11 +227,6 @@ const cardDate = computed(() => {
 });
 
 function handleRestrictedAction(label) {
-  if (!props.canInteract) {
-    emit("auth-required", label);
-    return;
-  }
-
   emit("placeholder", label);
 }
 
@@ -195,6 +234,11 @@ function shortText(text, maxLength) {
   if (!text) return "";
   if (text.length <= maxLength) return text;
   return `${text.slice(0, maxLength)}...`;
+}
+
+function openSource() {
+  if (!props.post.source_url) return;
+  window.open(props.post.source_url, "_blank", "noopener,noreferrer");
 }
 </script>
 
@@ -248,6 +292,15 @@ function shortText(text, maxLength) {
   background:
     radial-gradient(circle at 24% 22%, var(--preview-glow) 0, transparent 34%),
     linear-gradient(160deg, var(--preview-start) 0%, var(--preview-end) 100%);
+}
+
+.preview-poster {
+  position: absolute;
+  inset: 0;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  opacity: 0.9;
 }
 
 .preview-glow {
@@ -445,8 +498,43 @@ h2 {
   line-height: 1;
 }
 
+.info-pill--link {
+  border: 0;
+  cursor: pointer;
+}
+
 .info-label {
   color: #9ca7b0;
+}
+
+.manage-row {
+  margin-top: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.manage-btn {
+  min-width: 142px;
+  height: 40px;
+  border: 1px solid #d5ddf0;
+  border-radius: 12px;
+  background: #f8fafc;
+  color: #2b31b3;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.manage-btn--danger {
+  border-color: #f0c5cd;
+  background: #fff4f6;
+  color: #c34b5e;
+}
+
+.manage-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
 }
 
 .chips {
@@ -516,6 +604,19 @@ h2 {
 
 .block-body p + p {
   margin-top: 8px;
+}
+
+.video-shell {
+  border-radius: 12px;
+  overflow: hidden;
+  background: #0f172a;
+}
+
+.video-player {
+  display: block;
+  width: 100%;
+  max-height: 420px;
+  background: #0f172a;
 }
 
 .adapt-btn {
