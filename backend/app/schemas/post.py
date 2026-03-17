@@ -14,7 +14,7 @@ class PostUpdate(BaseModel):
 
     @model_validator(mode="after")
     def validate_payload(self) -> "PostUpdate":
-        # PATCH requires at least one field to update.
+        # Для PATCH хотя бы одно поле должно быть передано.
         if self.title is None and self.text is None:
             raise ValueError("At least one field must be provided: title or text.")
         return self

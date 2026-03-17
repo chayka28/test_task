@@ -6,7 +6,7 @@ class PostRepository:
         self.pool = pool
 
     async def create_post(self, user_id: int, title: str, text: str) -> dict:
-        # Parameterized SQL keeps this layer safe for external input.
+        # Используем параметризованный SQL, чтобы безопасно работать с внешними данными.
         query = """
             INSERT INTO posts (user_id, title, text)
             VALUES ($1, $2, $3)

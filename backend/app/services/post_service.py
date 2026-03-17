@@ -22,7 +22,7 @@ class PostService:
 
     async def _save_posts_to_cache(self, user_id: int, posts: list[dict]) -> None:
         key = self._cache_key(user_id)
-        # jsonable_encoder converts datetime values to ISO strings.
+        # Преобразуем datetime в ISO-строки, чтобы безопасно сохранить JSON в Redis.
         payload = json.dumps(jsonable_encoder(posts))
         await self.redis_client.set(key, payload, ex=settings.cache_ttl_seconds)
 
@@ -100,7 +100,7 @@ class PostService:
         if cached_posts is not None:
             return cached_posts[offset : offset + limit]
 
-        # Required by task: Postgres path should emulate heavy query.
+        # По ТЗ чтение из Postgres должно имитировать тяжелый запрос.
         await asyncio.sleep(2)
         posts = await self.post_repository.get_user_posts(user_id=user_id)
         await self._save_posts_to_cache(user_id=user_id, posts=posts)

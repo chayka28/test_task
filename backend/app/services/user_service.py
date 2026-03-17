@@ -21,7 +21,10 @@ class UserService:
         password: str,
         avatar_data: str | None = None,
     ) -> dict:
-        existing_user = await self.user_repository.get_auth_payload_by_email(email=email)
+        normalized_name = name.strip()
+        normalized_email = email.strip().lower()
+
+        existing_user = await self.user_repository.get_auth_payload_by_email(email=normalized_email)
         if existing_user is not None:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
@@ -29,8 +32,8 @@ class UserService:
             )
 
         user = await self.user_repository.create_user(
-            name=name,
-            email=email,
+            name=normalized_name,
+            email=normalized_email,
             password_hash=hash_password(password),
             avatar_data=avatar_data,
         )
@@ -42,7 +45,8 @@ class UserService:
         }
 
     async def authenticate_user(self, email: str, password: str) -> dict:
-        auth_user = await self.user_repository.get_auth_payload_by_email(email=email)
+        normalized_email = email.strip().lower()
+        auth_user = await self.user_repository.get_auth_payload_by_email(email=normalized_email)
         if auth_user is None or not verify_password(password=password, password_hash=auth_user.get("password_hash")):
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,

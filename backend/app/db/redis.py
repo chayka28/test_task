@@ -9,7 +9,7 @@ class RedisManager:
         self.client: Redis | None = None
 
     async def connect(self) -> None:
-        # decode_responses=True makes Redis return strings instead of bytes.
+        # Просим Redis возвращать строки, чтобы не декодировать bytes вручную.
         self.client = Redis.from_url(settings.redis_url, decode_responses=True)
         await self.client.ping()
 

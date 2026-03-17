@@ -1,19 +1,60 @@
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "").replace(/\/+$/, "");
 const BASE_API_PATH = `${API_BASE_URL}/api/v1`;
 
+const ERROR_MESSAGE_MAP = {
+  "Invalid email or password.": "Неверный email или пароль.",
+  "User with this email already exists.": "Пользователь с таким email уже существует.",
+  "Token belongs to a deleted user.": "Сессия больше недействительна. Войдите снова.",
+  "Could not validate credentials.": "Сессия истекла. Войдите в аккаунт повторно.",
+  "Not authenticated": "Войдите в аккаунт, чтобы продолжить.",
+  "User not found.": "Пользователь не найден.",
+  "Post not found.": "Публикация не найдена.",
+  "You can edit only your own posts.": "Можно изменять только свои публикации.",
+  "You can delete only your own posts.": "Можно удалять только свои публикации.",
+};
+
+function normalizeErrorMessage(message, status) {
+  if (!message) {
+    return status >= 500 ? "Внутренняя ошибка сервера. Попробуйте позже." : `Ошибка запроса (${status}).`;
+  }
+
+  return ERROR_MESSAGE_MAP[message] || message;
+}
+
+async function buildRequestError(response) {
+  const rawPayload = await response.text();
+
+  if (!rawPayload) {
+    return new Error(normalizeErrorMessage("", response.status));
+  }
+
+  try {
+    const parsedPayload = JSON.parse(rawPayload);
+    const detail = typeof parsedPayload?.detail === "string" ? parsedPayload.detail : rawPayload;
+    return new Error(normalizeErrorMessage(detail, response.status));
+  } catch {
+    return new Error(normalizeErrorMessage(rawPayload, response.status));
+  }
+}
+
 async function request(path, { method = "GET", token, body } = {}) {
-  const response = await fetch(`${BASE_API_PATH}${path}`, {
-    method,
-    headers: {
-      "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
-    ...(body ? { body: JSON.stringify(body) } : {}),
-  });
+  let response;
+
+  try {
+    response = await fetch(`${BASE_API_PATH}${path}`, {
+      method,
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      ...(body ? { body: JSON.stringify(body) } : {}),
+    });
+  } catch {
+    throw new Error("Не удалось связаться с сервером. Проверьте, что backend запущен.");
+  }
 
   if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`Ошибка запроса (${response.status}): ${errorText}`);
+    throw await buildRequestError(response);
   }
 
   if (response.status === 204) {

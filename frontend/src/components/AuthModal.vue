@@ -232,18 +232,24 @@ function submitLogin() {
   z-index: 120;
   background: rgba(17, 22, 35, 0.5);
   backdrop-filter: blur(6px);
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   padding: 20px;
+  overflow-y: auto;
 }
 
 .auth-card {
   width: min(560px, 100%);
   position: relative;
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
   border-radius: 28px;
   background: #ffffff;
   padding: 28px;
   box-shadow: 0 28px 80px rgba(20, 27, 45, 0.22);
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
 }
 
 .close-btn {
@@ -392,12 +398,29 @@ h2 {
 }
 
 @media (max-width: 620px) {
+  .auth-overlay {
+    padding: 10px;
+    align-items: flex-start;
+  }
+
   .auth-card {
+    max-height: calc(100vh - 20px);
     padding: 24px 18px 18px;
+    border-radius: 24px;
   }
 
   .password-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-height: 820px) {
+  .auth-overlay {
+    align-items: flex-start;
+  }
+
+  .auth-card {
+    margin-block: auto;
   }
 }
 </style>

@@ -13,7 +13,7 @@ redis_manager = RedisManager()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Initialize infra clients once at startup and store them in app state.
+    # Инициализируем инфраструктурные клиенты один раз на старте приложения.
     await postgres_manager.connect()
     await redis_manager.connect()
 

@@ -92,18 +92,23 @@ function handleSave() {
   z-index: 120;
   background: rgba(17, 22, 35, 0.5);
   backdrop-filter: blur(6px);
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   padding: 20px;
+  overflow-y: auto;
 }
 
 .profile-card {
   width: min(520px, 100%);
   position: relative;
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
   border-radius: 28px;
   background: #ffffff;
   padding: 28px;
   box-shadow: 0 28px 80px rgba(20, 27, 45, 0.22);
+  overscroll-behavior: contain;
 }
 
 .close-btn {
@@ -227,5 +232,32 @@ h2 {
 .save-btn:disabled {
   opacity: 0.6;
   cursor: default;
+}
+
+@media (max-width: 620px) {
+  .profile-overlay {
+    padding: 10px;
+    align-items: flex-start;
+  }
+
+  .profile-card {
+    max-height: calc(100vh - 20px);
+    padding: 24px 18px 18px;
+    border-radius: 24px;
+  }
+
+  .meta-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .actions {
+    flex-direction: column;
+  }
+}
+
+@media (max-height: 820px) {
+  .profile-overlay {
+    align-items: flex-start;
+  }
 }
 </style>

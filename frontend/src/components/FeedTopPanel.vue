@@ -208,7 +208,7 @@ function handleRestrictedAction(label) {
   height: 240px;
   right: 140px;
   top: -4px;
-  background: rgba(0, 0, 0, 0.86);
+  background: radial-gradient(circle at 50% 50%, rgba(18, 12, 47, 0.98) 0%, rgba(20, 13, 52, 0.97) 62%, rgba(28, 18, 66, 0.94) 100%);
   clip-path: ellipse(50% 44% at 50% 50%);
 }
 

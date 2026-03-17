@@ -10,7 +10,7 @@ from app.services.user_service import UserService
 
 
 def get_user_repository(pool=Depends(get_db_pool)) -> UserRepository:
-    # DI provider: API layer does not create repositories directly.
+    # Провайдер DI: HTTP-слой не создает репозитории вручную.
     return UserRepository(pool=pool)
 
 

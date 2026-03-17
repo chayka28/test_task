@@ -19,7 +19,7 @@ class PostgresManager:
         self.pool: asyncpg.Pool | None = None
 
     async def connect(self) -> None:
-        # Pool is reused across all requests.
+        # Один пул соединений используется всеми запросами приложения.
         self.pool = await asyncpg.create_pool(
             dsn=settings.postgres_dsn,
             min_size=settings.postgres_min_pool_size,

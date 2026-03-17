@@ -2,8 +2,8 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    # Settings are loaded from environment variables.
-    # Local runs can use backend/.env (see .env.example).
+    # Конфигурация читается из переменных окружения.
+    # Для локального запуска можно использовать backend/.env на основе .env.example.
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
