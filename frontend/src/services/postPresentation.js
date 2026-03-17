@@ -77,15 +77,3 @@ export function buildPostMetrics(postId) {
 export function buildMediaPalette(postId) {
   return mediaPalettes[Math.abs(Number(postId || 0)) % mediaPalettes.length];
 }
-
-export function buildPosterCopy(post) {
-  const title = (post?.title || "Разбор публикации").trim();
-  const text = (post?.text || "").trim();
-  const headline = title.length > 44 ? `${title.slice(0, 44)}...` : title;
-  const note = text.length > 82 ? `${text.slice(0, 82)}...` : text || "Подробный разбор механики ролика и сценария удержания.";
-
-  return {
-    headline,
-    note,
-  };
-}

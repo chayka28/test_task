@@ -1,4 +1,7 @@
 from datetime import UTC, datetime, timedelta
+import hashlib
+import hmac
+import secrets
 
 from fastapi import HTTPException, status
 from jose import JWTError, jwt
@@ -36,3 +39,29 @@ def decode_access_token(token: str) -> int:
         return int(raw_user_id)
     except ValueError as exc:
         raise credentials_error from exc
+
+
+def hash_password(password: str) -> str:
+    # Используем PBKDF2, чтобы не хранить пароли в открытом виде.
+    salt = secrets.token_hex(16)
+    password_hash = hashlib.pbkdf2_hmac(
+        "sha256",
+        password.encode("utf-8"),
+        salt.encode("utf-8"),
+        100_000,
+    ).hex()
+    return f"{salt}${password_hash}"
+
+
+def verify_password(password: str, password_hash: str | None) -> bool:
+    if not password_hash or "$" not in password_hash:
+        return False
+
+    salt, stored_hash = password_hash.split("$", maxsplit=1)
+    candidate_hash = hashlib.pbkdf2_hmac(
+        "sha256",
+        password.encode("utf-8"),
+        salt.encode("utf-8"),
+        100_000,
+    ).hex()
+    return hmac.compare_digest(candidate_hash, stored_hash)

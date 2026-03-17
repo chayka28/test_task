@@ -21,24 +21,18 @@
               </span>
             </div>
 
-            <div class="preview-copy">
-              <p class="preview-overline">Тема ролика</p>
-              <p class="preview-title">{{ posterCopy.headline }}</p>
-            </div>
-
-            <div class="preview-bubble">{{ posterCopy.note }}</div>
             <span class="play-circle">▶</span>
           </div>
 
           <time class="left-date">{{ cardDate }}</time>
 
           <div class="left-author">
-            <img src="/assets/avatar-feed.png" alt="" class="left-avatar" />
+            <AppAvatar :seed="post.id" :size="40" alt="Креатор" :blurred="true" />
             <div class="left-author-meta">
               <p class="left-name">{{ handle }}</p>
               <p class="left-sub">{{ followers }}</p>
             </div>
-            <button type="button" class="left-tool-btn" @click="$emit('placeholder', 'Инструменты публикации')">
+            <button type="button" class="left-tool-btn" @click="handleRestrictedAction('Инструменты публикации')">
               <img src="/assets/icons/Vector-5.png" alt="" class="left-tool" />
             </button>
           </div>
@@ -103,17 +97,6 @@
             </span>
           </div>
 
-          <div class="meta-line">
-            <span class="meta-chip">
-              <img src="/assets/icons/Vector-15.png" alt="" />
-              <span>Tyga - Pop it off</span>
-            </span>
-            <span class="meta-chip">
-              <span>Язык:</span>
-              <strong>Английский</strong>
-            </span>
-          </div>
-
           <div class="chips">
             <span class="chip chip-blue">Туториал</span>
             <span class="chip chip-green">Энергичное видео</span>
@@ -126,7 +109,7 @@
           <section class="content-block">
             <div class="block-header">
               <h3>Транскрибация</h3>
-              <button type="button" class="translated-pill" @click="$emit('placeholder', 'Перевод публикации')">
+              <button type="button" class="translated-pill" @click="handleRestrictedAction('Перевод публикации')">
                 Переведено
               </button>
             </div>
@@ -137,7 +120,7 @@
             </div>
           </section>
 
-          <button class="adapt-btn" type="button" @click="$emit('placeholder', 'Адаптировать публикацию')">
+          <button class="adapt-btn" type="button" @click="handleRestrictedAction('Адаптировать публикацию')">
             <img src="/assets/icons/Vector-5.png" alt="" />
             <span>Адаптировать</span>
           </button>
@@ -150,66 +133,6 @@
           </section>
         </section>
       </div>
-
-      <section class="long-section">
-        <h3>Структура</h3>
-        <div class="timeline">
-          <div class="timeline-row">
-            <span class="timeline-time">0-3 сек</span>
-            <div class="timeline-node"></div>
-            <div class="timeline-body">
-              <p class="timeline-title">Шок-сравнение</p>
-              <p>{{ shortText(post.text, 88) }}</p>
-            </div>
-          </div>
-          <div class="timeline-row">
-            <span class="timeline-time">3-15 сек</span>
-            <div class="timeline-node timeline-node--hollow"></div>
-            <div class="timeline-body">
-              <p class="timeline-title">Сюжет</p>
-              <p>{{ shortText(post.text, 88) }}</p>
-            </div>
-          </div>
-          <div class="timeline-row">
-            <span class="timeline-time">15-120 сек</span>
-            <div class="timeline-node"></div>
-            <div class="timeline-body">
-              <p class="timeline-title">Финал / CTA</p>
-              <p>{{ shortText(post.text, 88) }}</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section class="long-section">
-        <div class="section-heading">
-          <h3>Хук фраза</h3>
-          <button type="button" class="icon-copy-btn" @click="$emit('placeholder', 'Скопировать секцию')">⧉</button>
-        </div>
-        <div class="block-body">
-          <p>{{ shortText(post.text, 100) }}</p>
-        </div>
-      </section>
-
-      <section class="long-section">
-        <div class="section-heading">
-          <h3>Визуальный хук</h3>
-          <button type="button" class="icon-copy-btn" @click="$emit('placeholder', 'Скопировать секцию')">⧉</button>
-        </div>
-        <div class="block-body">
-          <p>{{ shortText(post.text, 100) }}</p>
-        </div>
-      </section>
-
-      <section class="long-section">
-        <div class="section-heading">
-          <h3>Текстовый хук</h3>
-          <button type="button" class="icon-copy-btn" @click="$emit('placeholder', 'Скопировать секцию')">⧉</button>
-        </div>
-        <div class="block-body">
-          <p>{{ shortText(post.text, 100) }}</p>
-        </div>
-      </section>
     </div>
   </div>
 </template>
@@ -217,22 +140,26 @@
 <script setup>
 import { computed } from "vue";
 
+import AppAvatar from "./AppAvatar.vue";
 import { formatDateTime } from "../services/dateFormatter";
-import { buildFollowers, buildHandle, buildMediaPalette, buildPosterCopy, buildPostMetrics } from "../services/postPresentation";
+import { buildFollowers, buildHandle, buildMediaPalette, buildPostMetrics } from "../services/postPresentation";
 
 const props = defineProps({
   post: {
     type: Object,
     required: true,
   },
+  canInteract: {
+    type: Boolean,
+    default: false,
+  },
 });
 
-defineEmits(["close", "placeholder"]);
+const emit = defineEmits(["close", "placeholder", "auth-required"]);
 
 const metrics = computed(() => buildPostMetrics(props.post.id));
 const handle = computed(() => buildHandle(props.post.user_id));
 const followers = computed(() => buildFollowers(props.post.user_id));
-const posterCopy = computed(() => buildPosterCopy(props.post));
 const activityMultiplier = computed(() => ((props.post.id % 12) + 3).toString());
 
 const mediaStyle = computed(() => {
@@ -241,7 +168,6 @@ const mediaStyle = computed(() => {
   return {
     "--preview-start": palette.start,
     "--preview-end": palette.end,
-    "--preview-accent": palette.accent,
     "--preview-glow": palette.glow,
   };
 });
@@ -255,6 +181,15 @@ const cardDate = computed(() => {
     year: "numeric",
   }).format(date);
 });
+
+function handleRestrictedAction(label) {
+  if (!props.canInteract) {
+    emit("auth-required", label);
+    return;
+  }
+
+  emit("placeholder", label);
+}
 
 function shortText(text, maxLength) {
   if (!text) return "";
@@ -272,7 +207,6 @@ function shortText(text, maxLength) {
   backdrop-filter: blur(2px);
   display: grid;
   place-items: start end;
-  padding: 0;
 }
 
 .modal-card {
@@ -366,55 +300,11 @@ function shortText(text, maxLength) {
   padding: 4px 8px;
   font-size: 12px;
   line-height: 14.5px;
-  letter-spacing: 0.4px;
 }
 
 .tag img {
   width: 16px;
   height: 16px;
-}
-
-.preview-copy {
-  position: absolute;
-  left: 16px;
-  right: 16px;
-  bottom: 92px;
-}
-
-.preview-overline {
-  margin: 0;
-  color: rgba(255, 255, 255, 0.72);
-  font-size: 11px;
-  line-height: 1.2;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-}
-
-.preview-title {
-  margin: 10px 0 0;
-  color: #ffffff;
-  font-size: 25px;
-  line-height: 0.95;
-  font-weight: 700;
-  letter-spacing: -0.04em;
-  text-shadow: 0 4px 24px rgba(0, 0, 0, 0.26);
-}
-
-.preview-bubble {
-  position: absolute;
-  left: 16px;
-  right: 16px;
-  bottom: 22px;
-  width: fit-content;
-  max-width: 174px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.9);
-  color: #111827;
-  padding: 8px 10px;
-  box-shadow: 0 8px 20px rgba(22, 22, 22, 0.15);
-  font-size: 11px;
-  line-height: 1.15;
-  font-weight: 600;
 }
 
 .play-circle {
@@ -445,13 +335,6 @@ function shortText(text, maxLength) {
   display: flex;
   align-items: center;
   gap: 8px;
-}
-
-.left-avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  object-fit: cover;
 }
 
 .left-name {
@@ -566,27 +449,6 @@ h2 {
   color: #9ca7b0;
 }
 
-.meta-line {
-  margin-top: 10px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
-.meta-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  color: #6d7f8d;
-  font-size: 13px;
-  line-height: 1;
-}
-
-.meta-chip img {
-  width: 14px;
-  height: 14px;
-}
-
 .chips {
   margin-top: 10px;
   display: flex;
@@ -602,50 +464,24 @@ h2 {
   font-weight: 700;
 }
 
-.chip-blue {
-  background: #dde1ff;
-  color: #4758cd;
-}
-
-.chip-green {
-  background: #def4d9;
-  color: #4c9a41;
-}
-
-.chip-orange {
-  background: #ffe8cd;
-  color: #ab6b23;
-}
-
-.chip-red {
-  background: #ffe0e8;
-  color: #cc4d66;
-}
-
-.chip-yellow {
-  background: #ffeecb;
-  color: #b17f1b;
-}
-
-.chip-violet {
-  background: #e4e6ff;
-  color: #5f62cf;
-}
+.chip-blue { background: #dde1ff; color: #4758cd; }
+.chip-green { background: #def4d9; color: #4c9a41; }
+.chip-orange { background: #ffe8cd; color: #ab6b23; }
+.chip-red { background: #ffe0e8; color: #cc4d66; }
+.chip-yellow { background: #ffeecb; color: #b17f1b; }
+.chip-violet { background: #e4e6ff; color: #5f62cf; }
 
 .content-block {
   margin-top: 14px;
 }
 
-.block-header,
-.section-heading {
+.block-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
 }
 
-.content-block h3,
-.long-section h3 {
+.content-block h3 {
   margin: 0 0 8px;
   color: #1c2436;
   font-size: 32px;
@@ -695,7 +531,6 @@ h2 {
   justify-content: center;
   gap: 8px;
   font-size: 16px;
-  line-height: 1;
   font-weight: 700;
   cursor: pointer;
 }
@@ -703,71 +538,6 @@ h2 {
 .adapt-btn img {
   width: 20px;
   height: 20px;
-}
-
-.long-section {
-  margin-top: 14px;
-}
-
-.timeline {
-  border-radius: 8px;
-  background: #f2f4f6;
-  padding: 12px;
-  display: grid;
-  gap: 12px;
-}
-
-.timeline-row {
-  display: grid;
-  grid-template-columns: 90px 12px 1fr;
-  gap: 12px;
-  align-items: start;
-}
-
-.timeline-time {
-  color: #86949f;
-  font-size: 12px;
-  line-height: 14.5px;
-}
-
-.timeline-node {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: #3845d0;
-  box-shadow: 0 0 0 4px rgba(56, 69, 208, 0.12);
-  margin-top: 3px;
-}
-
-.timeline-node--hollow {
-  background: #ffffff;
-  border: 2px solid #3845d0;
-  box-shadow: none;
-}
-
-.timeline-title {
-  margin: 0;
-  color: #192135;
-  font-size: 15px;
-  line-height: 1.3;
-  font-weight: 700;
-}
-
-.timeline-body p {
-  margin: 2px 0 0;
-  color: #617483;
-  font-size: 14px;
-  line-height: 1.45;
-}
-
-.icon-copy-btn {
-  width: 30px;
-  height: 30px;
-  border: 0;
-  border-radius: 8px;
-  background: #f0f2f5;
-  color: #71808d;
-  cursor: pointer;
 }
 
 @media (max-width: 980px) {

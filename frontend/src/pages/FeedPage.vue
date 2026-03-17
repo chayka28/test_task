@@ -10,23 +10,38 @@
         :token-total="tokenTotal"
         :profile-name="profileName"
         :profile-phone="profilePhone"
+        :profile-avatar="profileAvatar"
+        :avatar-seed="avatarSeed"
         @toggle-sidebar="isSidebarCollapsed = !isSidebarCollapsed"
         @toggle-creative="isCreativeExpanded = !isCreativeExpanded"
-        @open-auth="openAuthModal"
-        @logout="handleLogout"
+        @open-auth="openAuthModal('register')"
+        @open-profile="isProfileModalOpen = true"
         @placeholder="handlePlaceholder"
       />
 
       <section class="content-area">
+        <FeedTopPanel
+          v-model:query="searchQuery"
+          v-model:selectedTopic="selectedTopic"
+          :loaded-count="visiblePosts.length"
+          :can-interact="isAuthenticated"
+          @update:sortMode="sortMode = $event"
+          @search="handleSearch"
+          @placeholder="handlePlaceholder"
+          @auth-required="handleAuthRequired"
+        />
+
         <section class="post-grid">
           <FeedPostCard
-            v-for="post in posts"
+            v-for="post in visiblePosts"
             :key="post.id"
             :post="post"
             :liked="isPostLiked(post.id)"
+            :can-interact="isAuthenticated"
             @open="openPost"
             @toggle-like="toggleLike"
             @placeholder="handlePlaceholder"
+            @auth-required="handleAuthRequired"
           />
         </section>
 
@@ -34,18 +49,18 @@
           <LoadingIndicator v-if="isInitialLoading" label="Загружаем публикации..." />
           <LoadingIndicator v-else-if="isLoadingMore" label="Подгружаем еще..." />
           <p v-else-if="errorText" class="error-state">{{ errorText }}</p>
-          <p v-else-if="!posts.length" class="empty-state">Публикации не найдены</p>
+          <p v-else-if="!visiblePosts.length" class="empty-state">По текущему фильтру публикации не найдены</p>
           <p v-else-if="!hasMore" class="empty-state">Больше публикаций нет</p>
         </div>
 
         <div class="floating-actions">
-          <button type="button" class="more-btn" @click="handlePlaceholder('Найти еще ролики')">
+          <button type="button" class="more-btn" @click="handleFindMoreClick">
             <img src="/assets/icons/Vector-5.png" alt="" />
             <span>Найти еще ролики</span>
           </button>
           <div class="counter-pill">
             <img src="/assets/icons/Vector-12.png" alt="" />
-            <span>Видео: {{ posts.length }} из {{ estimatedTotal }}</span>
+            <span>Видео: {{ visiblePosts.length }} из {{ estimatedTotal }}</span>
           </div>
         </div>
       </section>
@@ -55,18 +70,33 @@
       <PostDetailsModal
         v-if="selectedPost"
         :post="selectedPost"
+        :can-interact="isAuthenticated"
         @close="selectedPost = null"
         @placeholder="handlePlaceholder"
+        @auth-required="handleAuthRequired"
       />
     </Transition>
 
     <Transition name="auth-fade">
       <AuthModal
         v-if="isAuthModalOpen"
-        :is-loading="isRegistering"
+        :is-loading="isAuthBusy"
         :error-text="authErrorText"
-        @submit="handleRegister"
+        :initial-mode="authMode"
+        @register="handleRegister"
+        @login="handleLogin"
         @close="isAuthModalOpen = false"
+      />
+    </Transition>
+
+    <Transition name="auth-fade">
+      <ProfileModal
+        v-if="isProfileModalOpen && session?.user"
+        :user="session.user"
+        :is-loading="isProfileSaving"
+        @close="isProfileModalOpen = false"
+        @save="handleProfileSave"
+        @logout="handleLogout"
       />
     </Transition>
 
@@ -84,10 +114,12 @@ import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import AuthModal from "../components/AuthModal.vue";
 import FeedPostCard from "../components/FeedPostCard.vue";
 import FeedSidebar from "../components/FeedSidebar.vue";
+import FeedTopPanel from "../components/FeedTopPanel.vue";
 import LoadingIndicator from "../components/LoadingIndicator.vue";
 import PlaceholderToast from "../components/PlaceholderToast.vue";
 import PostDetailsModal from "../components/PostDetailsModal.vue";
-import { fetchDemoUser, fetchPostsByUser, registerUser, seedDemoPosts } from "../services/postsApi";
+import ProfileModal from "../components/ProfileModal.vue";
+import { fetchDemoUser, fetchPostsByUser, loginUser, registerUser, seedDemoPosts, updateMyProfile } from "../services/postsApi";
 import { clearSession, loadLikedPostIds, loadSession, saveLikedPostIds, saveSession } from "../services/localState";
 
 const pageSize = 12;
@@ -101,7 +133,8 @@ const likedPostIds = ref(loadLikedPostIds());
 
 const isInitialLoading = ref(false);
 const isLoadingMore = ref(false);
-const isRegistering = ref(false);
+const isAuthBusy = ref(false);
+const isProfileSaving = ref(false);
 const hasMore = ref(true);
 const errorText = ref("");
 const authErrorText = ref("");
@@ -110,12 +143,35 @@ const offset = ref(0);
 const isSidebarCollapsed = ref(false);
 const isCreativeExpanded = ref(false);
 const isAuthModalOpen = ref(false);
+const isProfileModalOpen = ref(false);
+const authMode = ref("register");
 const toastState = ref(null);
+
+const searchQuery = ref("");
+const selectedTopic = ref("Базы данных");
+const sortMode = ref("all");
 
 let toastTimerId = null;
 
 const isAuthenticated = computed(() => Boolean(session.value?.accessToken));
 const activeViewer = computed(() => session.value?.user || publicViewer.value || null);
+
+const visiblePosts = computed(() => {
+  const normalizedQuery = searchQuery.value.trim().toLowerCase();
+  let result = [...posts.value];
+
+  if (normalizedQuery) {
+    result = result.filter((post) => {
+      return `${post.title} ${post.text}`.toLowerCase().includes(normalizedQuery);
+    });
+  }
+
+  if (sortMode.value === "likes") {
+    result.sort((left, right) => right.id - left.id);
+  }
+
+  return result;
+});
 
 const profileName = computed(() => {
   if (isAuthenticated.value) {
@@ -127,11 +183,14 @@ const profileName = computed(() => {
 
 const profilePhone = computed(() => {
   if (isAuthenticated.value) {
-    return session.value?.email || "Аккаунт Trendsee";
+    return session.value?.user?.email || "Аккаунт Trendsee";
   }
 
   return "Войдите или создайте аккаунт";
 });
+
+const profileAvatar = computed(() => session.value?.user?.avatar_data || "");
+const avatarSeed = computed(() => session.value?.user?.id || 1);
 
 const radarCount = computed(() => Math.min(999, 120 + posts.value.length * 7));
 const tokenTotal = computed(() => 4200 + (activeViewer.value?.id || 1) * 37);
@@ -201,8 +260,9 @@ function openPost(post) {
   selectedPost.value = post;
 }
 
-function openAuthModal() {
+function openAuthModal(mode = "register") {
   authErrorText.value = "";
+  authMode.value = mode;
   isAuthModalOpen.value = true;
 }
 
@@ -215,10 +275,10 @@ function toggleLike(postId) {
 
   if (nextLikedPostIds.has(postId)) {
     nextLikedPostIds.delete(postId);
-    showToast("Публикация убрана из избранного", "Список сохранится локально в этом браузере.");
+    showToast("Публикация убрана из избранного", "Список сохранится в вашем аккаунте на этом устройстве.");
   } else {
     nextLikedPostIds.add(postId);
-    showToast("Публикация добавлена в избранное", "Позже сюда можно будет подключить отдельный раздел.");
+    showToast("Публикация добавлена в избранное", "Избранное доступно только авторизованному пользователю.");
   }
 
   likedPostIds.value = nextLikedPostIds;
@@ -226,16 +286,22 @@ function toggleLike(postId) {
 }
 
 async function handleRegister(form) {
-  isRegistering.value = true;
+  isAuthBusy.value = true;
   authErrorText.value = "";
 
   try {
-    const response = await registerUser({ name: form.name });
+    const response = await registerUser({
+      name: form.name,
+      email: form.email,
+      password: form.password,
+      avatarData: form.avatarData,
+    });
+
     const nextSession = {
       accessToken: response.access_token,
       tokenType: response.token_type,
       user: response.user,
-      email: form.email,
+      email: response.user.email,
     };
 
     saveSession(nextSession);
@@ -251,70 +317,127 @@ async function handleRegister(form) {
 
     isAuthModalOpen.value = false;
     await reloadFeed();
-    showToast("Аккаунт создан", "Лента переключена на ваш профиль.");
+    showToast("Аккаунт создан", "Теперь доступны избранное, профиль и работа с подборкой.");
   } catch (error) {
     authErrorText.value = error.message;
   } finally {
-    isRegistering.value = false;
+    isAuthBusy.value = false;
+  }
+}
+
+async function handleLogin(form) {
+  isAuthBusy.value = true;
+  authErrorText.value = "";
+
+  try {
+    const response = await loginUser({
+      email: form.email,
+      password: form.password,
+    });
+
+    const nextSession = {
+      accessToken: response.access_token,
+      tokenType: response.token_type,
+      user: response.user,
+      email: response.user.email,
+    };
+
+    saveSession(nextSession);
+    session.value = nextSession;
+    publicViewer.value = null;
+    viewerUserId.value = response.user.id;
+
+    isAuthModalOpen.value = false;
+    await reloadFeed();
+    showToast("Вход выполнен", "Можно продолжать работу с личной лентой.");
+  } catch (error) {
+    authErrorText.value = error.message;
+  } finally {
+    isAuthBusy.value = false;
+  }
+}
+
+async function handleProfileSave(payload) {
+  if (!session.value?.accessToken) return;
+
+  isProfileSaving.value = true;
+
+  try {
+    const updatedUser = await updateMyProfile({
+      token: session.value.accessToken,
+      name: payload.name,
+      avatarData: payload.avatarData,
+    });
+
+    const nextSession = {
+      ...session.value,
+      user: updatedUser,
+      email: updatedUser.email,
+    };
+
+    saveSession(nextSession);
+    session.value = nextSession;
+    showToast("Профиль сохранен", "Новые данные сразу применены в интерфейсе.");
+    isProfileModalOpen.value = false;
+  } catch (error) {
+    showToast("Не удалось сохранить профиль", error.message);
+  } finally {
+    isProfileSaving.value = false;
+  }
+}
+
+async function handleFindMoreClick() {
+  if (!session.value?.accessToken) {
+    handleAuthRequired("Найти еще ролики");
+    return;
+  }
+
+  try {
+    await seedDemoPosts({
+      token: session.value.accessToken,
+      count: 8,
+      append: true,
+    });
+    await reloadFeed();
+    showToast("Подборка обновлена", "Мы добавили новую пачку роликов в ленту.");
+  } catch (error) {
+    errorText.value = error.message;
   }
 }
 
 async function handleLogout() {
   clearSession();
   session.value = null;
+  likedPostIds.value = new Set();
+  saveLikedPostIds(new Set());
   isCreativeExpanded.value = false;
+  isProfileModalOpen.value = false;
 
   try {
     await loadPublicFeed();
     await reloadFeed();
-    showToast("Вы вышли из аккаунта", "Можно продолжать просматривать открытую ленту.");
+    showToast("Вы вышли из аккаунта", "Избранное и расширенные действия снова недоступны.");
   } catch (error) {
     errorText.value = error.message;
   }
 }
 
 function handlePlaceholder(label) {
-  const messages = {
-    "Найти еще ролики": {
-      title: "Подборка появится на следующем этапе",
-      text: "Сейчас лента уже умеет автоматически догружаться при прокрутке страницы.",
-    },
-    "Улучшить подписку": {
-      title: "Раздел подписки подготовлен как точка входа",
-      text: "Тарифы и платежный сценарий можно будет подключить отдельно.",
-    },
-    "Открыть источник": {
-      title: "Переход к источнику пока отключен",
-      text: "Кнопка сохранена в интерфейсе, чтобы сценарий страницы читался как продуктовый.",
-    },
-    "Инструменты карточки": {
-      title: "Блок инструментов пока в режиме заглушки",
-      text: "Здесь удобно будет разместить быстрые действия для поста.",
-    },
-    "Инструменты публикации": {
-      title: "Дополнительные действия появятся позже",
-      text: "Сейчас этот элемент оставлен как интерактивная заглушка.",
-    },
-    "Адаптировать публикацию": {
-      title: "Адаптация еще не подключена",
-      text: "Кнопка оставлена для продуктового сценария и визуальной полноты экрана.",
-    },
-    "Перевод публикации": {
-      title: "Переключение перевода пока неактивно",
-      text: "Можно будет подключить отдельный переводческий pipeline.",
-    },
-    "Скопировать секцию": {
-      title: "Копирование подготовлено как следующий шаг",
-      text: "Сценарий действия уже обозначен в интерфейсе.",
-    },
-  };
-
-  const payload = messages[label] || {
+  const payload = {
     title: `${label} пока в разработке`,
-    text: "Элемент сохранен как интерактивная заглушка, чтобы можно было полноценно пройтись по интерфейсу.",
+    text: "Элемент сохранен как интерактивная заглушка, чтобы сценарий страницы читался как полноценный продукт.",
   };
 
   showToast(payload.title, payload.text);
+}
+
+function handleAuthRequired(reason) {
+  openAuthModal("login");
+  showToast("Нужно войти в аккаунт", `${reason} доступно только после регистрации или входа.`);
+}
+
+function handleSearch() {
+  showToast("Фильтр обновлен", `Показано ${visiblePosts.value.length} публикаций по вашему запросу.`);
 }
 
 function showToast(title, text = "") {
@@ -377,7 +500,7 @@ onBeforeUnmount(() => {
 
 .content-area {
   flex: 1;
-  background: #ffffff;
+  background: #f8fafc;
   padding: 8px 16px 96px;
   position: relative;
 }
@@ -436,9 +559,7 @@ onBeforeUnmount(() => {
   line-height: 1;
   cursor: pointer;
   letter-spacing: 0.2px;
-  transition:
-    transform 0.2s ease,
-    opacity 0.2s ease;
+  transition: transform 0.2s ease;
 }
 
 .more-btn:hover {

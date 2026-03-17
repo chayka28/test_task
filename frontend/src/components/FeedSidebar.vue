@@ -82,21 +82,14 @@
         </Transition>
       </section>
 
-      <section class="profile-row" :class="{ 'profile-row--collapsed': collapsed }">
-        <img src="/assets/avatar-feed.png" alt="Профиль" class="profile-avatar" />
+      <button type="button" class="profile-row" :class="{ 'profile-row--collapsed': collapsed }" @click="handleProfileAction">
+        <AppAvatar :avatar="profileAvatar" :size="34" :seed="avatarSeed" alt="Профиль" class="profile-avatar" />
         <div v-if="!collapsed" class="profile-meta">
           <p class="profile-name">{{ profileName }}</p>
           <p class="profile-phone">{{ profilePhone }}</p>
         </div>
-        <button
-          type="button"
-          class="profile-action"
-          :title="isAuthenticated ? 'Выйти' : 'Регистрация'"
-          @click="handleProfileAction"
-        >
-          {{ isAuthenticated ? "↪" : "+" }}
-        </button>
-      </section>
+        <span v-if="!collapsed" class="profile-action">{{ isAuthenticated ? "↗" : "+" }}</span>
+      </button>
 
       <div v-if="!collapsed" class="locale-row">
         <span class="locale-flag">🇷🇺</span>
@@ -109,6 +102,8 @@
 
 <script setup>
 import { computed } from "vue";
+
+import AppAvatar from "./AppAvatar.vue";
 
 const props = defineProps({
   collapsed: {
@@ -143,9 +138,17 @@ const props = defineProps({
     type: String,
     default: "Создайте аккаунт",
   },
+  profileAvatar: {
+    type: String,
+    default: "",
+  },
+  avatarSeed: {
+    type: Number,
+    default: 1,
+  },
 });
 
-const emit = defineEmits(["toggle-sidebar", "toggle-creative", "open-auth", "logout", "placeholder"]);
+const emit = defineEmits(["toggle-sidebar", "toggle-creative", "open-auth", "open-profile", "placeholder"]);
 
 const sections = computed(() => [
   {
@@ -218,7 +221,7 @@ const tokenProgress = computed(() => {
 
 function handleProfileAction() {
   if (props.isAuthenticated) {
-    emit("logout");
+    emit("open-profile");
     return;
   }
 
@@ -278,6 +281,11 @@ function handleProfileAction() {
   width: 34px;
   height: 28px;
   flex: 0 0 34px;
+}
+
+.logo-outline,
+.logo-center {
+  filter: brightness(0) saturate(100%);
 }
 
 .logo-outline {
@@ -563,18 +571,16 @@ function handleProfileAction() {
   display: flex;
   align-items: center;
   gap: 8px;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  text-align: left;
+  cursor: pointer;
 }
 
 .profile-row--collapsed {
   justify-content: center;
-}
-
-.profile-avatar {
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  object-fit: cover;
-  flex: 0 0 34px;
 }
 
 .profile-meta {
@@ -598,14 +604,8 @@ function handleProfileAction() {
 
 .profile-action {
   margin-left: auto;
-  width: 26px;
-  height: 26px;
-  border: 0;
-  border-radius: 50%;
-  background: transparent;
   color: #8e98a6;
   font-size: 18px;
-  cursor: pointer;
 }
 
 .locale-row {

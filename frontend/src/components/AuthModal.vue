@@ -1,6 +1,6 @@
 <template>
   <div class="auth-overlay" @click.self="$emit('close')">
-    <div class="auth-card" role="dialog" aria-modal="true" aria-label="Регистрация">
+    <div class="auth-card" role="dialog" aria-modal="true" aria-label="Авторизация">
       <button type="button" class="close-btn" aria-label="Закрыть" @click="$emit('close')">×</button>
 
       <div class="logo-mark" aria-hidden="true">
@@ -9,16 +9,27 @@
       </div>
 
       <p class="overline">Trendsee</p>
-      <h2>Создайте аккаунт и сохраните свою ленту</h2>
+      <h2>{{ mode === 'register' ? "Создайте аккаунт" : "Войдите в аккаунт" }}</h2>
       <p class="text">
-        Регистрация открывает персональный профиль, сохранение избранного и быстрый доступ к вашей подборке публикаций.
+        {{ mode === "register" ? "После регистрации можно сохранять избранное, менять профиль и работать со своей подборкой." : "Войдите, чтобы продолжить работу с избранным, подборками и профилем." }}
       </p>
 
-      <form class="form" @submit.prevent="submitForm">
+      <div class="mode-switch">
+        <button type="button" class="mode-btn" :class="{ 'mode-btn--active': mode === 'register' }" @click="mode = 'register'">
+          Регистрация
+        </button>
+        <button type="button" class="mode-btn" :class="{ 'mode-btn--active': mode === 'login' }" @click="mode = 'login'">
+          Вход
+        </button>
+      </div>
+
+      <form v-if="mode === 'register'" class="form" @submit.prevent="submitRegister">
+        <AvatarPicker v-model="registerForm.avatarData" />
+
         <label class="field">
           <span>Имя</span>
           <input
-            v-model.trim="form.name"
+            v-model.trim="registerForm.name"
             type="text"
             minlength="2"
             maxlength="100"
@@ -30,7 +41,7 @@
         <label class="field">
           <span>Email</span>
           <input
-            v-model.trim="form.email"
+            v-model.trim="registerForm.email"
             type="email"
             placeholder="you@trendsee.app"
             :disabled="isLoading"
@@ -41,7 +52,7 @@
           <label class="field">
             <span>Пароль</span>
             <input
-              v-model="form.password"
+              v-model="registerForm.password"
               type="password"
               minlength="8"
               placeholder="Минимум 8 символов"
@@ -52,7 +63,7 @@
           <label class="field">
             <span>Повторите пароль</span>
             <input
-              v-model="form.confirmPassword"
+              v-model="registerForm.confirmPassword"
               type="password"
               minlength="8"
               placeholder="Повторите пароль"
@@ -62,15 +73,45 @@
         </div>
 
         <label class="checkbox-row">
-          <input v-model="form.accepted" type="checkbox" :disabled="isLoading" />
+          <input v-model="registerForm.accepted" type="checkbox" :disabled="isLoading" />
           <span>Я согласен(а) с правилами платформы и обработкой персональных данных.</span>
         </label>
 
-        <p v-if="validationText" class="error-text">{{ validationText }}</p>
+        <p v-if="registerValidationText" class="error-text">{{ registerValidationText }}</p>
         <p v-else-if="errorText" class="error-text">{{ errorText }}</p>
 
         <button type="submit" class="submit-btn" :disabled="isLoading">
           {{ isLoading ? "Создаем аккаунт..." : "Создать аккаунт" }}
+        </button>
+      </form>
+
+      <form v-else class="form" @submit.prevent="submitLogin">
+        <label class="field">
+          <span>Email</span>
+          <input
+            v-model.trim="loginForm.email"
+            type="email"
+            placeholder="you@trendsee.app"
+            :disabled="isLoading"
+          />
+        </label>
+
+        <label class="field">
+          <span>Пароль</span>
+          <input
+            v-model="loginForm.password"
+            type="password"
+            minlength="8"
+            placeholder="Ваш пароль"
+            :disabled="isLoading"
+          />
+        </label>
+
+        <p v-if="loginValidationText" class="error-text">{{ loginValidationText }}</p>
+        <p v-else-if="errorText" class="error-text">{{ errorText }}</p>
+
+        <button type="submit" class="submit-btn" :disabled="isLoading">
+          {{ isLoading ? "Входим..." : "Войти" }}
         </button>
       </form>
     </div>
@@ -78,7 +119,9 @@
 </template>
 
 <script setup>
-import { computed, reactive, watch } from "vue";
+import { computed, reactive, ref, watch } from "vue";
+
+import AvatarPicker from "./AvatarPicker.vue";
 
 const props = defineProps({
   isLoading: {
@@ -89,39 +132,49 @@ const props = defineProps({
     type: String,
     default: "",
   },
+  initialMode: {
+    type: String,
+    default: "register",
+  },
 });
 
-const emit = defineEmits(["submit", "close"]);
+const emit = defineEmits(["register", "login", "close"]);
 
-const form = reactive({
+const mode = ref(props.initialMode);
+
+const registerForm = reactive({
   name: "",
   email: "",
   password: "",
   confirmPassword: "",
   accepted: false,
+  avatarData: "preset:midnight",
 });
 
-const validationText = computed(() => {
-  if (form.name && form.name.length < 2) {
-    return "Имя должно содержать минимум 2 символа.";
-  }
+const loginForm = reactive({
+  email: "",
+  password: "",
+});
 
-  if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
-    return "Укажите корректный email.";
-  }
+watch(
+  () => props.initialMode,
+  (value) => {
+    mode.value = value;
+  },
+);
 
-  if (form.password && form.password.length < 8) {
-    return "Пароль должен содержать минимум 8 символов.";
-  }
+const registerValidationText = computed(() => {
+  if (registerForm.name && registerForm.name.length < 2) return "Имя должно содержать минимум 2 символа.";
+  if (registerForm.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(registerForm.email)) return "Укажите корректный email.";
+  if (registerForm.password && registerForm.password.length < 8) return "Пароль должен содержать минимум 8 символов.";
+  if (registerForm.confirmPassword && registerForm.password !== registerForm.confirmPassword) return "Пароли должны совпадать.";
+  if ((registerForm.name || registerForm.email || registerForm.password) && !registerForm.accepted) return "Подтвердите согласие, чтобы продолжить.";
+  return "";
+});
 
-  if (form.confirmPassword && form.password !== form.confirmPassword) {
-    return "Пароли должны совпадать.";
-  }
-
-  if ((form.name || form.email || form.password || form.confirmPassword) && !form.accepted) {
-    return "Подтвердите согласие, чтобы продолжить.";
-  }
-
+const loginValidationText = computed(() => {
+  if (loginForm.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(loginForm.email)) return "Укажите корректный email.";
+  if (loginForm.password && loginForm.password.length < 8) return "Пароль должен содержать минимум 8 символов.";
   return "";
 });
 
@@ -129,31 +182,47 @@ watch(
   () => props.isLoading,
   (nextValue, previousValue) => {
     if (previousValue && !nextValue && !props.errorText) {
-      form.name = "";
-      form.email = "";
-      form.password = "";
-      form.confirmPassword = "";
-      form.accepted = false;
+      registerForm.name = "";
+      registerForm.email = "";
+      registerForm.password = "";
+      registerForm.confirmPassword = "";
+      registerForm.accepted = false;
+      registerForm.avatarData = "preset:midnight";
+      loginForm.email = "";
+      loginForm.password = "";
     }
   },
 );
 
-function submitForm() {
+function submitRegister() {
   if (
     props.isLoading ||
-    validationText.value ||
-    form.name.length < 2 ||
-    !form.email ||
-    form.password.length < 8 ||
-    form.password !== form.confirmPassword ||
-    !form.accepted
+    registerValidationText.value ||
+    registerForm.name.length < 2 ||
+    !registerForm.email ||
+    registerForm.password.length < 8 ||
+    registerForm.password !== registerForm.confirmPassword ||
+    !registerForm.accepted
   ) {
     return;
   }
 
-  emit("submit", {
-    name: form.name,
-    email: form.email,
+  emit("register", {
+    name: registerForm.name,
+    email: registerForm.email,
+    password: registerForm.password,
+    avatarData: registerForm.avatarData,
+  });
+}
+
+function submitLogin() {
+  if (props.isLoading || loginValidationText.value || !loginForm.email || loginForm.password.length < 8) {
+    return;
+  }
+
+  emit("login", {
+    email: loginForm.email,
+    password: loginForm.password,
   });
 }
 </script>
@@ -171,7 +240,7 @@ function submitForm() {
 }
 
 .auth-card {
-  width: min(540px, 100%);
+  width: min(560px, 100%);
   position: relative;
   border-radius: 28px;
   background: #ffffff;
@@ -198,6 +267,11 @@ function submitForm() {
   position: relative;
   width: 34px;
   height: 34px;
+}
+
+.logo-outline,
+.logo-center {
+  filter: brightness(0) saturate(100%);
 }
 
 .logo-outline {
@@ -242,8 +316,34 @@ h2 {
   line-height: 1.5;
 }
 
+.mode-switch {
+  margin-top: 18px;
+  display: inline-flex;
+  padding: 4px;
+  border-radius: 16px;
+  background: #f2f4f8;
+}
+
+.mode-btn {
+  border: 0;
+  background: transparent;
+  color: #6b7280;
+  height: 38px;
+  padding: 0 18px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.mode-btn--active {
+  background: #ffffff;
+  color: #2b31b3;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+}
+
 .form {
-  margin-top: 20px;
+  margin-top: 18px;
   display: grid;
   gap: 12px;
 }
@@ -319,10 +419,6 @@ h2 {
 .submit-btn:disabled {
   opacity: 0.6;
   cursor: default;
-}
-
-.submit-btn:not(:disabled):hover {
-  transform: translateY(-1px);
 }
 
 @media (max-width: 620px) {

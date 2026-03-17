@@ -1,8 +1,16 @@
 from fastapi import APIRouter, Depends, Response, status
 
-from app.dependencies.services import get_user_service
-from app.dependencies.services import get_post_service
-from app.schemas.user import TokenResponse, UserCreate, UserOut, UserUpdate, UserWithToken
+from app.dependencies.auth import get_current_user_id
+from app.dependencies.services import get_post_service, get_user_service
+from app.schemas.user import (
+    TokenResponse,
+    UserCreate,
+    UserLogin,
+    UserOut,
+    UserProfileUpdate,
+    UserUpdate,
+    UserWithToken,
+)
 from app.services.post_service import PostService
 from app.services.user_service import UserService
 
@@ -33,7 +41,56 @@ async def create_user(
     payload: UserCreate,
     user_service: UserService = Depends(get_user_service),
 ) -> UserWithToken:
-    return await user_service.create_user(name=payload.name)
+    return await user_service.create_user(
+        name=payload.name,
+        email=payload.email,
+        password=payload.password,
+        avatar_data=payload.avatar_data,
+    )
+
+
+@router.post(
+    "/login",
+    response_model=UserWithToken,
+    summary="Login by email and password",
+)
+async def login_user(
+    payload: UserLogin,
+    user_service: UserService = Depends(get_user_service),
+) -> UserWithToken:
+    return await user_service.authenticate_user(
+        email=payload.email,
+        password=payload.password,
+    )
+
+
+@router.get(
+    "/me",
+    response_model=UserOut,
+    summary="Get current user profile",
+)
+async def get_current_user_profile(
+    current_user_id: int = Depends(get_current_user_id),
+    user_service: UserService = Depends(get_user_service),
+) -> UserOut:
+    return await user_service.get_user_by_id(user_id=current_user_id)
+
+
+@router.patch(
+    "/me/profile",
+    response_model=UserOut,
+    summary="Update current user profile",
+)
+async def update_current_user_profile(
+    payload: UserProfileUpdate,
+    current_user_id: int = Depends(get_current_user_id),
+    user_service: UserService = Depends(get_user_service),
+) -> UserOut:
+    return await user_service.update_user_profile(
+        user_id=current_user_id,
+        name=payload.name,
+        avatar_data=payload.avatar_data,
+    )
 
 
 @router.get(

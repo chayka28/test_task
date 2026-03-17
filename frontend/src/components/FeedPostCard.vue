@@ -1,10 +1,5 @@
 <template>
   <article class="post-card">
-    <div class="top-meta">
-      <time class="date">{{ formattedCreatedAt }}</time>
-      <button type="button" class="top-action-btn" @click="$emit('open', post)">Анализ</button>
-    </div>
-
     <div
       class="card-hitbox"
       role="button"
@@ -40,17 +35,9 @@
               <img src="/assets/icons/heart-outline.png" alt="" />
             </button>
 
-            <button type="button" class="action-pill external-btn" @click.stop="emitPlaceholder('Открыть источник')">
+            <button type="button" class="action-pill external-btn" @click.stop="handleRestrictedAction('Открыть источник')">
               <span>↗</span>
             </button>
-          </div>
-        </div>
-
-        <div class="media-copy">
-          <p class="media-overline">Разбор ролика</p>
-          <p class="media-headline">{{ posterCopy.headline }}</p>
-          <div class="media-note">
-            <span>{{ posterCopy.note }}</span>
           </div>
         </div>
 
@@ -75,12 +62,12 @@
       </div>
 
       <div class="author-card">
-        <img src="/assets/avatar-feed.png" alt="" class="avatar" />
+        <AppAvatar :seed="post.id" :size="40" alt="Креатор" :blurred="true" />
         <div class="author-meta">
           <p class="author-name">{{ handle }}</p>
           <p class="author-sub">{{ followers }}</p>
         </div>
-        <button type="button" class="author-tool-btn" @click.stop="emitPlaceholder('Инструменты карточки')">
+        <button type="button" class="author-tool-btn" @click.stop="handleRestrictedAction('Инструменты карточки')">
           <img src="/assets/icons/Vector-5.png" alt="" class="author-tool" />
         </button>
       </div>
@@ -88,13 +75,19 @@
       <p class="title">{{ post.title }}</p>
       <p class="text">{{ previewText }}</p>
     </div>
+
+    <div class="bottom-meta">
+      <time class="date">{{ formattedCreatedAt }}</time>
+      <button type="button" class="bottom-action-btn" @click="$emit('open', post)">Анализ</button>
+    </div>
   </article>
 </template>
 
 <script setup>
 import { computed, onBeforeUnmount, ref } from "vue";
 
-import { buildFollowers, buildHandle, buildMediaPalette, buildPosterCopy, buildPostMetrics } from "../services/postPresentation";
+import AppAvatar from "./AppAvatar.vue";
+import { buildFollowers, buildHandle, buildMediaPalette, buildPostMetrics } from "../services/postPresentation";
 
 const props = defineProps({
   post: {
@@ -105,9 +98,13 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  canInteract: {
+    type: Boolean,
+    default: false,
+  },
 });
 
-const emit = defineEmits(["open", "toggle-like", "placeholder"]);
+const emit = defineEmits(["open", "toggle-like", "placeholder", "auth-required"]);
 
 const isLikeAnimating = ref(false);
 let likeTimerId = null;
@@ -115,7 +112,6 @@ let likeTimerId = null;
 const metrics = computed(() => buildPostMetrics(props.post.id));
 const handle = computed(() => buildHandle(props.post.user_id));
 const followers = computed(() => buildFollowers(props.post.user_id));
-const posterCopy = computed(() => buildPosterCopy(props.post));
 const activityMultiplier = computed(() => ((props.post.id % 12) + 3).toString());
 
 const mediaStyle = computed(() => {
@@ -124,7 +120,6 @@ const mediaStyle = computed(() => {
   return {
     "--media-start": palette.start,
     "--media-end": palette.end,
-    "--media-accent": palette.accent,
     "--media-glow": palette.glow,
     "--media-surface": palette.surface,
   };
@@ -146,11 +141,21 @@ const formattedCreatedAt = computed(() => {
   }).format(date);
 });
 
-function emitPlaceholder(label) {
+function handleRestrictedAction(label) {
+  if (!props.canInteract) {
+    emit("auth-required", label);
+    return;
+  }
+
   emit("placeholder", label);
 }
 
 function handleLikeClick() {
+  if (!props.canInteract) {
+    emit("auth-required", "Избранное");
+    return;
+  }
+
   if (isLikeAnimating.value) return;
 
   if (props.liked) {
@@ -182,41 +187,10 @@ onBeforeUnmount(() => {
   padding: 0 0 10px;
 }
 
-.top-meta {
-  padding: 0 2px 10px;
-}
-
 .card-hitbox {
-  border: 0;
-  background: transparent;
   width: 100%;
   padding: 0;
   text-align: left;
-  cursor: pointer;
-}
-
-.date {
-  display: block;
-  margin: 0;
-  color: #a0adb4;
-  font-size: 12px;
-  line-height: 14.5px;
-  letter-spacing: 0.4px;
-  font-weight: 500;
-}
-
-.top-action-btn {
-  margin-top: 8px;
-  width: 100%;
-  height: 40px;
-  border: 0;
-  border-radius: 12px;
-  background: #2b31b3;
-  color: #ffffff;
-  font-size: 12px;
-  line-height: 16px;
-  letter-spacing: 0.4px;
-  font-weight: 600;
   cursor: pointer;
 }
 
@@ -261,7 +235,7 @@ onBeforeUnmount(() => {
     linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
   background-size: 22px 22px;
-  opacity: 0.5;
+  opacity: 0.45;
 }
 
 .media-header {
@@ -313,18 +287,13 @@ onBeforeUnmount(() => {
   place-items: center;
   border: 0;
   color: #ffffff;
+  cursor: pointer;
 }
 
 .action-pill img {
   width: 20px;
   height: 20px;
   object-fit: contain;
-}
-
-.like-btn,
-.external-btn,
-.author-tool-btn {
-  cursor: pointer;
 }
 
 .like-btn img {
@@ -345,51 +314,6 @@ onBeforeUnmount(() => {
   font-size: 22px;
   line-height: 1;
   transform: translateY(-1px);
-}
-
-.media-copy {
-  position: absolute;
-  left: 16px;
-  right: 16px;
-  bottom: 74px;
-}
-
-.media-overline {
-  margin: 0;
-  color: rgba(255, 255, 255, 0.72);
-  font-size: 11px;
-  line-height: 1.2;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-}
-
-.media-headline {
-  margin: 10px 0 0;
-  color: #ffffff;
-  font-size: 25px;
-  line-height: 0.95;
-  font-weight: 700;
-  letter-spacing: -0.04em;
-  text-shadow: 0 4px 24px rgba(0, 0, 0, 0.26);
-  max-width: 168px;
-}
-
-.media-note {
-  margin-top: 12px;
-  width: fit-content;
-  max-width: 164px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.9);
-  color: #111827;
-  padding: 8px 10px;
-  box-shadow: 0 8px 20px rgba(22, 22, 22, 0.15);
-}
-
-.media-note span {
-  display: block;
-  font-size: 11px;
-  line-height: 1.15;
-  font-weight: 600;
 }
 
 .stats-overlay {
@@ -430,13 +354,6 @@ onBeforeUnmount(() => {
   padding: 4px 0;
 }
 
-.avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  object-fit: cover;
-}
-
 .author-meta {
   min-width: 0;
 }
@@ -464,6 +381,7 @@ onBeforeUnmount(() => {
   border: 0;
   background: transparent;
   padding: 0;
+  cursor: pointer;
 }
 
 .author-tool {
@@ -499,42 +417,44 @@ onBeforeUnmount(() => {
   overflow: hidden;
 }
 
+.bottom-meta {
+  margin-top: 8px;
+}
+
+.date {
+  display: block;
+  margin: 0 0 8px;
+  color: #a0adb4;
+  font-size: 12px;
+  line-height: 14.5px;
+  letter-spacing: 0.4px;
+  font-weight: 500;
+}
+
+.bottom-action-btn {
+  width: 100%;
+  height: 40px;
+  border: 0;
+  border-radius: 12px;
+  background: #2b31b3;
+  color: #ffffff;
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 0.4px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
 @keyframes heart-quarter-turn {
-  0% {
-    transform: rotate(0deg);
-  }
-
-  24.99% {
-    transform: rotate(0deg);
-  }
-
-  25% {
-    transform: rotate(90deg);
-  }
-
-  49.99% {
-    transform: rotate(90deg);
-  }
-
-  50% {
-    transform: rotate(180deg);
-  }
-
-  74.99% {
-    transform: rotate(180deg);
-  }
-
-  75% {
-    transform: rotate(270deg);
-  }
-
-  99.99% {
-    transform: rotate(270deg);
-  }
-
-  100% {
-    transform: rotate(360deg);
-  }
+  0% { transform: rotate(0deg); }
+  24.99% { transform: rotate(0deg); }
+  25% { transform: rotate(90deg); }
+  49.99% { transform: rotate(90deg); }
+  50% { transform: rotate(180deg); }
+  74.99% { transform: rotate(180deg); }
+  75% { transform: rotate(270deg); }
+  99.99% { transform: rotate(270deg); }
+  100% { transform: rotate(360deg); }
 }
 
 @media (max-width: 840px) {
@@ -544,11 +464,6 @@ onBeforeUnmount(() => {
 
   .media {
     height: 400px;
-  }
-
-  .media-headline {
-    font-size: 28px;
-    max-width: 186px;
   }
 }
 </style>

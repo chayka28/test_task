@@ -23,12 +23,6 @@
         </div>
       </div>
 
-      <div class="media-copy">
-        <p class="media-overline">Разбор ролика</p>
-        <p class="media-title">{{ posterCopy.headline }}</p>
-        <div class="media-note">{{ posterCopy.note }}</div>
-      </div>
-
       <div class="stats">
         <div class="cell">
           <img src="/assets/icons/Vector-14.png" alt="" />
@@ -50,7 +44,7 @@
     </div>
 
     <div class="author-row">
-      <img src="/assets/avatar-feed.png" alt="" class="avatar" />
+      <AppAvatar :seed="sourcePost.id" :size="40" alt="Креатор" :blurred="true" />
       <div class="author-meta">
         <p class="name">{{ handle }}</p>
         <p class="subs">{{ followers }}</p>
@@ -68,7 +62,8 @@
 <script setup>
 import { computed } from "vue";
 
-import { buildFollowers, buildHandle, buildMediaPalette, buildPosterCopy, buildPostMetrics } from "../services/postPresentation";
+import AppAvatar from "./AppAvatar.vue";
+import { buildFollowers, buildHandle, buildMediaPalette, buildPostMetrics } from "../services/postPresentation";
 
 const props = defineProps({
   post: {
@@ -92,7 +87,6 @@ const sourcePost = computed(() => {
 const metrics = computed(() => buildPostMetrics(sourcePost.value.id));
 const handle = computed(() => buildHandle(sourcePost.value.user_id));
 const followers = computed(() => buildFollowers(sourcePost.value.user_id));
-const posterCopy = computed(() => buildPosterCopy(sourcePost.value));
 const activityMultiplier = computed(() => ((sourcePost.value.id % 12) + 3).toString());
 
 const mediaStyle = computed(() => {
@@ -231,47 +225,6 @@ const formattedCreatedAt = computed(() => {
   transform: translateY(-1px);
 }
 
-.media-copy {
-  position: absolute;
-  left: 16px;
-  right: 16px;
-  bottom: 74px;
-}
-
-.media-overline {
-  margin: 0;
-  color: rgba(255, 255, 255, 0.72);
-  font-size: 11px;
-  line-height: 1.2;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-}
-
-.media-title {
-  margin: 10px 0 0;
-  color: #ffffff;
-  font-size: 28px;
-  line-height: 0.95;
-  font-weight: 700;
-  letter-spacing: -0.04em;
-  text-shadow: 0 4px 24px rgba(0, 0, 0, 0.26);
-  max-width: 190px;
-}
-
-.media-note {
-  margin-top: 12px;
-  width: fit-content;
-  max-width: 176px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.9);
-  color: #111827;
-  padding: 8px 10px;
-  box-shadow: 0 8px 20px rgba(22, 22, 22, 0.15);
-  font-size: 11px;
-  line-height: 1.15;
-  font-weight: 600;
-}
-
 .stats {
   position: absolute;
   left: 12px;
@@ -306,13 +259,6 @@ const formattedCreatedAt = computed(() => {
   display: flex;
   align-items: center;
   gap: 8px;
-}
-
-.avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  object-fit: cover;
 }
 
 .name {

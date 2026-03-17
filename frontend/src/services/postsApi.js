@@ -32,10 +32,36 @@ export async function fetchPostsByUser({ userId, limit, offset }) {
   return request(`/posts/user/${userId}?${params.toString()}`);
 }
 
-export async function registerUser({ name }) {
+export async function registerUser({ name, email, password, avatarData }) {
   return request("/users", {
     method: "POST",
-    body: { name },
+    body: {
+      name,
+      email,
+      password,
+      avatar_data: avatarData || null,
+    },
+  });
+}
+
+export async function loginUser({ email, password }) {
+  return request("/users/login", {
+    method: "POST",
+    body: {
+      email,
+      password,
+    },
+  });
+}
+
+export async function updateMyProfile({ token, name, avatarData }) {
+  return request("/users/me/profile", {
+    method: "PATCH",
+    token,
+    body: {
+      name: name || null,
+      avatar_data: avatarData || null,
+    },
   });
 }
 
