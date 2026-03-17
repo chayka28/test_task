@@ -19,6 +19,7 @@ export function loadSession() {
     accessToken: session.accessToken || session.token || session.access_token || null,
     tokenType: session.tokenType || session.token_type || "bearer",
     user: session.user || null,
+    email: session.email || session.userEmail || null,
   };
 }
 

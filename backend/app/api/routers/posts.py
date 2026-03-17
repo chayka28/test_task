@@ -75,7 +75,7 @@ async def get_posts_by_user(
 @router.post(
     "/demo-seed",
     response_model=list[PostOut],
-    summary="Generate demo posts for the current user",
+    summary="Generate starter posts for the current user",
 )
 async def seed_demo_posts(
     current_user_id: int = Depends(get_current_user_id),

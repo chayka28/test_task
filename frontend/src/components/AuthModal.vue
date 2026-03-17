@@ -9,17 +9,16 @@
       </div>
 
       <p class="overline">Trendsee</p>
-      <h2>Создайте аккаунт и получите личную ленту</h2>
+      <h2>Создайте аккаунт и сохраните свою ленту</h2>
       <p class="text">
-        Регистрация в тестовом проекте работает по ТЗ: создаем пользователя, получаем JWT
-        и сразу заполняем аккаунт демо-публикациями.
+        Регистрация открывает персональный профиль, сохранение избранного и быстрый доступ к вашей подборке публикаций.
       </p>
 
       <form class="form" @submit.prevent="submitForm">
         <label class="field">
-          <span>Ваше имя</span>
+          <span>Имя</span>
           <input
-            v-model.trim="name"
+            v-model.trim="form.name"
             type="text"
             minlength="2"
             maxlength="100"
@@ -28,10 +27,50 @@
           />
         </label>
 
-        <p v-if="errorText" class="error-text">{{ errorText }}</p>
+        <label class="field">
+          <span>Email</span>
+          <input
+            v-model.trim="form.email"
+            type="email"
+            placeholder="you@trendsee.app"
+            :disabled="isLoading"
+          />
+        </label>
 
-        <button type="submit" class="submit-btn" :disabled="isLoading || name.length < 2">
-          {{ isLoading ? "Создаем аккаунт..." : "Зарегистрироваться" }}
+        <div class="password-grid">
+          <label class="field">
+            <span>Пароль</span>
+            <input
+              v-model="form.password"
+              type="password"
+              minlength="8"
+              placeholder="Минимум 8 символов"
+              :disabled="isLoading"
+            />
+          </label>
+
+          <label class="field">
+            <span>Повторите пароль</span>
+            <input
+              v-model="form.confirmPassword"
+              type="password"
+              minlength="8"
+              placeholder="Повторите пароль"
+              :disabled="isLoading"
+            />
+          </label>
+        </div>
+
+        <label class="checkbox-row">
+          <input v-model="form.accepted" type="checkbox" :disabled="isLoading" />
+          <span>Я согласен(а) с правилами платформы и обработкой персональных данных.</span>
+        </label>
+
+        <p v-if="validationText" class="error-text">{{ validationText }}</p>
+        <p v-else-if="errorText" class="error-text">{{ errorText }}</p>
+
+        <button type="submit" class="submit-btn" :disabled="isLoading">
+          {{ isLoading ? "Создаем аккаунт..." : "Создать аккаунт" }}
         </button>
       </form>
     </div>
@@ -39,7 +78,7 @@
 </template>
 
 <script setup>
-import { ref, watch } from "vue";
+import { computed, reactive, watch } from "vue";
 
 const props = defineProps({
   isLoading: {
@@ -53,20 +92,69 @@ const props = defineProps({
 });
 
 const emit = defineEmits(["submit", "close"]);
-const name = ref("");
+
+const form = reactive({
+  name: "",
+  email: "",
+  password: "",
+  confirmPassword: "",
+  accepted: false,
+});
+
+const validationText = computed(() => {
+  if (form.name && form.name.length < 2) {
+    return "Имя должно содержать минимум 2 символа.";
+  }
+
+  if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+    return "Укажите корректный email.";
+  }
+
+  if (form.password && form.password.length < 8) {
+    return "Пароль должен содержать минимум 8 символов.";
+  }
+
+  if (form.confirmPassword && form.password !== form.confirmPassword) {
+    return "Пароли должны совпадать.";
+  }
+
+  if ((form.name || form.email || form.password || form.confirmPassword) && !form.accepted) {
+    return "Подтвердите согласие, чтобы продолжить.";
+  }
+
+  return "";
+});
 
 watch(
   () => props.isLoading,
   (nextValue, previousValue) => {
     if (previousValue && !nextValue && !props.errorText) {
-      name.value = "";
+      form.name = "";
+      form.email = "";
+      form.password = "";
+      form.confirmPassword = "";
+      form.accepted = false;
     }
   },
 );
 
 function submitForm() {
-  if (name.value.length < 2 || props.isLoading) return;
-  emit("submit", name.value);
+  if (
+    props.isLoading ||
+    validationText.value ||
+    form.name.length < 2 ||
+    !form.email ||
+    form.password.length < 8 ||
+    form.password !== form.confirmPassword ||
+    !form.accepted
+  ) {
+    return;
+  }
+
+  emit("submit", {
+    name: form.name,
+    email: form.email,
+  });
 }
 </script>
 
@@ -83,7 +171,7 @@ function submitForm() {
 }
 
 .auth-card {
-  width: min(440px, 100%);
+  width: min(540px, 100%);
   position: relative;
   border-radius: 28px;
   background: #ffffff;
@@ -160,6 +248,12 @@ h2 {
   gap: 12px;
 }
 
+.password-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
 .field {
   display: grid;
   gap: 8px;
@@ -185,6 +279,19 @@ h2 {
 
 .field input:focus {
   border-color: #2b31b3;
+}
+
+.checkbox-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  color: #617283;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.checkbox-row input {
+  margin-top: 2px;
 }
 
 .error-text {
@@ -216,5 +323,15 @@ h2 {
 
 .submit-btn:not(:disabled):hover {
   transform: translateY(-1px);
+}
+
+@media (max-width: 620px) {
+  .auth-card {
+    padding: 24px 18px 18px;
+  }
+
+  .password-grid {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

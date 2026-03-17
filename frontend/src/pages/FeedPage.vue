@@ -14,6 +14,7 @@
         @toggle-creative="isCreativeExpanded = !isCreativeExpanded"
         @open-auth="openAuthModal"
         @logout="handleLogout"
+        @placeholder="handlePlaceholder"
       />
 
       <section class="content-area">
@@ -25,21 +26,22 @@
             :liked="isPostLiked(post.id)"
             @open="openPost"
             @toggle-like="toggleLike"
+            @placeholder="handlePlaceholder"
           />
         </section>
 
         <div class="state-line">
-          <LoadingIndicator v-if="isInitialLoading" label="Загрузка публикаций..." />
-          <LoadingIndicator v-else-if="isLoadingMore" label="Подгружаем ещё..." />
+          <LoadingIndicator v-if="isInitialLoading" label="Загружаем публикации..." />
+          <LoadingIndicator v-else-if="isLoadingMore" label="Подгружаем еще..." />
           <p v-else-if="errorText" class="error-state">{{ errorText }}</p>
           <p v-else-if="!posts.length" class="empty-state">Публикации не найдены</p>
           <p v-else-if="!hasMore" class="empty-state">Больше публикаций нет</p>
         </div>
 
         <div class="floating-actions">
-          <button type="button" class="more-btn" :disabled="isGeneratingBatch" @click="handleFindMoreClick">
+          <button type="button" class="more-btn" @click="handlePlaceholder('Найти еще ролики')">
             <img src="/assets/icons/Vector-5.png" alt="" />
-            <span>{{ isGeneratingBatch ? "Подбираем..." : "Найти еще ролики" }}</span>
+            <span>Найти еще ролики</span>
           </button>
           <div class="counter-pill">
             <img src="/assets/icons/Vector-12.png" alt="" />
@@ -50,7 +52,12 @@
     </div>
 
     <Transition name="modal-fade">
-      <PostDetailsModal v-if="selectedPost" :post="selectedPost" @close="selectedPost = null" />
+      <PostDetailsModal
+        v-if="selectedPost"
+        :post="selectedPost"
+        @close="selectedPost = null"
+        @placeholder="handlePlaceholder"
+      />
     </Transition>
 
     <Transition name="auth-fade">
@@ -62,6 +69,12 @@
         @close="isAuthModalOpen = false"
       />
     </Transition>
+
+    <Transition name="toast-fade">
+      <div v-if="toastState" class="toast-wrap">
+        <PlaceholderToast :title="toastState.title" :text="toastState.text" />
+      </div>
+    </Transition>
   </main>
 </template>
 
@@ -72,6 +85,7 @@ import AuthModal from "../components/AuthModal.vue";
 import FeedPostCard from "../components/FeedPostCard.vue";
 import FeedSidebar from "../components/FeedSidebar.vue";
 import LoadingIndicator from "../components/LoadingIndicator.vue";
+import PlaceholderToast from "../components/PlaceholderToast.vue";
 import PostDetailsModal from "../components/PostDetailsModal.vue";
 import { fetchDemoUser, fetchPostsByUser, registerUser, seedDemoPosts } from "../services/postsApi";
 import { clearSession, loadLikedPostIds, loadSession, saveLikedPostIds, saveSession } from "../services/localState";
@@ -81,13 +95,12 @@ const pageSize = 12;
 const posts = ref([]);
 const selectedPost = ref(null);
 const viewerUserId = ref(null);
-const demoUser = ref(null);
+const publicViewer = ref(null);
 const session = ref(loadSession());
 const likedPostIds = ref(loadLikedPostIds());
 
 const isInitialLoading = ref(false);
 const isLoadingMore = ref(false);
-const isGeneratingBatch = ref(false);
 const isRegistering = ref(false);
 const hasMore = ref(true);
 const errorText = ref("");
@@ -97,16 +110,27 @@ const offset = ref(0);
 const isSidebarCollapsed = ref(false);
 const isCreativeExpanded = ref(false);
 const isAuthModalOpen = ref(false);
+const toastState = ref(null);
+
+let toastTimerId = null;
 
 const isAuthenticated = computed(() => Boolean(session.value?.accessToken));
-const activeViewer = computed(() => session.value?.user || demoUser.value || null);
+const activeViewer = computed(() => session.value?.user || publicViewer.value || null);
 
-const profileName = computed(() => activeViewer.value?.name || "Гостевой режим");
-const profilePhone = computed(() => {
-  if (isAuthenticated.value && activeViewer.value?.id) {
-    return `+7 (9${(activeViewer.value.id % 9) + 10}) 99${activeViewer.value.id % 10}-99-99`;
+const profileName = computed(() => {
+  if (isAuthenticated.value) {
+    return session.value?.user?.name || "Пользователь";
   }
-  return "Создайте аккаунт, чтобы сохранить свою ленту";
+
+  return "Гость";
+});
+
+const profilePhone = computed(() => {
+  if (isAuthenticated.value) {
+    return session.value?.email || "Аккаунт Trendsee";
+  }
+
+  return "Войдите или создайте аккаунт";
 });
 
 const radarCount = computed(() => Math.min(999, 120 + posts.value.length * 7));
@@ -122,6 +146,7 @@ async function loadNextBatch() {
   } else {
     isLoadingMore.value = true;
   }
+
   errorText.value = "";
 
   try {
@@ -133,7 +158,10 @@ async function loadNextBatch() {
 
     posts.value = offset.value === 0 ? nextPosts : [...posts.value, ...nextPosts];
     offset.value += nextPosts.length;
-    if (nextPosts.length < pageSize) hasMore.value = false;
+
+    if (nextPosts.length < pageSize) {
+      hasMore.value = false;
+    }
   } catch (error) {
     errorText.value = error.message;
   } finally {
@@ -145,13 +173,18 @@ async function loadNextBatch() {
 
 function onScroll() {
   if (!viewerUserId.value) return;
+
   const viewportBottom = window.scrollY + window.innerHeight;
   const threshold = document.documentElement.scrollHeight - 500;
-  if (viewportBottom >= threshold) loadNextBatch();
+
+  if (viewportBottom >= threshold) {
+    loadNextBatch();
+  }
 }
 
 async function reloadFeed() {
   if (!viewerUserId.value) return;
+
   posts.value = [];
   selectedPost.value = null;
   offset.value = 0;
@@ -159,9 +192,9 @@ async function reloadFeed() {
   await loadNextBatch();
 }
 
-async function loadDemoViewer() {
-  demoUser.value = await fetchDemoUser();
-  viewerUserId.value = demoUser.value.id;
+async function loadPublicFeed() {
+  publicViewer.value = await fetchDemoUser();
+  viewerUserId.value = publicViewer.value.id;
 }
 
 function openPost(post) {
@@ -182,29 +215,32 @@ function toggleLike(postId) {
 
   if (nextLikedPostIds.has(postId)) {
     nextLikedPostIds.delete(postId);
+    showToast("Публикация убрана из избранного", "Список сохранится локально в этом браузере.");
   } else {
     nextLikedPostIds.add(postId);
+    showToast("Публикация добавлена в избранное", "Позже сюда можно будет подключить отдельный раздел.");
   }
 
   likedPostIds.value = nextLikedPostIds;
   saveLikedPostIds(nextLikedPostIds);
 }
 
-async function handleRegister(name) {
+async function handleRegister(form) {
   isRegistering.value = true;
   authErrorText.value = "";
 
   try {
-    const response = await registerUser({ name });
+    const response = await registerUser({ name: form.name });
     const nextSession = {
       accessToken: response.access_token,
       tokenType: response.token_type,
       user: response.user,
+      email: form.email,
     };
 
     saveSession(nextSession);
     session.value = nextSession;
-    demoUser.value = null;
+    publicViewer.value = null;
     viewerUserId.value = response.user.id;
 
     await seedDemoPosts({
@@ -215,6 +251,7 @@ async function handleRegister(name) {
 
     isAuthModalOpen.value = false;
     await reloadFeed();
+    showToast("Аккаунт создан", "Лента переключена на ваш профиль.");
   } catch (error) {
     authErrorText.value = error.message;
   } finally {
@@ -222,40 +259,75 @@ async function handleRegister(name) {
   }
 }
 
-async function handleFindMoreClick() {
-  if (!isAuthenticated.value || !session.value?.accessToken) {
-    openAuthModal();
-    return;
-  }
-
-  isGeneratingBatch.value = true;
-
-  try {
-    await seedDemoPosts({
-      token: session.value.accessToken,
-      count: 8,
-      append: true,
-    });
-    await reloadFeed();
-  } catch (error) {
-    errorText.value = error.message;
-  } finally {
-    isGeneratingBatch.value = false;
-  }
-}
-
 async function handleLogout() {
   clearSession();
   session.value = null;
   isCreativeExpanded.value = false;
-  openAuthModal();
 
   try {
-    await loadDemoViewer();
+    await loadPublicFeed();
     await reloadFeed();
+    showToast("Вы вышли из аккаунта", "Можно продолжать просматривать открытую ленту.");
   } catch (error) {
     errorText.value = error.message;
   }
+}
+
+function handlePlaceholder(label) {
+  const messages = {
+    "Найти еще ролики": {
+      title: "Подборка появится на следующем этапе",
+      text: "Сейчас лента уже умеет автоматически догружаться при прокрутке страницы.",
+    },
+    "Улучшить подписку": {
+      title: "Раздел подписки подготовлен как точка входа",
+      text: "Тарифы и платежный сценарий можно будет подключить отдельно.",
+    },
+    "Открыть источник": {
+      title: "Переход к источнику пока отключен",
+      text: "Кнопка сохранена в интерфейсе, чтобы сценарий страницы читался как продуктовый.",
+    },
+    "Инструменты карточки": {
+      title: "Блок инструментов пока в режиме заглушки",
+      text: "Здесь удобно будет разместить быстрые действия для поста.",
+    },
+    "Инструменты публикации": {
+      title: "Дополнительные действия появятся позже",
+      text: "Сейчас этот элемент оставлен как интерактивная заглушка.",
+    },
+    "Адаптировать публикацию": {
+      title: "Адаптация еще не подключена",
+      text: "Кнопка оставлена для продуктового сценария и визуальной полноты экрана.",
+    },
+    "Перевод публикации": {
+      title: "Переключение перевода пока неактивно",
+      text: "Можно будет подключить отдельный переводческий pipeline.",
+    },
+    "Скопировать секцию": {
+      title: "Копирование подготовлено как следующий шаг",
+      text: "Сценарий действия уже обозначен в интерфейсе.",
+    },
+  };
+
+  const payload = messages[label] || {
+    title: `${label} пока в разработке`,
+    text: "Элемент сохранен как интерактивная заглушка, чтобы можно было полноценно пройтись по интерфейсу.",
+  };
+
+  showToast(payload.title, payload.text);
+}
+
+function showToast(title, text = "") {
+  toastState.value = { title, text };
+
+  if (toastTimerId) {
+    window.clearTimeout(toastTimerId);
+  }
+
+  toastTimerId = window.setTimeout(() => {
+    toastState.value = null;
+    toastTimerId = null;
+  }, 2600);
 }
 
 async function bootstrap() {
@@ -263,8 +335,7 @@ async function bootstrap() {
     if (isAuthenticated.value && session.value?.user?.id) {
       viewerUserId.value = session.value.user.id;
     } else {
-      await loadDemoViewer();
-      isAuthModalOpen.value = true;
+      await loadPublicFeed();
     }
 
     await reloadFeed();
@@ -281,6 +352,10 @@ onMounted(async () => {
 
 onBeforeUnmount(() => {
   window.removeEventListener("scroll", onScroll);
+
+  if (toastTimerId) {
+    window.clearTimeout(toastTimerId);
+  }
 });
 </script>
 
@@ -366,12 +441,7 @@ onBeforeUnmount(() => {
     opacity 0.2s ease;
 }
 
-.more-btn:disabled {
-  opacity: 0.7;
-  cursor: default;
-}
-
-.more-btn:not(:disabled):hover {
+.more-btn:hover {
   transform: translateY(-1px);
 }
 
@@ -398,10 +468,20 @@ onBeforeUnmount(() => {
   height: 20px;
 }
 
+.toast-wrap {
+  position: fixed;
+  left: 50%;
+  bottom: 84px;
+  transform: translateX(-50%);
+  z-index: 130;
+}
+
 .modal-fade-enter-active,
 .modal-fade-leave-active,
 .auth-fade-enter-active,
-.auth-fade-leave-active {
+.auth-fade-leave-active,
+.toast-fade-enter-active,
+.toast-fade-leave-active {
   transition:
     opacity 0.22s ease,
     transform 0.22s ease;
@@ -410,7 +490,9 @@ onBeforeUnmount(() => {
 .modal-fade-enter-from,
 .modal-fade-leave-to,
 .auth-fade-enter-from,
-.auth-fade-leave-to {
+.auth-fade-leave-to,
+.toast-fade-enter-from,
+.toast-fade-leave-to {
   opacity: 0;
   transform: translateY(8px);
 }
@@ -449,6 +531,13 @@ onBeforeUnmount(() => {
 
   .counter-pill {
     font-size: 14px;
+  }
+
+  .toast-wrap {
+    left: 10px;
+    right: 10px;
+    transform: none;
+    bottom: 74px;
   }
 }
 </style>

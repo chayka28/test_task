@@ -5,9 +5,18 @@
       <button type="button" class="top-action-btn" @click="$emit('open', post)">Анализ</button>
     </div>
 
-    <button type="button" class="card-hitbox" @click="$emit('open', post)">
-      <div class="media">
-        <img src="/assets/figma/feed-card-image.png" alt="" class="media-image" />
+    <div
+      class="card-hitbox"
+      role="button"
+      tabindex="0"
+      @click="$emit('open', post)"
+      @keydown.enter.prevent="$emit('open', post)"
+      @keydown.space.prevent="$emit('open', post)"
+    >
+      <div class="media" :style="mediaStyle">
+        <div class="media-glow media-glow--first"></div>
+        <div class="media-glow media-glow--second"></div>
+        <div class="media-grid"></div>
 
         <div class="media-header">
           <div class="tags">
@@ -25,17 +34,23 @@
             <button
               type="button"
               class="action-pill like-btn"
-              :class="{
-                'is-liked': liked,
-                'is-animating': isLikeAnimating,
-              }"
+              :class="{ 'is-liked': liked, 'is-animating': isLikeAnimating }"
               @click.stop="handleLikeClick"
             >
               <img src="/assets/icons/heart-outline.png" alt="" />
             </button>
-            <span class="action-pill">
-              <img src="/assets/icons/Vector-10.png" alt="" />
-            </span>
+
+            <button type="button" class="action-pill external-btn" @click.stop="emitPlaceholder('Открыть источник')">
+              <span>↗</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="media-copy">
+          <p class="media-overline">Разбор ролика</p>
+          <p class="media-headline">{{ posterCopy.headline }}</p>
+          <div class="media-note">
+            <span>{{ posterCopy.note }}</span>
           </div>
         </div>
 
@@ -65,19 +80,21 @@
           <p class="author-name">{{ handle }}</p>
           <p class="author-sub">{{ followers }}</p>
         </div>
-        <img src="/assets/icons/Vector-5.png" alt="" class="author-tool" />
+        <button type="button" class="author-tool-btn" @click.stop="emitPlaceholder('Инструменты карточки')">
+          <img src="/assets/icons/Vector-5.png" alt="" class="author-tool" />
+        </button>
       </div>
 
       <p class="title">{{ post.title }}</p>
       <p class="text">{{ previewText }}</p>
-    </button>
+    </div>
   </article>
 </template>
 
 <script setup>
-import { computed, ref } from "vue";
+import { computed, onBeforeUnmount, ref } from "vue";
 
-import { buildFollowers, buildHandle, buildPostMetrics } from "../services/postPresentation";
+import { buildFollowers, buildHandle, buildMediaPalette, buildPosterCopy, buildPostMetrics } from "../services/postPresentation";
 
 const props = defineProps({
   post: {
@@ -90,13 +107,28 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(["open", "toggle-like"]);
+const emit = defineEmits(["open", "toggle-like", "placeholder"]);
+
 const isLikeAnimating = ref(false);
+let likeTimerId = null;
 
 const metrics = computed(() => buildPostMetrics(props.post.id));
 const handle = computed(() => buildHandle(props.post.user_id));
 const followers = computed(() => buildFollowers(props.post.user_id));
+const posterCopy = computed(() => buildPosterCopy(props.post));
 const activityMultiplier = computed(() => ((props.post.id % 12) + 3).toString());
+
+const mediaStyle = computed(() => {
+  const palette = buildMediaPalette(props.post.id);
+
+  return {
+    "--media-start": palette.start,
+    "--media-end": palette.end,
+    "--media-accent": palette.accent,
+    "--media-glow": palette.glow,
+    "--media-surface": palette.surface,
+  };
+});
 
 const previewText = computed(() => {
   const raw = props.post.text || "";
@@ -114,16 +146,31 @@ const formattedCreatedAt = computed(() => {
   }).format(date);
 });
 
+function emitPlaceholder(label) {
+  emit("placeholder", label);
+}
+
 function handleLikeClick() {
-  if (!props.liked) {
-    isLikeAnimating.value = true;
-    window.setTimeout(() => {
-      isLikeAnimating.value = false;
-    }, 420);
+  if (isLikeAnimating.value) return;
+
+  if (props.liked) {
+    emit("toggle-like", props.post.id);
+    return;
   }
 
-  emit("toggle-like", props.post.id);
+  isLikeAnimating.value = true;
+  likeTimerId = window.setTimeout(() => {
+    emit("toggle-like", props.post.id);
+    isLikeAnimating.value = false;
+    likeTimerId = null;
+  }, 560);
 }
+
+onBeforeUnmount(() => {
+  if (likeTimerId) {
+    window.clearTimeout(likeTimerId);
+  }
+});
 </script>
 
 <style scoped>
@@ -179,13 +226,42 @@ function handleLikeClick() {
   height: 344px;
   border-radius: 16px;
   overflow: hidden;
+  background:
+    radial-gradient(circle at 24% 22%, var(--media-glow) 0, transparent 34%),
+    linear-gradient(160deg, var(--media-start) 0%, var(--media-end) 100%);
 }
 
-.media-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
+.media-glow {
+  position: absolute;
+  border-radius: 999px;
+  filter: blur(12px);
+  opacity: 0.9;
+}
+
+.media-glow--first {
+  width: 148px;
+  height: 148px;
+  right: -16px;
+  top: 54px;
+  background: var(--media-glow);
+}
+
+.media-glow--second {
+  width: 118px;
+  height: 118px;
+  left: -18px;
+  bottom: 96px;
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.media-grid {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: 22px 22px;
+  opacity: 0.5;
 }
 
 .media-header {
@@ -235,6 +311,8 @@ function handleLikeClick() {
   backdrop-filter: blur(8px);
   display: grid;
   place-items: center;
+  border: 0;
+  color: #ffffff;
 }
 
 .action-pill img {
@@ -243,25 +321,75 @@ function handleLikeClick() {
   object-fit: contain;
 }
 
-.like-btn {
-  border: 0;
+.like-btn,
+.external-btn,
+.author-tool-btn {
   cursor: pointer;
-  transition:
-    background 0.2s ease,
-    transform 0.2s ease;
 }
 
 .like-btn img {
   filter: brightness(0) invert(1);
-  transition: filter 0.25s ease;
+  transition: filter 0.16s ease;
+  transform-origin: center;
 }
 
 .like-btn.is-liked img {
   filter: invert(17%) sepia(83%) saturate(4100%) hue-rotate(338deg) brightness(105%) contrast(103%);
 }
 
-.like-btn.is-animating {
-  animation: like-spin 0.42s ease;
+.like-btn.is-animating img {
+  animation: heart-quarter-turn 0.56s linear forwards;
+}
+
+.external-btn span {
+  font-size: 22px;
+  line-height: 1;
+  transform: translateY(-1px);
+}
+
+.media-copy {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 74px;
+}
+
+.media-overline {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 11px;
+  line-height: 1.2;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.media-headline {
+  margin: 10px 0 0;
+  color: #ffffff;
+  font-size: 25px;
+  line-height: 0.95;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  text-shadow: 0 4px 24px rgba(0, 0, 0, 0.26);
+  max-width: 168px;
+}
+
+.media-note {
+  margin-top: 12px;
+  width: fit-content;
+  max-width: 164px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #111827;
+  padding: 8px 10px;
+  box-shadow: 0 8px 20px rgba(22, 22, 22, 0.15);
+}
+
+.media-note span {
+  display: block;
+  font-size: 11px;
+  line-height: 1.15;
+  font-weight: 600;
 }
 
 .stats-overlay {
@@ -270,7 +398,7 @@ function handleLikeClick() {
   right: 12px;
   bottom: 8px;
   border-radius: 12px;
-  background: rgba(47, 14, 14, 0.34);
+  background: var(--media-surface);
   backdrop-filter: blur(10px);
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -331,8 +459,14 @@ function handleLikeClick() {
   font-weight: 500;
 }
 
-.author-tool {
+.author-tool-btn {
   margin-left: auto;
+  border: 0;
+  background: transparent;
+  padding: 0;
+}
+
+.author-tool {
   width: 24px;
   height: 24px;
 }
@@ -365,17 +499,41 @@ function handleLikeClick() {
   overflow: hidden;
 }
 
-@keyframes like-spin {
+@keyframes heart-quarter-turn {
   0% {
-    transform: rotate(0deg) scale(1);
+    transform: rotate(0deg);
+  }
+
+  24.99% {
+    transform: rotate(0deg);
+  }
+
+  25% {
+    transform: rotate(90deg);
+  }
+
+  49.99% {
+    transform: rotate(90deg);
   }
 
   50% {
-    transform: rotate(90deg) scale(1.14);
+    transform: rotate(180deg);
+  }
+
+  74.99% {
+    transform: rotate(180deg);
+  }
+
+  75% {
+    transform: rotate(270deg);
+  }
+
+  99.99% {
+    transform: rotate(270deg);
   }
 
   100% {
-    transform: rotate(0deg) scale(1);
+    transform: rotate(360deg);
   }
 }
 
@@ -386,6 +544,11 @@ function handleLikeClick() {
 
   .media {
     height: 400px;
+  }
+
+  .media-headline {
+    font-size: 28px;
+    max-width: 186px;
   }
 }
 </style>

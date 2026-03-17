@@ -12,7 +12,7 @@ router = APIRouter(prefix="/users", tags=["Users"])
 @router.get(
     "/demo",
     response_model=UserOut,
-    summary="Get or create the public demo user",
+    summary="Get or create the public feed user",
 )
 async def get_demo_user(
     user_service: UserService = Depends(get_user_service),

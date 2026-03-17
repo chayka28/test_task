@@ -10,7 +10,7 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
-    app_name: str = "Trendsee Feed Service"
+    app_name: str = "Trendsee Service"
     app_version: str = "1.0.0"
     api_prefix: str = "/api/v1"
 

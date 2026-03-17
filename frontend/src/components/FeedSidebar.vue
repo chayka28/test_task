@@ -7,73 +7,67 @@
             <img class="logo-outline" src="/assets/logo/logo-outline.png" alt="" />
             <img class="logo-center" src="/assets/logo/logo-center.png" alt="" />
           </div>
-          <span class="logo-text">trendsee</span>
-          <span class="logo-tag">Beta</span>
+          <span v-if="!collapsed" class="logo-text">trendsee</span>
+          <span v-if="!collapsed" class="logo-tag">Beta</span>
         </div>
 
         <button class="collapse-btn" type="button" aria-label="Свернуть меню" @click="$emit('toggle-sidebar')">
-          <img src="/assets/icons/Vector-13.png" alt="" />
+          <span class="collapse-arrow" :class="{ 'collapse-arrow--collapsed': collapsed }">→</span>
         </button>
       </header>
 
-      <p class="section-title">Поиск контента</p>
-      <nav class="menu-list" aria-label="Главное меню">
-        <button
-          v-for="item in mainItems"
-          :key="item.label"
-          type="button"
-          class="menu-item"
-          :title="collapsed ? item.label : ''"
-        >
-          <img :src="item.icon" alt="" class="menu-icon" />
-          <span class="menu-label">{{ item.label }}</span>
-          <span v-if="item.badge" class="menu-badge">{{ item.badge }}</span>
-        </button>
-      </nav>
+      <template v-if="collapsed">
+        <nav class="shortcut-list" aria-label="Быстрые действия">
+          <button
+            v-for="item in shortcutItems"
+            :key="item.label"
+            type="button"
+            class="shortcut-item"
+            :class="{ 'shortcut-item--active': item.isActive }"
+            :title="item.label"
+            @click="$emit('placeholder', item.label)"
+          >
+            <img :src="item.icon" :alt="item.label" class="shortcut-icon" />
+          </button>
+        </nav>
+      </template>
 
-      <p class="section-title">Работа с соцсетями</p>
-      <nav class="menu-list" aria-label="Соцсети">
-        <button
-          v-for="item in socialItems"
-          :key="item.label"
-          type="button"
-          class="menu-item"
-          :title="collapsed ? item.label : ''"
-        >
-          <img :src="item.icon" alt="" class="menu-icon" />
-          <span class="menu-label">{{ item.label }}</span>
-        </button>
-      </nav>
-
-      <p class="section-title">Инструменты</p>
-      <nav class="menu-list" aria-label="Инструменты">
-        <button
-          v-for="item in toolsItems"
-          :key="item.label"
-          type="button"
-          class="menu-item"
-          :title="collapsed ? item.label : ''"
-        >
-          <img :src="item.icon" alt="" class="menu-icon" />
-          <span class="menu-label">{{ item.label }}</span>
-          <span v-if="item.badge" class="menu-badge badge-soft">{{ item.badge }}</span>
-        </button>
-      </nav>
+      <template v-else>
+        <section v-for="section in sections" :key="section.title" class="menu-section">
+          <p class="section-title">{{ section.title }}</p>
+          <nav class="menu-list" :aria-label="section.title">
+            <button
+              v-for="item in section.items"
+              :key="item.label"
+              type="button"
+              class="menu-item"
+              @click="$emit('placeholder', item.label)"
+            >
+              <img :src="item.icon" :alt="item.label" class="menu-icon" />
+              <span class="menu-label">{{ item.label }}</span>
+              <span v-if="item.badge" class="menu-badge" :class="{ 'menu-badge--soft': item.badgeSoft }">
+                {{ item.badge }}
+              </span>
+              <span v-if="item.chevron" class="menu-chevron">›</span>
+            </button>
+          </nav>
+        </section>
+      </template>
 
       <section class="token-card">
         <div class="token-head">
           <span class="token-title">
             <img src="/assets/icons/Vector-15.png" alt="" class="token-icon" />
-            <span class="token-title-text">Токены</span>
+            <span v-if="!collapsed" class="token-title-text">Токены</span>
           </span>
-          <strong class="token-value">{{ formattedTokenValue }}</strong>
+          <strong v-if="!collapsed" class="token-value">{{ formattedTokenValue }}</strong>
         </div>
 
-        <div class="token-bar">
+        <div v-if="!collapsed" class="token-bar">
           <span class="token-progress" :style="{ width: `${tokenProgress}%` }"></span>
         </div>
 
-        <button type="button" class="creative-row" @click="$emit('toggle-creative')">
+        <button v-if="!collapsed" type="button" class="creative-row" @click="$emit('toggle-creative')">
           <span>Creative +</span>
           <span class="creative-arrow" :class="{ 'creative-arrow--open': creativeExpanded }">›</span>
         </button>
@@ -81,32 +75,30 @@
         <Transition name="creative-panel">
           <div v-if="creativeExpanded && !collapsed" class="creative-panel">
             <p class="creative-copy">Пробная версия</p>
-            <button type="button" class="upgrade-btn">Улучшить подписку</button>
+            <button type="button" class="upgrade-btn" @click="$emit('placeholder', 'Улучшить подписку')">
+              Улучшить подписку
+            </button>
           </div>
         </Transition>
-
-        <button v-if="!isAuthenticated && !collapsed" type="button" class="auth-btn" @click="$emit('open-auth')">
-          Создать аккаунт
-        </button>
       </section>
 
-      <section class="profile-row">
+      <section class="profile-row" :class="{ 'profile-row--collapsed': collapsed }">
         <img src="/assets/avatar-feed.png" alt="Профиль" class="profile-avatar" />
-        <div class="profile-meta">
+        <div v-if="!collapsed" class="profile-meta">
           <p class="profile-name">{{ profileName }}</p>
           <p class="profile-phone">{{ profilePhone }}</p>
         </div>
         <button
           type="button"
           class="profile-action"
-          :title="isAuthenticated ? 'Выйти' : 'Зарегистрироваться'"
+          :title="isAuthenticated ? 'Выйти' : 'Регистрация'"
           @click="handleProfileAction"
         >
           {{ isAuthenticated ? "↪" : "+" }}
         </button>
       </section>
 
-      <div class="locale-row">
+      <div v-if="!collapsed" class="locale-row">
         <span class="locale-flag">🇷🇺</span>
         <span class="locale-code">RU</span>
         <span class="locale-arrow">⌄</span>
@@ -145,7 +137,7 @@ const props = defineProps({
   },
   profileName: {
     type: String,
-    default: "Гостевой режим",
+    default: "Trendsee user",
   },
   profilePhone: {
     type: String,
@@ -153,26 +145,66 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(["toggle-sidebar", "toggle-creative", "open-auth", "logout"]);
+const emit = defineEmits(["toggle-sidebar", "toggle-creative", "open-auth", "logout", "placeholder"]);
 
-const mainItems = computed(() => [
-  { label: "Главная", icon: "/assets/icons/Vector-12.png" },
-  { label: "Видео", icon: "/assets/icons/Vector.png" },
-  { label: "Шпионаж", icon: "/assets/icons/Vector-1.png" },
-  { label: "Контент радар", icon: "/assets/icons/Vector-2.png", badge: String(props.radarCount) },
+const sections = computed(() => [
+  {
+    title: "Поиск контента",
+    items: [
+      { label: "Главная", icon: "/assets/icons/home.svg" },
+      { label: "Видео", icon: "/assets/icons/Vector.png" },
+      { label: "Шпионаж", icon: "/assets/icons/Vector-1.png" },
+      { label: "Контент радар", icon: "/assets/icons/Vector-2.png", badge: String(props.radarCount) },
+    ],
+  },
+  {
+    title: "Работа с соцсетями",
+    items: [
+      { label: "Кросс-постинг", icon: "/assets/icons/Vector-3.png" },
+      { label: "Чат боты", icon: "/assets/icons/Vector-4.png" },
+    ],
+  },
+  {
+    title: "Инструменты",
+    items: [
+      { label: "ИИ-сценарий", icon: "/assets/icons/Vector-5.png" },
+      { label: "Карусели", icon: "/assets/icons/Vector-6.png" },
+      { label: "Анализ видео", icon: "/assets/icons/Vector-7.png" },
+      { label: "Анализ профиля", icon: "/assets/icons/Vector-8.png" },
+      { label: "Черновик", icon: "/assets/icons/Vector-9.png", badge: "Скоро", badgeSoft: true },
+      { label: "Контент план", icon: "/assets/icons/Vector-10.png", badge: "Скоро", badgeSoft: true },
+    ],
+  },
+  {
+    title: "Идеи",
+    items: [
+      { label: "Избранные", icon: "/assets/icons/menu-favorites.png" },
+      { label: "История", icon: "/assets/icons/menu-history.png", badge: "Скоро", badgeSoft: true, chevron: true },
+      { label: "Закладки", icon: "/assets/icons/menu-bookmark.png", badge: "Скоро", badgeSoft: true },
+    ],
+  },
+  {
+    title: "Еще",
+    items: [
+      { label: "Обучение", icon: "/assets/icons/education.svg" },
+      { label: "Рефералы", icon: "/assets/icons/referrals.svg" },
+      { label: "Предложить идею", icon: "/assets/icons/idea.svg" },
+      { label: "Поддержка", icon: "/assets/icons/support.svg" },
+    ],
+  },
 ]);
 
-const socialItems = [
-  { label: "Кросс-постинг", icon: "/assets/icons/Vector-3.png" },
-  { label: "Чат боты", icon: "/assets/icons/Vector-4.png" },
-];
-
-const toolsItems = [
-  { label: "ИИ-сценарий", icon: "/assets/icons/Vector-5.png" },
-  { label: "Карусели", icon: "/assets/icons/Vector-6.png" },
+const shortcutItems = [
+  { label: "Главная", icon: "/assets/icons/home.svg" },
+  { label: "Поиск", icon: "/assets/icons/search.svg", isActive: true },
+  { label: "Контент радар", icon: "/assets/icons/Vector-2.png" },
+  { label: "Идеи", icon: "/assets/icons/ghost.svg" },
   { label: "Анализ видео", icon: "/assets/icons/Vector-7.png" },
   { label: "Анализ профиля", icon: "/assets/icons/Vector-8.png" },
-  { label: "Черновик", icon: "/assets/icons/Vector-9.png", badge: "Скоро" },
+  { label: "Черновик", icon: "/assets/icons/Vector-9.png" },
+  { label: "Контент план", icon: "/assets/icons/Vector-10.png" },
+  { label: "Избранные", icon: "/assets/icons/menu-favorites.png" },
+  { label: "Закладки", icon: "/assets/icons/menu-bookmark.png" },
 ];
 
 const formattedTokenValue = computed(() => {
@@ -196,13 +228,13 @@ function handleProfileAction() {
 
 <style scoped>
 .sidebar {
-  width: 282px;
-  flex: 0 0 282px;
+  width: 252px;
+  flex: 0 0 252px;
   height: 100vh;
   position: sticky;
   top: 0;
-  background: #f4f5f6;
-  padding: 10px 14px 12px;
+  background: #f5f6f8;
+  padding: 10px 12px 12px;
   transition:
     width 0.28s ease,
     flex-basis 0.28s ease,
@@ -210,9 +242,9 @@ function handleProfileAction() {
 }
 
 .sidebar--collapsed {
-  width: 88px;
-  flex-basis: 88px;
-  padding-inline: 12px;
+  width: 84px;
+  flex-basis: 84px;
+  padding-inline: 10px;
 }
 
 .sidebar-scroll {
@@ -272,10 +304,6 @@ function handleProfileAction() {
   line-height: 1;
   font-weight: 900;
   letter-spacing: -0.04em;
-  transition:
-    width 0.24s ease,
-    opacity 0.2s ease,
-    transform 0.24s ease;
 }
 
 .logo-tag {
@@ -286,39 +314,41 @@ function handleProfileAction() {
   line-height: 1;
   font-weight: 700;
   padding: 5px 8px;
-  transition:
-    opacity 0.2s ease,
-    transform 0.24s ease;
 }
 
 .collapse-btn {
-  border: 1px solid #c9cfd4;
+  border: 1px solid #bad9ec;
   border-radius: 4px;
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   display: grid;
   place-items: center;
   background: transparent;
   cursor: pointer;
   padding: 0;
+}
+
+.collapse-arrow {
+  color: #7a8a97;
+  font-size: 12px;
+  line-height: 1;
   transition: transform 0.24s ease;
 }
 
-.collapse-btn img {
-  width: 12px;
-  height: 12px;
+.collapse-arrow--collapsed {
+  transform: rotate(180deg);
+}
+
+.menu-section + .menu-section {
+  margin-top: 4px;
 }
 
 .section-title {
   margin: 18px 0 8px;
-  color: #8393a0;
+  color: #95a2ad;
   font-size: 14px;
   line-height: 1.2;
   font-weight: 700;
-  transition:
-    opacity 0.2s ease,
-    max-height 0.24s ease,
-    margin 0.24s ease;
 }
 
 .menu-list {
@@ -330,7 +360,7 @@ function handleProfileAction() {
   border: 0;
   border-radius: 12px;
   background: transparent;
-  color: #435968;
+  color: #526878;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -342,7 +372,7 @@ function handleProfileAction() {
 }
 
 .menu-item:hover {
-  background: #ebedf0;
+  background: #eceef2;
 }
 
 .menu-icon {
@@ -352,23 +382,9 @@ function handleProfileAction() {
   flex: 0 0 20px;
 }
 
-.menu-label,
-.menu-badge,
-.token-title-text,
-.token-value,
-.creative-row span:first-child,
-.profile-meta,
-.locale-code,
-.locale-arrow {
-  transition:
-    opacity 0.2s ease,
-    transform 0.24s ease,
-    max-width 0.24s ease;
-}
-
 .menu-label {
   font-size: 15px;
-  line-height: 1.2;
+  line-height: 1.25;
   font-weight: 500;
   margin-right: auto;
   white-space: nowrap;
@@ -376,27 +392,64 @@ function handleProfileAction() {
 
 .menu-badge {
   border-radius: 999px;
-  background: #c6cbff;
-  color: #2f3ace;
+  background: #d7dbff;
+  color: #3640cb;
   font-size: 11px;
   line-height: 1;
   font-weight: 700;
   padding: 4px 8px;
 }
 
-.badge-soft {
-  background: #d9dde2;
-  color: #636f7a;
+.menu-badge--soft {
+  background: #e4e7eb;
+  color: #6d7680;
+}
+
+.menu-chevron {
+  color: #838b92;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.shortcut-list {
+  margin-top: 16px;
+  display: grid;
+  gap: 18px;
+  justify-items: center;
+  padding-top: 8px;
+}
+
+.shortcut-item {
+  width: 42px;
+  height: 42px;
+  border: 0;
+  border-radius: 14px;
+  background: transparent;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.shortcut-item:hover {
+  background: #eceef2;
+}
+
+.shortcut-item--active {
+  background: #ecebe7;
+}
+
+.shortcut-icon {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
 }
 
 .token-card {
   margin-top: auto;
-  border-radius: 18px;
+  border-radius: 14px;
   background: #ffffff;
-  padding: 14px;
-  transition:
-    padding 0.24s ease,
-    background 0.24s ease;
+  padding: 12px 14px;
 }
 
 .token-head {
@@ -413,7 +466,6 @@ function handleProfileAction() {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  min-width: 0;
 }
 
 .token-icon {
@@ -442,7 +494,7 @@ function handleProfileAction() {
   width: 100%;
   border: 0;
   background: transparent;
-  color: #748592;
+  color: #8a96a0;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -492,13 +544,13 @@ function handleProfileAction() {
   line-height: 1.2;
 }
 
-.upgrade-btn,
-.auth-btn {
+.upgrade-btn {
+  margin-top: 10px;
   width: 100%;
-  height: 40px;
+  height: 38px;
   border: 0;
-  border-radius: 14px;
-  background: #eef0f4;
+  border-radius: 13px;
+  background: #f0f1f4;
   color: #2b31b3;
   font-size: 14px;
   line-height: 1;
@@ -506,21 +558,15 @@ function handleProfileAction() {
   cursor: pointer;
 }
 
-.upgrade-btn {
-  margin-top: 10px;
-}
-
-.auth-btn {
-  margin-top: 12px;
-  background: #2b31b3;
-  color: #ffffff;
-}
-
 .profile-row {
   margin-top: 14px;
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+.profile-row--collapsed {
+  justify-content: center;
 }
 
 .profile-avatar {
@@ -576,97 +622,30 @@ function handleProfileAction() {
   font-size: 14px;
 }
 
-.sidebar--collapsed .logo-text,
-.sidebar--collapsed .logo-tag,
-.sidebar--collapsed .section-title,
-.sidebar--collapsed .menu-label,
-.sidebar--collapsed .menu-badge,
-.sidebar--collapsed .token-title-text,
-.sidebar--collapsed .token-value,
-.sidebar--collapsed .creative-row span:first-child,
-.sidebar--collapsed .profile-meta,
-.sidebar--collapsed .locale-code,
-.sidebar--collapsed .locale-arrow {
-  opacity: 0;
-  transform: translateX(-8px);
-  max-width: 0;
-  overflow: hidden;
-}
-
-.sidebar--collapsed .section-title {
-  max-height: 0;
-  margin: 0;
-}
-
-.sidebar--collapsed .collapse-btn {
-  transform: rotate(180deg);
-}
-
-.sidebar--collapsed .menu-item {
-  justify-content: center;
-  padding-inline: 0;
-}
-
 .sidebar--collapsed .token-card {
-  background: transparent;
-  padding-inline: 0;
-  padding-block: 10px 0;
-}
-
-.sidebar--collapsed .token-bar,
-.sidebar--collapsed .creative-row,
-.sidebar--collapsed .creative-panel,
-.sidebar--collapsed .auth-btn {
-  display: none;
+  padding-inline: 10px;
 }
 
 .sidebar--collapsed .token-head {
   justify-content: center;
 }
 
-.sidebar--collapsed .profile-row,
-.sidebar--collapsed .locale-row {
-  justify-content: center;
-}
-
 @media (max-width: 980px) {
-  .sidebar {
+  .sidebar,
+  .sidebar--collapsed {
     width: 100%;
     flex-basis: auto;
     height: auto;
     position: static;
   }
 
-  .sidebar--collapsed {
-    width: 100%;
-    flex-basis: auto;
-  }
-
   .sidebar-scroll {
     overflow: visible;
   }
 
-  .sidebar--collapsed .logo-text,
-  .sidebar--collapsed .logo-tag,
-  .sidebar--collapsed .section-title,
-  .sidebar--collapsed .menu-label,
-  .sidebar--collapsed .menu-badge,
-  .sidebar--collapsed .token-title-text,
-  .sidebar--collapsed .token-value,
-  .sidebar--collapsed .creative-row span:first-child,
-  .sidebar--collapsed .profile-meta,
-  .sidebar--collapsed .locale-code,
-  .sidebar--collapsed .locale-arrow {
-    opacity: 1;
-    transform: none;
-    max-width: none;
-  }
-
-  .sidebar--collapsed .token-bar,
-  .sidebar--collapsed .creative-row,
-  .sidebar--collapsed .creative-panel,
-  .sidebar--collapsed .auth-btn {
-    display: block;
+  .shortcut-list {
+    grid-template-columns: repeat(5, 40px);
+    justify-content: flex-start;
   }
 }
 </style>
