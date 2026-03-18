@@ -197,6 +197,42 @@ Measure-Command { Invoke-RestMethod "http://localhost:8000/api/v1/posts/user/$ui
 - первый запрос медленный, потому что идет в Postgres с искусственной задержкой
 - второй запрос быстрый, потому что уже читается из Redis
 
+## Как показать DI работодателю
+
+Dependency Injection в проекте реализован через `FastAPI Depends`.
+
+Где это видно в коде:
+- `backend/app/api/routers/users.py`
+- `backend/app/api/routers/posts.py`
+- `backend/app/dependencies/services.py`
+- `backend/app/dependencies/auth.py`
+
+Как работает цепочка зависимостей:
+- роут не создает сервис вручную, а получает его через `Depends(get_user_service)` или `Depends(get_post_service)`
+- провайдер сервиса сам получает зависимости через `Depends`, например репозиторий и Redis-клиент
+- провайдер репозитория получает подключение к Postgres через `Depends(get_db_pool)`
+- auth-зависимость `get_current_user_id` получает `UserService` через `Depends(get_user_service)` и валидирует JWT
+
+На примере публикаций цепочка выглядит так:
+- роут `POST /posts` в `backend/app/api/routers/posts.py`
+- получает `current_user_id = Depends(get_current_user_id)`
+- получает `post_service = Depends(get_post_service)`
+- `get_post_service` в `backend/app/dependencies/services.py`
+- получает `post_repository = Depends(get_post_repository)` и `redis_client = Depends(get_redis_client)`
+- `get_post_repository` получает `pool = Depends(get_db_pool)`
+
+Что важно проговорить на защите:
+- HTTP-слой не знает, как создавать сервисы, репозитории, Redis и Postgres-подключение
+- зависимости собираются централизованно в `dependencies`
+- благодаря этому слои разделены чище: `router -> service -> repository`
+- такой подход упрощает сопровождение, замену реализаций и расширение проекта
+
+Короткий сценарий показа:
+1. Открыть `backend/app/api/routers/posts.py` и показать `Depends(get_post_service)` и `Depends(get_current_user_id)`.
+2. Открыть `backend/app/dependencies/services.py` и показать, как `PostService` собирается из `PostRepository` и `Redis`.
+3. Открыть `backend/app/dependencies/auth.py` и показать, как JWT-пользователь подмешивается в защищенные роуты.
+4. Коротко пояснить, что сервисы и репозитории не создаются вручную внутри эндпоинтов.
+
 ## Дополнительная проверка перед отправкой
 
 ```bash

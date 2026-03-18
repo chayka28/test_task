@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <main class="feed-page">
     <div class="feed-shell">
       <FeedSidebar
@@ -48,21 +48,21 @@
         </section>
 
         <div class="state-line">
-          <LoadingIndicator v-if="isInitialLoading" label="Р—Р°РіСЂСѓР¶Р°РµРј РїСѓР±Р»РёРєР°С†РёРё..." />
-          <LoadingIndicator v-else-if="isLoadingMore" label="РџРѕРґРіСЂСѓР¶Р°РµРј РµС‰Рµ..." />
+          <LoadingIndicator v-if="isInitialLoading" label="Загружаем публикации..." />
+          <LoadingIndicator v-else-if="isLoadingMore" label="Подгружаем еще..." />
           <p v-else-if="errorText" class="error-state">{{ errorText }}</p>
           <p v-else-if="!visiblePosts.length" class="empty-state">{{ emptyStateText }}</p>
-          <p v-else-if="!hasMore" class="empty-state">Р‘РѕР»СЊС€Рµ РїСѓР±Р»РёРєР°С†РёР№ РЅРµС‚</p>
+          <p v-else-if="!hasMore" class="empty-state">Больше публикаций нет</p>
         </div>
 
         <div class="floating-actions">
           <button type="button" class="more-btn" @click="handleFindMoreClick">
             <img src="/assets/icons/Vector-5.png" alt="" />
-            <span>РќР°Р№С‚Рё РµС‰Рµ СЂРѕР»РёРєРё</span>
+            <span>Найти еще ролики</span>
           </button>
           <div class="counter-pill">
             <img src="/assets/icons/Vector-12.png" alt="" />
-            <span>Р’РёРґРµРѕ: {{ visiblePosts.length }} РёР· {{ estimatedTotal }}</span>
+            <span>Видео: {{ visiblePosts.length }} из {{ estimatedTotal }}</span>
           </div>
         </div>
       </section>
@@ -236,35 +236,35 @@ const resultsTitle = computed(() => {
     return searchQuery.value.trim();
   }
 
-  return isFavoritesView.value ? "РР·Р±СЂР°РЅРЅС‹Рµ" : "Business history";
+  return isFavoritesView.value ? "Избранные" : "Business history";
 });
 
 const emptyStateText = computed(() => {
   if (isFavoritesView.value && !isAuthenticated.value) {
-    return "Р’РѕР№РґРёС‚Рµ РІ Р°РєРєР°СѓРЅС‚, С‡С‚РѕР±С‹ СЃРѕС…СЂР°РЅСЏС‚СЊ РїСѓР±Р»РёРєР°С†РёРё РІ РёР·Р±СЂР°РЅРЅРѕРµ.";
+    return "Войдите в аккаунт, чтобы сохранять публикации в избранное.";
   }
 
   if (isFavoritesView.value) {
-    return "Р’ РёР·Р±СЂР°РЅРЅРѕРј РїРѕРєР° РЅРµС‚ РїСѓР±Р»РёРєР°С†РёР№.";
+    return "В избранном пока нет публикаций.";
   }
 
-  return "РџРѕ С‚РµРєСѓС‰РµРјСѓ С„РёР»СЊС‚СЂСѓ РїСѓР±Р»РёРєР°С†РёРё РЅРµ РЅР°Р№РґРµРЅС‹";
+  return "По текущему фильтру публикации не найдены";
 });
 
 const profileName = computed(() => {
   if (isAuthenticated.value) {
-    return session.value?.user?.name || "РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ";
+    return session.value?.user?.name || "Пользователь";
   }
 
-  return "Р“РѕСЃС‚СЊ";
+  return "Гость";
 });
 
 const profilePhone = computed(() => {
   if (isAuthenticated.value) {
-    return session.value?.user?.email || "РђРєРєР°СѓРЅС‚ Trendsee";
+    return session.value?.user?.email || "Аккаунт Trendsee";
   }
 
-  return "Р’РѕР№РґРёС‚Рµ РёР»Рё СЃРѕР·РґР°Р№С‚Рµ Р°РєРєР°СѓРЅС‚";
+  return "Войдите или создайте аккаунт";
 });
 
 const profileAvatar = computed(() => session.value?.user?.avatar_data || "");
@@ -356,12 +356,12 @@ function openPost(post) {
 
 function openPostEditor(mode, post = null) {
   if (!session.value?.accessToken) {
-    handleAuthRequired(mode === "create" ? "РЎРѕР·РґР°РЅРёРµ РїСѓР±Р»РёРєР°С†РёРё" : "Р РµРґР°РєС‚РёСЂРѕРІР°РЅРёРµ РїСѓР±Р»РёРєР°С†РёРё");
+    handleAuthRequired(mode === "create" ? "Создание публикации" : "Редактирование публикации");
     return;
   }
 
   if (mode === "edit" && post?.user_id !== session.value?.user?.id) {
-    showToast("Р РµРґР°РєС‚РёСЂРѕРІР°РЅРёРµ РЅРµРґРѕСЃС‚СѓРїРЅРѕ", "РР·РјРµРЅСЏС‚СЊ РјРѕР¶РЅРѕ С‚РѕР»СЊРєРѕ СЃРІРѕРё РїСѓР±Р»РёРєР°С†РёРё.");
+    showToast("Редактирование недоступно", "Изменять можно только свои публикации.");
     return;
   }
 
@@ -415,7 +415,7 @@ async function handleRegister(form) {
     isAuthModalOpen.value = false;
     await reloadFeed();
     await refreshOwnPostsCount();
-    showToast("РђРєРєР°СѓРЅС‚ СЃРѕР·РґР°РЅ", "РўРµРїРµСЂСЊ РґРѕСЃС‚СѓРїРЅС‹ РёР·Р±СЂР°РЅРЅРѕРµ, РїСЂРѕС„РёР»СЊ Рё СЂР°Р±РѕС‚Р° СЃ РїРѕРґР±РѕСЂРєРѕР№.");
+    showToast("Аккаунт создан", "Теперь доступны избранное, профиль и работа с подборкой.");
   } catch (error) {
     authErrorText.value = error.message;
   } finally {
@@ -447,7 +447,7 @@ async function handleLogin(form) {
     isAuthModalOpen.value = false;
     await reloadFeed();
     await refreshOwnPostsCount();
-    showToast("Р’С…РѕРґ РІС‹РїРѕР»РЅРµРЅ", "РњРѕР¶РЅРѕ РїСЂРѕРґРѕР»Р¶Р°С‚СЊ СЂР°Р±РѕС‚Сѓ СЃ Р»РёС‡РЅРѕР№ Р»РµРЅС‚РѕР№.");
+    showToast("Вход выполнен", "Можно продолжать работу с личной лентой.");
   } catch (error) {
     authErrorText.value = error.message;
   } finally {
@@ -474,10 +474,10 @@ async function handleProfileSave(payload) {
 
     saveSession(nextSession);
     session.value = nextSession;
-    showToast("РџСЂРѕС„РёР»СЊ СЃРѕС…СЂР°РЅРµРЅ", "РќРѕРІС‹Рµ РґР°РЅРЅС‹Рµ СЃСЂР°Р·Сѓ РїСЂРёРјРµРЅРµРЅС‹ РІ РёРЅС‚РµСЂС„РµР№СЃРµ.");
+    showToast("Профиль сохранен", "Новые данные сразу применены в интерфейсе.");
     isProfileModalOpen.value = false;
   } catch (error) {
-    showToast("РќРµ СѓРґР°Р»РѕСЃСЊ СЃРѕС…СЂР°РЅРёС‚СЊ РїСЂРѕС„РёР»СЊ", error.message);
+    showToast("Не удалось сохранить профиль", error.message);
   } finally {
     isProfileSaving.value = false;
   }
@@ -500,7 +500,7 @@ async function handlePostEditorSubmit(payload) {
         posterUrl: payload.posterUrl,
         sourceUrl: payload.sourceUrl,
       });
-      showToast("РџСѓР±Р»РёРєР°С†РёСЏ СЃРѕР·РґР°РЅР°", "РќРѕРІР°СЏ РєР°СЂС‚РѕС‡РєР° РґРѕР±Р°РІР»РµРЅР° РІ РІР°С€Сѓ Р»РµРЅС‚Сѓ.");
+      showToast("Публикация создана", "Новая карточка добавлена в вашу ленту.");
     } else {
       nextPost = await updatePost({
         token: session.value.accessToken,
@@ -511,7 +511,7 @@ async function handlePostEditorSubmit(payload) {
         posterUrl: payload.posterUrl,
         sourceUrl: payload.sourceUrl,
       });
-      showToast("РџСѓР±Р»РёРєР°С†РёСЏ РѕР±РЅРѕРІР»РµРЅР°", "РР·РјРµРЅРµРЅРёСЏ СЃРѕС…СЂР°РЅРµРЅС‹ Рё СѓР¶Рµ РѕС‚РѕР±СЂР°Р¶Р°СЋС‚СЃСЏ РІ Р»РµРЅС‚Рµ.");
+      showToast("Публикация обновлена", "Изменения сохранены и уже отображаются в ленте.");
     }
 
     isPostEditorOpen.value = false;
@@ -520,7 +520,7 @@ async function handlePostEditorSubmit(payload) {
     await refreshOwnPostsCount();
     selectedPost.value = nextPost;
   } catch (error) {
-    showToast("РќРµ СѓРґР°Р»РѕСЃСЊ СЃРѕС…СЂР°РЅРёС‚СЊ РїСѓР±Р»РёРєР°С†РёСЋ", error.message);
+    showToast("Не удалось сохранить публикацию", error.message);
   } finally {
     isPostSaving.value = false;
   }
@@ -529,10 +529,10 @@ async function handlePostEditorSubmit(payload) {
 async function handleDeletePost(post) {
   if (!session.value?.accessToken || !post?.id) return;
   if (post.user_id !== session.value?.user?.id) {
-    showToast("РЈРґР°Р»РµРЅРёРµ РЅРµРґРѕСЃС‚СѓРїРЅРѕ", "РЈРґР°Р»СЏС‚СЊ РјРѕР¶РЅРѕ С‚РѕР»СЊРєРѕ СЃРІРѕРё РїСѓР±Р»РёРєР°С†РёРё.");
+    showToast("Удаление недоступно", "Удалять можно только свои публикации.");
     return;
   }
-  if (!window.confirm("РЈРґР°Р»РёС‚СЊ СЌС‚Сѓ РїСѓР±Р»РёРєР°С†РёСЋ?")) return;
+  if (!window.confirm("Удалить эту публикацию?")) return;
 
   isPostDeleting.value = true;
 
@@ -544,9 +544,9 @@ async function handleDeletePost(post) {
     selectedPost.value = null;
     await reloadFeed();
     await refreshOwnPostsCount();
-    showToast("РџСѓР±Р»РёРєР°С†РёСЏ СѓРґР°Р»РµРЅР°", "РљР°СЂС‚РѕС‡РєР° Р±РѕР»СЊС€Рµ РЅРµ РѕС‚РѕР±СЂР°Р¶Р°РµС‚СЃСЏ РІ РІР°С€РµР№ Р»РµРЅС‚Рµ.");
+    showToast("Публикация удалена", "Карточка больше не отображается в вашей ленте.");
   } catch (error) {
-    showToast("РќРµ СѓРґР°Р»РѕСЃСЊ СѓРґР°Р»РёС‚СЊ РїСѓР±Р»РёРєР°С†РёСЋ", error.message);
+    showToast("Не удалось удалить публикацию", error.message);
   } finally {
     isPostDeleting.value = false;
   }
@@ -559,14 +559,14 @@ async function handleFindMoreClick() {
     }
 
     if (!hasMore.value) {
-      showToast("Р‘РѕР»СЊС€Рµ РїСѓР±Р»РёРєР°С†РёР№ РЅРµС‚", "РќРёР¶РЅСЏСЏ РіСЂР°РЅРёС†Р° Р»РµРЅС‚С‹ СѓР¶Рµ РґРѕСЃС‚РёРіРЅСѓС‚Р°.");
+      showToast("Больше публикаций нет", "Нижняя граница ленты уже достигнута.");
       return;
     }
 
     await loadNextBatch();
     showToast("Лента обновлена", "Загружена следующая порция публикаций.");
   } catch (error) {
-    showToast("РќРµ СѓРґР°Р»РѕСЃСЊ Р·Р°РіСЂСѓР·РёС‚СЊ РЅРѕРІС‹Рµ СЂРѕР»РёРєРё", error.message);
+    showToast("Не удалось загрузить новые ролики", error.message);
   }
 }
 
@@ -583,7 +583,7 @@ async function handleLogout() {
 
   try {
     await reloadFeed();
-    showToast("Р’С‹ РІС‹С€Р»Рё РёР· Р°РєРєР°СѓРЅС‚Р°", "РќР° РіР»Р°РІРЅРѕР№ СЃС‚СЂР°РЅРёС†Рµ РѕСЃС‚Р°Р»РёСЃСЊ С‚РѕР»СЊРєРѕ С„СѓРЅРєС†РёРё, РґРѕСЃС‚СѓРїРЅС‹Рµ Р±РµР· Р°РІС‚РѕСЂРёР·Р°С†РёРё.");
+    showToast("Вы вышли из аккаунта", "На главной странице остались только функции, доступные без авторизации.");
   } catch (error) {
     errorText.value = error.message;
   }
@@ -591,7 +591,7 @@ async function handleLogout() {
 
 async function handleDeleteAccount() {
   if (!session.value?.user?.id) return;
-  if (!window.confirm("РЈРґР°Р»РёС‚СЊ Р°РєРєР°СѓРЅС‚ Рё СЃРІСЏР·Р°РЅРЅС‹Рµ РїСѓР±Р»РёРєР°С†РёРё?")) return;
+  if (!window.confirm("Удалить аккаунт и связанные публикации?")) return;
 
   isUserDeleting.value = true;
 
@@ -611,9 +611,9 @@ async function handleDeleteAccount() {
     }
 
     await reloadFeed();
-    showToast("РђРєРєР°СѓРЅС‚ СѓРґР°Р»РµРЅ", "Р’С‹ РІРµСЂРЅСѓР»РёСЃСЊ РІ РїСѓР±Р»РёС‡РЅС‹Р№ СЂРµР¶РёРј РїСЂРѕСЃРјРѕС‚СЂР°.");
+    showToast("Аккаунт удален", "Вы вернулись в публичный режим просмотра.");
   } catch (error) {
-    showToast("РќРµ СѓРґР°Р»РѕСЃСЊ СѓРґР°Р»РёС‚СЊ Р°РєРєР°СѓРЅС‚", error.message);
+    showToast("Не удалось удалить аккаунт", error.message);
   } finally {
     isUserDeleting.value = false;
   }
@@ -621,8 +621,8 @@ async function handleDeleteAccount() {
 
 function handlePlaceholder(label) {
   const payload = {
-    title: `${label} РЅРµРґРѕСЃС‚СѓРїРЅРѕ`,
-    text: "Р¤СѓРЅРєС†РёСЏ РїРѕРєР° РЅРµРґРѕСЃС‚СѓРїРЅР°.",
+    title: `${label} недоступно`,
+    text: "Функция пока недоступна.",
   };
 
   showToast(payload.title, payload.text);
@@ -630,7 +630,7 @@ function handlePlaceholder(label) {
 
 function handleAuthRequired(reason) {
   openAuthModal("login");
-  showToast("РќСѓР¶РЅРѕ РІРѕР№С‚Рё РІ Р°РєРєР°СѓРЅС‚", `${reason} РґРѕСЃС‚СѓРїРЅРѕ С‚РѕР»СЊРєРѕ РїРѕСЃР»Рµ СЂРµРіРёСЃС‚СЂР°С†РёРё РёР»Рё РІС…РѕРґР°.`);
+  showToast("Нужно войти в аккаунт", `${reason} доступно только после регистрации или входа.`);
 }
 
 function isPostLiked(postId) {
@@ -639,7 +639,7 @@ function isPostLiked(postId) {
 
 function toggleLike(post) {
   if (!session.value?.user?.id) {
-    handleAuthRequired("РР·Р±СЂР°РЅРЅРѕРµ");
+    handleAuthRequired("Избранное");
     return;
   }
 
@@ -647,10 +647,10 @@ function toggleLike(post) {
 
   if (nextSet.has(post.id)) {
     nextSet.delete(post.id);
-    showToast("РЈРґР°Р»РµРЅРѕ РёР· РёР·Р±СЂР°РЅРЅРѕРіРѕ", "РџСѓР±Р»РёРєР°С†РёСЏ СѓР±СЂР°РЅР° РёР· СЃРѕС…СЂР°РЅРµРЅРЅРѕРіРѕ СЃРїРёСЃРєР°.");
+    showToast("Удалено из избранного", "Публикация убрана из сохраненного списка.");
   } else {
     nextSet.add(post.id);
-    showToast("Р”РѕР±Р°РІР»РµРЅРѕ РІ РёР·Р±СЂР°РЅРЅРѕРµ", "РџСѓР±Р»РёРєР°С†РёСЏ СЃРѕС…СЂР°РЅРµРЅР° РІ РёР·Р±СЂР°РЅРЅРѕРј.");
+    showToast("Добавлено в избранное", "Публикация сохранена в избранном.");
   }
 
   favoritePostIds.value = nextSet;
@@ -659,7 +659,7 @@ function toggleLike(post) {
 
 function handleNavigate(target) {
   if (target === "favorites" && !isAuthenticated.value) {
-    handleAuthRequired("РР·Р±СЂР°РЅРЅРѕРµ");
+    handleAuthRequired("Избранное");
     return;
   }
 
@@ -678,7 +678,7 @@ function handleSearch() {
     requestAnimationFrame(onScroll);
   }
 
-  showToast("Р›РµРЅС‚Р° РѕР±РЅРѕРІР»РµРЅР°", `РџРѕ С‚РµРєСѓС‰РёРј С„РёР»СЊС‚СЂР°Рј РїРѕРєР°Р·Р°РЅРѕ ${visiblePosts.value.length} РїСѓР±Р»РёРєР°С†РёР№.`);
+  showToast("Лента обновлена", `По текущим фильтрам показано ${visiblePosts.value.length} публикаций.`);
 }
 
 function showToast(title, text = "") {
