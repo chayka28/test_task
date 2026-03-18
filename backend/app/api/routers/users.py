@@ -17,13 +17,13 @@ from app.services.post_service import PostService
 from app.services.user_service import UserService
 
 router = APIRouter(prefix="/users", tags=["Users"])
-PositiveUserId = Annotated[int, Path(ge=1, description="Positive user id")]
+PositiveUserId = Annotated[int, Path(ge=1, description="Положительный id пользователя")]
 
 
 @router.get(
     "/demo",
     response_model=UserOut,
-    summary="Get or create the public feed user",
+    summary="Получить или создать пользователя витринной ленты",
 )
 async def get_demo_user(
     user_service: UserService = Depends(get_user_service),
@@ -38,7 +38,7 @@ async def get_demo_user(
     "",
     response_model=UserWithToken,
     status_code=status.HTTP_201_CREATED,
-    summary="Create a user and return JWT token",
+    summary="Создать пользователя и вернуть JWT-токен",
 )
 async def create_user(
     payload: UserCreate,
@@ -55,7 +55,7 @@ async def create_user(
 @router.post(
     "/login",
     response_model=UserWithToken,
-    summary="Login by email and password",
+    summary="Войти по email и паролю",
 )
 async def login_user(
     payload: UserLogin,
@@ -70,7 +70,7 @@ async def login_user(
 @router.get(
     "/me",
     response_model=UserOut,
-    summary="Get current user profile",
+    summary="Получить профиль текущего пользователя",
 )
 async def get_current_user_profile(
     current_user_id: int = Depends(get_current_user_id),
@@ -82,7 +82,7 @@ async def get_current_user_profile(
 @router.patch(
     "/me/profile",
     response_model=UserOut,
-    summary="Update current user profile",
+    summary="Обновить профиль текущего пользователя",
 )
 async def update_current_user_profile(
     payload: UserProfileUpdate,
@@ -99,7 +99,7 @@ async def update_current_user_profile(
 @router.get(
     "/{user_id}/token",
     response_model=TokenResponse,
-    summary="Get token by user id (for testing convenience)",
+    summary="Получить JWT по id пользователя",
 )
 async def issue_token_by_user_id(
     user_id: PositiveUserId,
@@ -111,7 +111,7 @@ async def issue_token_by_user_id(
 @router.patch(
     "/{user_id}",
     response_model=UserOut,
-    summary="Update user name",
+    summary="Изменить имя пользователя",
 )
 async def update_user_name(
     user_id: PositiveUserId,
@@ -124,7 +124,7 @@ async def update_user_name(
 @router.delete(
     "/{user_id}",
     status_code=status.HTTP_204_NO_CONTENT,
-    summary="Delete user",
+    summary="Удалить пользователя",
 )
 async def delete_user(
     user_id: PositiveUserId,

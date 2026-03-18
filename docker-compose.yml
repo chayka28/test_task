@@ -6,13 +6,13 @@ services:
     ports:
       - "5173:80"
     depends_on:
-      api:
+      backend:
         condition: service_started
 
-  api:
+  backend:
     build:
       context: ./backend
-    container_name: trendsee_api
+    container_name: trendsee_backend
     environment:
       POSTGRES_HOST: postgres
       POSTGRES_PORT: 5432

@@ -17,7 +17,7 @@
         </div>
       </div>
 
-      <p class="profile-note">Здесь можно обновить основные данные аккаунта и управлять своими публикациями.</p>
+      <p class="profile-note">Здесь можно обновить имя, перейти к своим публикациям и управлять аккаунтом.</p>
 
       <div class="meta-grid">
         <div class="meta-item">
@@ -46,6 +46,9 @@
       <div class="primary-actions">
         <button type="button" class="save-btn" :disabled="isLoading || !isDirty" @click="handleSave">
           {{ isLoading ? "Сохраняем..." : "Сохранить имя" }}
+        </button>
+        <button type="button" class="secondary-btn" :disabled="isLoading || isDeleting" @click="$emit('view-posts')">
+          Мои публикации
         </button>
         <button type="button" class="secondary-btn" :disabled="isLoading || isDeleting" @click="$emit('create-post')">
           Создать публикацию
@@ -86,7 +89,7 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(["close", "save", "logout", "create-post", "delete-account"]);
+const emit = defineEmits(["close", "save", "logout", "create-post", "delete-account", "view-posts"]);
 
 const localName = ref(props.user.name || "");
 
@@ -261,16 +264,23 @@ h2 {
   padding: 0 16px;
   color: #172033;
   font-size: 15px;
-  outline: none;
+  line-height: 1.2;
 }
 
 .field input:focus {
+  outline: none;
   border-color: #2b31b3;
 }
 
-.primary-actions,
+.primary-actions {
+  margin-top: 22px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
 .secondary-actions {
-  margin-top: 16px;
+  margin-top: 12px;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
@@ -282,8 +292,7 @@ h2 {
 .danger-btn {
   height: 48px;
   border-radius: 16px;
-  padding: 0 18px;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 700;
   cursor: pointer;
 }
@@ -312,32 +321,18 @@ h2 {
   color: #c14558;
 }
 
-.save-btn:disabled,
-.secondary-btn:disabled,
-.danger-btn:disabled {
+button:disabled {
   opacity: 0.6;
   cursor: default;
 }
 
-@media (max-width: 620px) {
-  .profile-overlay {
-    padding: 10px;
-    align-items: flex-start;
-  }
-
+@media (max-width: 720px) {
   .profile-card {
-    max-height: calc(100vh - 20px);
-    padding: 24px 18px 18px;
-    border-radius: 24px;
-  }
-
-  .profile-hero,
-  .hero-badges {
-    align-items: flex-start;
+    padding: 24px 18px;
   }
 
   .profile-hero {
-    flex-direction: column;
+    align-items: flex-start;
   }
 
   .meta-grid,

@@ -96,6 +96,9 @@ class PostService:
         await self.post_repository.delete_post(post_id=post_id)
         await self._refresh_user_cache(user_id=current_user_id)
 
+    async def get_feed_posts(self, limit: int = 12, offset: int = 0) -> list[dict]:
+        return await self.post_repository.get_feed_posts(limit=limit, offset=offset)
+
     async def get_posts_by_user(
         self,
         user_id: int,

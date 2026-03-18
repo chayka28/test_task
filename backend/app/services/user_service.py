@@ -1,8 +1,13 @@
+import logging
+
 from fastapi import HTTPException, status
 from redis.asyncio import Redis
 
 from app.core.security import create_access_token, hash_password, verify_password
 from app.repositories.user_repository import UserRepository
+
+
+logger = logging.getLogger(__name__)
 
 
 class UserService:
@@ -13,6 +18,12 @@ class UserService:
     ) -> None:
         self.user_repository = user_repository
         self.redis_client = redis_client
+
+    @staticmethod
+    def _print_issued_token(context: str, user_id: int, token: str) -> None:
+        message = f"[JWT] {context} | user_id={user_id} | token={token}"
+        logger.info(message)
+        print(message, flush=True)
 
     async def create_user(
         self,
@@ -38,6 +49,7 @@ class UserService:
             avatar_data=avatar_data,
         )
         token = create_access_token(user_id=user["id"])
+        self._print_issued_token("создание пользователя", user["id"], token)
         return {
             "access_token": token,
             "token_type": "bearer",
@@ -55,6 +67,7 @@ class UserService:
 
         user = await self.user_repository.get_by_id(user_id=auth_user["id"])
         token = create_access_token(user_id=auth_user["id"])
+        self._print_issued_token("вход пользователя", auth_user["id"], token)
         return {
             "access_token": token,
             "token_type": "bearer",
@@ -70,6 +83,7 @@ class UserService:
                 detail="User not found.",
             )
         token = create_access_token(user_id=user["id"])
+        self._print_issued_token("получение токена по user_id", user["id"], token)
         return {"access_token": token, "token_type": "bearer"}
 
     async def get_user_by_id(self, user_id: int) -> dict | None:

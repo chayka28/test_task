@@ -599,16 +599,52 @@ function isRouteActive(routeName, fallback = false) {
     width: 100%;
     flex-basis: auto;
     height: auto;
-    position: static;
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    border-right: 0;
+    border-bottom: 1px solid #e8edf2;
   }
 
   .sidebar-scroll {
     overflow: visible;
+    padding: 12px 12px 14px;
   }
 
   .shortcut-list {
-    grid-template-columns: repeat(5, 40px);
+    grid-template-columns: repeat(7, 40px);
     justify-content: flex-start;
+    overflow-x: auto;
+    padding-bottom: 2px;
+  }
+
+  .shortcut-list::-webkit-scrollbar {
+    display: none;
+  }
+
+  .menu-section {
+    margin-bottom: 12px;
+  }
+
+  .token-card,
+  .profile-row,
+  .locale-row {
+    margin-top: 12px;
+  }
+}
+
+@media (max-width: 640px) {
+  .sidebar-scroll {
+    padding: 10px 10px 12px;
+  }
+
+  .logo-row {
+    margin-bottom: 10px;
+  }
+
+  .shortcut-list {
+    gap: 8px;
+    grid-template-columns: repeat(6, 40px);
   }
 }
 </style>

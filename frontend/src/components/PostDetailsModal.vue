@@ -668,4 +668,32 @@ h2 {
     font-size: 28px;
   }
 }
+
+@media (max-width: 720px) {
+  .modal-overlay {
+    padding: 6px;
+  }
+
+  .modal-card {
+    width: 100%;
+    max-height: calc(100vh - 12px);
+    border-radius: 12px;
+  }
+
+  .top-layout {
+    gap: 14px;
+  }
+
+  .left-col {
+    width: 100%;
+  }
+
+  .right-col {
+    gap: 14px;
+  }
+
+  h2 {
+    font-size: 22px;
+  }
+}
 </style>

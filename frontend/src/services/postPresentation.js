@@ -51,6 +51,20 @@ export function buildHandle(userId) {
   return variants[Math.abs(Number(userId || 0)) % variants.length];
 }
 
+export function buildUserHandle(userName, userId) {
+  const normalized = String(userName || "")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, "")
+    .replace(/[^\p{L}\p{N}_.]+/gu, "");
+
+  if (normalized) {
+    return `@${normalized}`;
+  }
+
+  return buildHandle(userId);
+}
+
 export function buildFollowers(userId) {
   const seed = seededValue(Number(userId || 1) + 17);
   const base = 120_000 + (seed % 380_000);

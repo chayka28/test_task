@@ -8,13 +8,28 @@ const routes = [
     path: "/",
     name: "feed",
     component: FeedPage,
-    props: { viewMode: "feed" },
+    props: { viewMode: "feed", routeUserId: null },
   },
   {
     path: "/favorites",
     name: "favorites",
     component: FeedPage,
-    props: { viewMode: "favorites" },
+    props: { viewMode: "favorites", routeUserId: null },
+  },
+  {
+    path: "/my-posts",
+    name: "my-posts",
+    component: FeedPage,
+    props: { viewMode: "my-posts", routeUserId: null },
+  },
+  {
+    path: "/users/:userId/posts",
+    name: "user-posts",
+    component: FeedPage,
+    props: (route) => ({
+      viewMode: "user",
+      routeUserId: Number(route.params.userId),
+    }),
   },
   {
     path: "/mobile-preview",

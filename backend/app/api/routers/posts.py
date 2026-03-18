@@ -9,15 +9,28 @@ from app.services.post_service import PostService
 from app.services.user_service import UserService
 
 router = APIRouter(prefix="/posts", tags=["Posts"])
-PositivePostId = Annotated[int, Path(ge=1, description="Positive post id")]
-PositiveUserId = Annotated[int, Path(ge=1, description="Positive user id")]
+PositivePostId = Annotated[int, Path(ge=1, description="Положительный id публикации")]
+PositiveUserId = Annotated[int, Path(ge=1, description="Положительный id пользователя")]
+
+
+@router.get(
+    "/feed",
+    response_model=list[PostOut],
+    summary="Получить общую ленту публикаций",
+)
+async def get_feed_posts(
+    limit: int = Query(default=12, ge=1, le=50),
+    offset: int = Query(default=0, ge=0),
+    post_service: PostService = Depends(get_post_service),
+) -> list[PostOut]:
+    return await post_service.get_feed_posts(limit=limit, offset=offset)
 
 
 @router.post(
     "",
     response_model=PostOut,
     status_code=status.HTTP_201_CREATED,
-    summary="Create post (authorized user only)",
+    summary="Создать публикацию (только для авторизованного пользователя)",
 )
 async def create_post(
     payload: PostCreate,
@@ -30,7 +43,7 @@ async def create_post(
 @router.patch(
     "/{post_id}",
     response_model=PostOut,
-    summary="Update post (author only)",
+    summary="Изменить публикацию (только автор)",
 )
 async def update_post(
     post_id: PositivePostId,
@@ -48,7 +61,7 @@ async def update_post(
 @router.delete(
     "/{post_id}",
     status_code=status.HTTP_204_NO_CONTENT,
-    summary="Delete post (author only)",
+    summary="Удалить публикацию (только автор)",
 )
 async def delete_post(
     post_id: PositivePostId,
@@ -62,7 +75,7 @@ async def delete_post(
 @router.get(
     "/user/{user_id}",
     response_model=list[PostOut],
-    summary="Get all posts of a user (Redis 10m cache, then Postgres + 2s delay)",
+    summary="Получить все публикации пользователя (Redis 10 минут, затем Postgres + 2 секунды)",
 )
 async def get_posts_by_user(
     user_id: PositiveUserId,
@@ -80,7 +93,7 @@ async def get_posts_by_user(
 @router.post(
     "/demo-seed",
     response_model=list[PostOut],
-    summary="Generate starter posts for the current user",
+    summary="Сгенерировать стартовые публикации для текущего пользователя",
 )
 async def seed_demo_posts(
     current_user_id: int = Depends(get_current_user_id),
@@ -98,7 +111,7 @@ async def seed_demo_posts(
 @router.post(
     "/demo-seed/public",
     response_model=list[PostOut],
-    summary="Generate or extend starter posts for the public feed",
+    summary="Сгенерировать или дополнить витринную ленту",
 )
 async def seed_public_demo_posts(
     count: int = Query(default=12, ge=1, le=24),

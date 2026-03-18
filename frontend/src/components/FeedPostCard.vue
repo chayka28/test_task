@@ -62,16 +62,16 @@
         </div>
       </div>
 
-      <div class="author-card">
+      <button type="button" class="author-card" @click.stop="$emit('open-user-posts', post)">
         <AppAvatar :seed="post.id" :size="40" alt="Креатор" :blurred="true" />
         <div class="author-meta">
-          <p class="author-name">{{ handle }}</p>
+          <p class="author-name">{{ authorHandle }}</p>
           <p class="author-sub">{{ followers }}</p>
         </div>
         <button type="button" class="author-tool-btn" @click.stop="handleRestrictedAction('Инструменты карточки')">
           <img src="/assets/icons/Vector-5.png" alt="" class="author-tool" />
         </button>
-      </div>
+      </button>
 
       <p class="title">{{ post.title }}</p>
       <p class="text">{{ previewText }}</p>
@@ -88,7 +88,7 @@
 import { computed, onBeforeUnmount, ref } from "vue";
 
 import AppAvatar from "./AppAvatar.vue";
-import { buildFollowers, buildHandle, buildMediaPalette, buildPostMetrics } from "../services/postPresentation";
+import { buildFollowers, buildMediaPalette, buildPostMetrics, buildUserHandle } from "../services/postPresentation";
 
 const props = defineProps({
   post: {
@@ -105,13 +105,13 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(["open", "toggle-like", "placeholder", "auth-required"]);
+const emit = defineEmits(["open", "toggle-like", "placeholder", "auth-required", "open-user-posts"]);
 
 const isLikeAnimating = ref(false);
 let likeAnimationTimerId = null;
 
 const metrics = computed(() => buildPostMetrics(props.post.id));
-const handle = computed(() => buildHandle(props.post.user_id));
+const authorHandle = computed(() => buildUserHandle(props.post.user_name, props.post.user_id));
 const followers = computed(() => buildFollowers(props.post.user_id));
 const activityMultiplier = computed(() => ((props.post.id % 12) + 3).toString());
 
@@ -190,7 +190,7 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .post-card {
-  width: 220px;
+  width: min(100%, 220px);
   min-height: 520px;
   border-radius: 16px;
   background: #ffffff;
@@ -373,6 +373,11 @@ onBeforeUnmount(() => {
   align-items: center;
   gap: 8px;
   padding: 4px 0;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
 }
 
 .author-meta {
@@ -486,11 +491,22 @@ onBeforeUnmount(() => {
 
 @media (max-width: 840px) {
   .post-card {
-    width: 262px;
+    width: min(100%, 320px);
   }
 
   .media {
-    height: 400px;
+    height: clamp(340px, 72vw, 400px);
+  }
+}
+
+@media (max-width: 480px) {
+  .post-card {
+    width: 100%;
+    min-height: auto;
+  }
+
+  .media {
+    height: clamp(320px, 88vw, 390px);
   }
 }
 </style>

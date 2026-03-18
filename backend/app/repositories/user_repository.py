@@ -12,7 +12,7 @@ class UserRepository:
         password_hash: str | None = None,
         avatar_data: str | None = None,
     ) -> dict:
-        # Все запросы используют placeholders, чтобы не допускать SQL injection.
+        # Все запросы используют параметризованные значения, чтобы не допускать SQL-инъекции.
         query = """
             INSERT INTO users (name, email, password_hash, avatar_data)
             VALUES ($1, $2, $3, $4)

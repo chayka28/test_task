@@ -35,6 +35,7 @@ class PostUpdate(BaseModel):
 class PostOut(BaseModel):
     id: int
     user_id: int
+    user_name: str | None = None
     title: str
     text: str
     video_url: AnyHttpUrl | None = None

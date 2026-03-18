@@ -566,4 +566,112 @@ function handleRestrictedAction(label) {
     grid-template-columns: 1fr;
   }
 }
+
+@media (max-width: 980px) {
+  .hero-card,
+  .results-card {
+    border-radius: 14px;
+  }
+
+  .hero-card {
+    padding: 16px 14px;
+  }
+
+  .hero-head {
+    margin-top: 14px;
+  }
+
+  .hero-head h2 {
+    font-size: 26px;
+  }
+
+  .hero-shape--dark {
+    width: 340px;
+    height: 340px;
+    top: -220px;
+    right: 60px;
+  }
+
+  .hero-shape--cyan {
+    width: 280px;
+    height: 280px;
+    left: 40px;
+    bottom: -170px;
+  }
+
+  .hero-shape--black {
+    width: 280px;
+    height: 180px;
+    right: 40px;
+    top: 20px;
+  }
+
+  .hero-shape--light {
+    width: 360px;
+    height: 180px;
+    right: -120px;
+    bottom: -70px;
+  }
+
+  .input-sub {
+    white-space: normal;
+  }
+
+  .submit-btn {
+    width: 100%;
+  }
+
+  .hint-row {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .filters-row {
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 640px) {
+  .top-panel {
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  .hero-card {
+    padding: 14px 12px;
+  }
+
+  .hero-head h2 {
+    font-size: 22px;
+  }
+
+  .hero-actions,
+  .results-left {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .radar-btn,
+  .results-radar-btn {
+    max-width: 100%;
+  }
+
+  .search-input,
+  .select-pill,
+  .submit-btn {
+    min-height: 58px;
+  }
+
+  .results-card {
+    padding: 14px 12px;
+  }
+
+  .results-query {
+    font-size: 18px;
+  }
+
+  .results-count {
+    white-space: normal;
+  }
+}
 </style>

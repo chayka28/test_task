@@ -26,9 +26,20 @@ class PostRepository:
 
     async def get_by_id(self, post_id: int) -> dict | None:
         query = """
-            SELECT id, user_id, title, text, video_url, poster_url, source_url, created_at, updated_at
+            SELECT
+                posts.id,
+                posts.user_id,
+                users.name AS user_name,
+                posts.title,
+                posts.text,
+                posts.video_url,
+                posts.poster_url,
+                posts.source_url,
+                posts.created_at,
+                posts.updated_at
             FROM posts
-            WHERE id = $1
+            JOIN users ON users.id = posts.user_id
+            WHERE posts.id = $1
         """
         async with self.pool.acquire() as connection:
             row = await connection.fetchrow(query, post_id)
@@ -36,13 +47,46 @@ class PostRepository:
 
     async def get_user_posts(self, user_id: int) -> list[dict]:
         query = """
-            SELECT id, user_id, title, text, video_url, poster_url, source_url, created_at, updated_at
+            SELECT
+                posts.id,
+                posts.user_id,
+                users.name AS user_name,
+                posts.title,
+                posts.text,
+                posts.video_url,
+                posts.poster_url,
+                posts.source_url,
+                posts.created_at,
+                posts.updated_at
             FROM posts
-            WHERE user_id = $1
-            ORDER BY created_at DESC
+            JOIN users ON users.id = posts.user_id
+            WHERE posts.user_id = $1
+            ORDER BY posts.created_at DESC, posts.id DESC
         """
         async with self.pool.acquire() as connection:
             rows = await connection.fetch(query, user_id)
+        return [dict(row) for row in rows]
+
+    async def get_feed_posts(self, limit: int, offset: int) -> list[dict]:
+        query = """
+            SELECT
+                posts.id,
+                posts.user_id,
+                users.name AS user_name,
+                posts.title,
+                posts.text,
+                posts.video_url,
+                posts.poster_url,
+                posts.source_url,
+                posts.created_at,
+                posts.updated_at
+            FROM posts
+            JOIN users ON users.id = posts.user_id
+            ORDER BY posts.created_at DESC, posts.id DESC
+            LIMIT $1 OFFSET $2
+        """
+        async with self.pool.acquire() as connection:
+            rows = await connection.fetch(query, limit, offset)
         return [dict(row) for row in rows]
 
     async def count_user_posts(self, user_id: int) -> int:
