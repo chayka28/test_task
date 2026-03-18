@@ -45,6 +45,17 @@ class PostRepository:
             rows = await connection.fetch(query, user_id)
         return [dict(row) for row in rows]
 
+    async def get_feed_posts(self, limit: int, offset: int) -> list[dict]:
+        query = """
+            SELECT id, user_id, title, text, video_url, poster_url, source_url, created_at, updated_at
+            FROM posts
+            ORDER BY created_at DESC, id DESC
+            LIMIT $1 OFFSET $2
+        """
+        async with self.pool.acquire() as connection:
+            rows = await connection.fetch(query, limit, offset)
+        return [dict(row) for row in rows]
+
     async def count_user_posts(self, user_id: int) -> int:
         query = """
             SELECT COUNT(*)

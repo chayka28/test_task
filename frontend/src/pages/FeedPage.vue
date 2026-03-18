@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <main class="feed-page">
     <div class="feed-shell">
       <FeedSidebar
@@ -48,21 +48,21 @@
         </section>
 
         <div class="state-line">
-          <LoadingIndicator v-if="isInitialLoading" label="Загружаем публикации..." />
-          <LoadingIndicator v-else-if="isLoadingMore" label="Подгружаем еще..." />
+          <LoadingIndicator v-if="isInitialLoading" label="Р—Р°РіСЂСѓР¶Р°РµРј РїСѓР±Р»РёРєР°С†РёРё..." />
+          <LoadingIndicator v-else-if="isLoadingMore" label="РџРѕРґРіСЂСѓР¶Р°РµРј РµС‰Рµ..." />
           <p v-else-if="errorText" class="error-state">{{ errorText }}</p>
           <p v-else-if="!visiblePosts.length" class="empty-state">{{ emptyStateText }}</p>
-          <p v-else-if="!hasMore" class="empty-state">Больше публикаций нет</p>
+          <p v-else-if="!hasMore" class="empty-state">Р‘РѕР»СЊС€Рµ РїСѓР±Р»РёРєР°С†РёР№ РЅРµС‚</p>
         </div>
 
         <div class="floating-actions">
           <button type="button" class="more-btn" @click="handleFindMoreClick">
             <img src="/assets/icons/Vector-5.png" alt="" />
-            <span>Найти еще ролики</span>
+            <span>РќР°Р№С‚Рё РµС‰Рµ СЂРѕР»РёРєРё</span>
           </button>
           <div class="counter-pill">
             <img src="/assets/icons/Vector-12.png" alt="" />
-            <span>Видео: {{ visiblePosts.length }} из {{ estimatedTotal }}</span>
+            <span>Р’РёРґРµРѕ: {{ visiblePosts.length }} РёР· {{ estimatedTotal }}</span>
           </div>
         </div>
       </section>
@@ -98,7 +98,7 @@
       <ProfileModal
         v-if="isProfileModalOpen && session?.user"
         :user="session.user"
-        :posts-count="posts.length"
+        :posts-count="ownPostsCount"
         :is-loading="isProfileSaving"
         :is-deleting="isUserDeleting"
         @close="isProfileModalOpen = false"
@@ -145,12 +145,11 @@ import {
   createPost,
   deletePost,
   deleteUserById,
-  fetchDemoUser,
+  fetchFeedPosts,
   fetchPostsByUser,
   loginUser,
   registerUser,
   seedDemoPosts,
-  seedPublicDemoPosts,
   updatePost,
   updateUserName,
 } from "../services/postsApi";
@@ -170,9 +169,8 @@ const pageSize = 12;
 
 const posts = ref([]);
 const selectedPost = ref(null);
-const viewerUserId = ref(null);
-const publicViewer = ref(null);
 const session = ref(loadSession());
+const ownPostsCount = ref(0);
 
 const isInitialLoading = ref(false);
 const isLoadingMore = ref(false);
@@ -204,7 +202,6 @@ const sortMode = ref("all");
 let toastTimerId = null;
 
 const isAuthenticated = computed(() => Boolean(session.value?.accessToken));
-const activeViewer = computed(() => session.value?.user || publicViewer.value || null);
 const isFavoritesView = computed(() => props.viewMode === "favorites");
 
 const visiblePosts = computed(() => {
@@ -239,42 +236,42 @@ const resultsTitle = computed(() => {
     return searchQuery.value.trim();
   }
 
-  return isFavoritesView.value ? "Избранные" : "Business history";
+  return isFavoritesView.value ? "РР·Р±СЂР°РЅРЅС‹Рµ" : "Business history";
 });
 
 const emptyStateText = computed(() => {
   if (isFavoritesView.value && !isAuthenticated.value) {
-    return "Войдите в аккаунт, чтобы сохранять публикации в избранное.";
+    return "Р’РѕР№РґРёС‚Рµ РІ Р°РєРєР°СѓРЅС‚, С‡С‚РѕР±С‹ СЃРѕС…СЂР°РЅСЏС‚СЊ РїСѓР±Р»РёРєР°С†РёРё РІ РёР·Р±СЂР°РЅРЅРѕРµ.";
   }
 
   if (isFavoritesView.value) {
-    return "В избранном пока нет публикаций.";
+    return "Р’ РёР·Р±СЂР°РЅРЅРѕРј РїРѕРєР° РЅРµС‚ РїСѓР±Р»РёРєР°С†РёР№.";
   }
 
-  return "По текущему фильтру публикации не найдены";
+  return "РџРѕ С‚РµРєСѓС‰РµРјСѓ С„РёР»СЊС‚СЂСѓ РїСѓР±Р»РёРєР°С†РёРё РЅРµ РЅР°Р№РґРµРЅС‹";
 });
 
 const profileName = computed(() => {
   if (isAuthenticated.value) {
-    return session.value?.user?.name || "Пользователь";
+    return session.value?.user?.name || "РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ";
   }
 
-  return "Гость";
+  return "Р“РѕСЃС‚СЊ";
 });
 
 const profilePhone = computed(() => {
   if (isAuthenticated.value) {
-    return session.value?.user?.email || "Аккаунт Trendsee";
+    return session.value?.user?.email || "РђРєРєР°СѓРЅС‚ Trendsee";
   }
 
-  return "Войдите или создайте аккаунт";
+  return "Р’РѕР№РґРёС‚Рµ РёР»Рё СЃРѕР·РґР°Р№С‚Рµ Р°РєРєР°СѓРЅС‚";
 });
 
 const profileAvatar = computed(() => session.value?.user?.avatar_data || "");
 const avatarSeed = computed(() => session.value?.user?.id || 1);
 
 const radarCount = computed(() => Math.min(999, 120 + posts.value.length * 7));
-const tokenTotal = computed(() => 4200 + (activeViewer.value?.id || 1) * 37);
+const tokenTotal = computed(() => 4200 + (session.value?.user?.id || 1) * 37);
 const tokenUsed = computed(() => Math.min(tokenTotal.value, 680 + posts.value.length * 19));
 const estimatedTotal = computed(() => (hasMore.value ? Math.max(3000, posts.value.length * 120) : posts.value.length));
 const canManageSelectedPost = computed(() => {
@@ -287,7 +284,7 @@ const canManageSelectedPost = computed(() => {
 });
 
 async function loadNextBatch() {
-  if (!viewerUserId.value || !hasMore.value || isInitialLoading.value || isLoadingMore.value) return;
+  if (!hasMore.value || isInitialLoading.value || isLoadingMore.value) return;
 
   if (offset.value === 0) {
     isInitialLoading.value = true;
@@ -298,8 +295,7 @@ async function loadNextBatch() {
   errorText.value = "";
 
   try {
-    const nextPosts = await fetchPostsByUser({
-      userId: viewerUserId.value,
+    const nextPosts = await fetchFeedPosts({
       limit: pageSize,
       offset: offset.value,
     });
@@ -320,8 +316,6 @@ async function loadNextBatch() {
 }
 
 function onScroll() {
-  if (!viewerUserId.value) return;
-
   const viewportBottom = window.scrollY + window.innerHeight;
   const threshold = document.documentElement.scrollHeight - 500;
 
@@ -331,8 +325,6 @@ function onScroll() {
 }
 
 async function reloadFeed() {
-  if (!viewerUserId.value) return;
-
   posts.value = [];
   selectedPost.value = null;
   offset.value = 0;
@@ -340,9 +332,22 @@ async function reloadFeed() {
   await loadNextBatch();
 }
 
-async function loadPublicFeed() {
-  publicViewer.value = await fetchDemoUser();
-  viewerUserId.value = publicViewer.value.id;
+async function refreshOwnPostsCount() {
+  if (!session.value?.user?.id) {
+    ownPostsCount.value = 0;
+    return;
+  }
+
+  try {
+    const ownPosts = await fetchPostsByUser({
+      userId: session.value.user.id,
+      limit: 50,
+      offset: 0,
+    });
+    ownPostsCount.value = ownPosts.length;
+  } catch {
+    ownPostsCount.value = posts.value.filter((post) => post.user_id === session.value?.user?.id).length;
+  }
 }
 
 function openPost(post) {
@@ -351,7 +356,12 @@ function openPost(post) {
 
 function openPostEditor(mode, post = null) {
   if (!session.value?.accessToken) {
-    handleAuthRequired(mode === "create" ? "Создание публикации" : "Редактирование публикации");
+    handleAuthRequired(mode === "create" ? "РЎРѕР·РґР°РЅРёРµ РїСѓР±Р»РёРєР°С†РёРё" : "Р РµРґР°РєС‚РёСЂРѕРІР°РЅРёРµ РїСѓР±Р»РёРєР°С†РёРё");
+    return;
+  }
+
+  if (mode === "edit" && post?.user_id !== session.value?.user?.id) {
+    showToast("Р РµРґР°РєС‚РёСЂРѕРІР°РЅРёРµ РЅРµРґРѕСЃС‚СѓРїРЅРѕ", "РР·РјРµРЅСЏС‚СЊ РјРѕР¶РЅРѕ С‚РѕР»СЊРєРѕ СЃРІРѕРё РїСѓР±Р»РёРєР°С†РёРё.");
     return;
   }
 
@@ -395,18 +405,17 @@ async function handleRegister(form) {
     saveSession(nextSession);
     session.value = nextSession;
     favoritePostIds.value = loadFavoritePostIds(response.user.id);
-    publicViewer.value = null;
-    viewerUserId.value = response.user.id;
 
     await seedDemoPosts({
       token: nextSession.accessToken,
-      count: 18,
+      count: 4,
       append: false,
     });
 
     isAuthModalOpen.value = false;
     await reloadFeed();
-    showToast("Аккаунт создан", "Теперь доступны избранное, профиль и работа с подборкой.");
+    await refreshOwnPostsCount();
+    showToast("РђРєРєР°СѓРЅС‚ СЃРѕР·РґР°РЅ", "РўРµРїРµСЂСЊ РґРѕСЃС‚СѓРїРЅС‹ РёР·Р±СЂР°РЅРЅРѕРµ, РїСЂРѕС„РёР»СЊ Рё СЂР°Р±РѕС‚Р° СЃ РїРѕРґР±РѕСЂРєРѕР№.");
   } catch (error) {
     authErrorText.value = error.message;
   } finally {
@@ -434,12 +443,11 @@ async function handleLogin(form) {
     saveSession(nextSession);
     session.value = nextSession;
     favoritePostIds.value = loadFavoritePostIds(response.user.id);
-    publicViewer.value = null;
-    viewerUserId.value = response.user.id;
 
     isAuthModalOpen.value = false;
     await reloadFeed();
-    showToast("Вход выполнен", "Можно продолжать работу с личной лентой.");
+    await refreshOwnPostsCount();
+    showToast("Р’С…РѕРґ РІС‹РїРѕР»РЅРµРЅ", "РњРѕР¶РЅРѕ РїСЂРѕРґРѕР»Р¶Р°С‚СЊ СЂР°Р±РѕС‚Сѓ СЃ Р»РёС‡РЅРѕР№ Р»РµРЅС‚РѕР№.");
   } catch (error) {
     authErrorText.value = error.message;
   } finally {
@@ -466,10 +474,10 @@ async function handleProfileSave(payload) {
 
     saveSession(nextSession);
     session.value = nextSession;
-    showToast("Профиль сохранен", "Новые данные сразу применены в интерфейсе.");
+    showToast("РџСЂРѕС„РёР»СЊ СЃРѕС…СЂР°РЅРµРЅ", "РќРѕРІС‹Рµ РґР°РЅРЅС‹Рµ СЃСЂР°Р·Сѓ РїСЂРёРјРµРЅРµРЅС‹ РІ РёРЅС‚РµСЂС„РµР№СЃРµ.");
     isProfileModalOpen.value = false;
   } catch (error) {
-    showToast("Не удалось сохранить профиль", error.message);
+    showToast("РќРµ СѓРґР°Р»РѕСЃСЊ СЃРѕС…СЂР°РЅРёС‚СЊ РїСЂРѕС„РёР»СЊ", error.message);
   } finally {
     isProfileSaving.value = false;
   }
@@ -492,7 +500,7 @@ async function handlePostEditorSubmit(payload) {
         posterUrl: payload.posterUrl,
         sourceUrl: payload.sourceUrl,
       });
-      showToast("Публикация создана", "Новая карточка добавлена в вашу ленту.");
+      showToast("РџСѓР±Р»РёРєР°С†РёСЏ СЃРѕР·РґР°РЅР°", "РќРѕРІР°СЏ РєР°СЂС‚РѕС‡РєР° РґРѕР±Р°РІР»РµРЅР° РІ РІР°С€Сѓ Р»РµРЅС‚Сѓ.");
     } else {
       nextPost = await updatePost({
         token: session.value.accessToken,
@@ -503,15 +511,16 @@ async function handlePostEditorSubmit(payload) {
         posterUrl: payload.posterUrl,
         sourceUrl: payload.sourceUrl,
       });
-      showToast("Публикация обновлена", "Изменения сохранены и уже отображаются в ленте.");
+      showToast("РџСѓР±Р»РёРєР°С†РёСЏ РѕР±РЅРѕРІР»РµРЅР°", "РР·РјРµРЅРµРЅРёСЏ СЃРѕС…СЂР°РЅРµРЅС‹ Рё СѓР¶Рµ РѕС‚РѕР±СЂР°Р¶Р°СЋС‚СЃСЏ РІ Р»РµРЅС‚Рµ.");
     }
 
     isPostEditorOpen.value = false;
     postEditorInitialPost.value = null;
     await reloadFeed();
+    await refreshOwnPostsCount();
     selectedPost.value = nextPost;
   } catch (error) {
-    showToast("Не удалось сохранить публикацию", error.message);
+    showToast("РќРµ СѓРґР°Р»РѕСЃСЊ СЃРѕС…СЂР°РЅРёС‚СЊ РїСѓР±Р»РёРєР°С†РёСЋ", error.message);
   } finally {
     isPostSaving.value = false;
   }
@@ -519,7 +528,11 @@ async function handlePostEditorSubmit(payload) {
 
 async function handleDeletePost(post) {
   if (!session.value?.accessToken || !post?.id) return;
-  if (!window.confirm("Удалить эту публикацию?")) return;
+  if (post.user_id !== session.value?.user?.id) {
+    showToast("РЈРґР°Р»РµРЅРёРµ РЅРµРґРѕСЃС‚СѓРїРЅРѕ", "РЈРґР°Р»СЏС‚СЊ РјРѕР¶РЅРѕ С‚РѕР»СЊРєРѕ СЃРІРѕРё РїСѓР±Р»РёРєР°С†РёРё.");
+    return;
+  }
+  if (!window.confirm("РЈРґР°Р»РёС‚СЊ СЌС‚Сѓ РїСѓР±Р»РёРєР°С†РёСЋ?")) return;
 
   isPostDeleting.value = true;
 
@@ -530,9 +543,10 @@ async function handleDeletePost(post) {
     });
     selectedPost.value = null;
     await reloadFeed();
-    showToast("Публикация удалена", "Карточка больше не отображается в вашей ленте.");
+    await refreshOwnPostsCount();
+    showToast("РџСѓР±Р»РёРєР°С†РёСЏ СѓРґР°Р»РµРЅР°", "РљР°СЂС‚РѕС‡РєР° Р±РѕР»СЊС€Рµ РЅРµ РѕС‚РѕР±СЂР°Р¶Р°РµС‚СЃСЏ РІ РІР°С€РµР№ Р»РµРЅС‚Рµ.");
   } catch (error) {
-    showToast("Не удалось удалить публикацию", error.message);
+    showToast("РќРµ СѓРґР°Р»РѕСЃСЊ СѓРґР°Р»РёС‚СЊ РїСѓР±Р»РёРєР°С†РёСЋ", error.message);
   } finally {
     isPostDeleting.value = false;
   }
@@ -540,23 +554,19 @@ async function handleDeletePost(post) {
 
 async function handleFindMoreClick() {
   try {
-    if (session.value?.accessToken) {
-      await seedDemoPosts({
-        token: session.value.accessToken,
-        count: 8,
-        append: true,
-      });
-    } else {
-      await seedPublicDemoPosts({
-        count: 8,
-        append: true,
-      });
+    if (isLoadingMore.value || isInitialLoading.value) {
+      return;
     }
 
-    await reloadFeed();
-    showToast("Подборка обновлена", "В ленту добавлены новые ролики.");
+    if (!hasMore.value) {
+      showToast("Р‘РѕР»СЊС€Рµ РїСѓР±Р»РёРєР°С†РёР№ РЅРµС‚", "РќРёР¶РЅСЏСЏ РіСЂР°РЅРёС†Р° Р»РµРЅС‚С‹ СѓР¶Рµ РґРѕСЃС‚РёРіРЅСѓС‚Р°.");
+      return;
+    }
+
+    await loadNextBatch();
+    showToast("Лента обновлена", "Загружена следующая порция публикаций.");
   } catch (error) {
-    showToast("Не удалось загрузить новые ролики", error.message);
+    showToast("РќРµ СѓРґР°Р»РѕСЃСЊ Р·Р°РіСЂСѓР·РёС‚СЊ РЅРѕРІС‹Рµ СЂРѕР»РёРєРё", error.message);
   }
 }
 
@@ -565,15 +575,15 @@ async function handleLogout() {
   session.value = null;
   isProfileModalOpen.value = false;
   favoritePostIds.value = new Set();
+  ownPostsCount.value = 0;
 
   if (isFavoritesView.value) {
     router.push("/");
   }
 
   try {
-    await loadPublicFeed();
     await reloadFeed();
-    showToast("Вы вышли из аккаунта", "На главной странице остались только функции, доступные без авторизации.");
+    showToast("Р’С‹ РІС‹С€Р»Рё РёР· Р°РєРєР°СѓРЅС‚Р°", "РќР° РіР»Р°РІРЅРѕР№ СЃС‚СЂР°РЅРёС†Рµ РѕСЃС‚Р°Р»РёСЃСЊ С‚РѕР»СЊРєРѕ С„СѓРЅРєС†РёРё, РґРѕСЃС‚СѓРїРЅС‹Рµ Р±РµР· Р°РІС‚РѕСЂРёР·Р°С†РёРё.");
   } catch (error) {
     errorText.value = error.message;
   }
@@ -581,7 +591,7 @@ async function handleLogout() {
 
 async function handleDeleteAccount() {
   if (!session.value?.user?.id) return;
-  if (!window.confirm("Удалить аккаунт и связанные публикации?")) return;
+  if (!window.confirm("РЈРґР°Р»РёС‚СЊ Р°РєРєР°СѓРЅС‚ Рё СЃРІСЏР·Р°РЅРЅС‹Рµ РїСѓР±Р»РёРєР°С†РёРё?")) return;
 
   isUserDeleting.value = true;
 
@@ -594,16 +604,16 @@ async function handleDeleteAccount() {
     isProfileModalOpen.value = false;
     selectedPost.value = null;
     favoritePostIds.value = new Set();
+    ownPostsCount.value = 0;
 
     if (isFavoritesView.value) {
       router.push("/");
     }
 
-    await loadPublicFeed();
     await reloadFeed();
-    showToast("Аккаунт удален", "Вы вернулись в публичный режим просмотра.");
+    showToast("РђРєРєР°СѓРЅС‚ СѓРґР°Р»РµРЅ", "Р’С‹ РІРµСЂРЅСѓР»РёСЃСЊ РІ РїСѓР±Р»РёС‡РЅС‹Р№ СЂРµР¶РёРј РїСЂРѕСЃРјРѕС‚СЂР°.");
   } catch (error) {
-    showToast("Не удалось удалить аккаунт", error.message);
+    showToast("РќРµ СѓРґР°Р»РѕСЃСЊ СѓРґР°Р»РёС‚СЊ Р°РєРєР°СѓРЅС‚", error.message);
   } finally {
     isUserDeleting.value = false;
   }
@@ -611,8 +621,8 @@ async function handleDeleteAccount() {
 
 function handlePlaceholder(label) {
   const payload = {
-    title: `${label} недоступно`,
-    text: "Функция пока недоступна.",
+    title: `${label} РЅРµРґРѕСЃС‚СѓРїРЅРѕ`,
+    text: "Р¤СѓРЅРєС†РёСЏ РїРѕРєР° РЅРµРґРѕСЃС‚СѓРїРЅР°.",
   };
 
   showToast(payload.title, payload.text);
@@ -620,7 +630,7 @@ function handlePlaceholder(label) {
 
 function handleAuthRequired(reason) {
   openAuthModal("login");
-  showToast("Нужно войти в аккаунт", `${reason} доступно только после регистрации или входа.`);
+  showToast("РќСѓР¶РЅРѕ РІРѕР№С‚Рё РІ Р°РєРєР°СѓРЅС‚", `${reason} РґРѕСЃС‚СѓРїРЅРѕ С‚РѕР»СЊРєРѕ РїРѕСЃР»Рµ СЂРµРіРёСЃС‚СЂР°С†РёРё РёР»Рё РІС…РѕРґР°.`);
 }
 
 function isPostLiked(postId) {
@@ -629,7 +639,7 @@ function isPostLiked(postId) {
 
 function toggleLike(post) {
   if (!session.value?.user?.id) {
-    handleAuthRequired("Избранное");
+    handleAuthRequired("РР·Р±СЂР°РЅРЅРѕРµ");
     return;
   }
 
@@ -637,10 +647,10 @@ function toggleLike(post) {
 
   if (nextSet.has(post.id)) {
     nextSet.delete(post.id);
-    showToast("Удалено из избранного", "Публикация убрана из сохраненного списка.");
+    showToast("РЈРґР°Р»РµРЅРѕ РёР· РёР·Р±СЂР°РЅРЅРѕРіРѕ", "РџСѓР±Р»РёРєР°С†РёСЏ СѓР±СЂР°РЅР° РёР· СЃРѕС…СЂР°РЅРµРЅРЅРѕРіРѕ СЃРїРёСЃРєР°.");
   } else {
     nextSet.add(post.id);
-    showToast("Добавлено в избранное", "Публикация сохранена в избранном.");
+    showToast("Р”РѕР±Р°РІР»РµРЅРѕ РІ РёР·Р±СЂР°РЅРЅРѕРµ", "РџСѓР±Р»РёРєР°С†РёСЏ СЃРѕС…СЂР°РЅРµРЅР° РІ РёР·Р±СЂР°РЅРЅРѕРј.");
   }
 
   favoritePostIds.value = nextSet;
@@ -649,7 +659,7 @@ function toggleLike(post) {
 
 function handleNavigate(target) {
   if (target === "favorites" && !isAuthenticated.value) {
-    handleAuthRequired("Избранное");
+    handleAuthRequired("РР·Р±СЂР°РЅРЅРѕРµ");
     return;
   }
 
@@ -668,7 +678,7 @@ function handleSearch() {
     requestAnimationFrame(onScroll);
   }
 
-  showToast("Лента обновлена", `По текущим фильтрам показано ${visiblePosts.value.length} публикаций.`);
+  showToast("Р›РµРЅС‚Р° РѕР±РЅРѕРІР»РµРЅР°", `РџРѕ С‚РµРєСѓС‰РёРј С„РёР»СЊС‚СЂР°Рј РїРѕРєР°Р·Р°РЅРѕ ${visiblePosts.value.length} РїСѓР±Р»РёРєР°С†РёР№.`);
 }
 
 function showToast(title, text = "") {
@@ -687,11 +697,11 @@ function showToast(title, text = "") {
 async function bootstrap() {
   try {
     if (isAuthenticated.value && session.value?.user?.id) {
-      viewerUserId.value = session.value.user.id;
       favoritePostIds.value = loadFavoritePostIds(session.value.user.id);
+      await refreshOwnPostsCount();
     } else {
       favoritePostIds.value = new Set();
-      await loadPublicFeed();
+      ownPostsCount.value = 0;
     }
 
     await reloadFeed();
@@ -895,3 +905,5 @@ onBeforeUnmount(() => {
   }
 }
 </style>
+
+

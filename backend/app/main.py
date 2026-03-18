@@ -6,6 +6,9 @@ from app.api.router import api_router
 from app.core.config import settings
 from app.db.postgres import PostgresManager
 from app.db.redis import RedisManager
+from app.repositories.post_repository import PostRepository
+from app.repositories.user_repository import UserRepository
+from app.utils.showcase_seed import ensure_showcase_feed
 
 postgres_manager = PostgresManager()
 redis_manager = RedisManager()
@@ -19,6 +22,10 @@ async def lifespan(app: FastAPI):
 
     app.state.db_pool = postgres_manager.pool
     app.state.redis = redis_manager.client
+    await ensure_showcase_feed(
+        user_repository=UserRepository(pool=postgres_manager.pool),
+        post_repository=PostRepository(pool=postgres_manager.pool),
+    )
 
     try:
         yield

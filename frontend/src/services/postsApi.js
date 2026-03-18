@@ -83,6 +83,15 @@ export async function fetchPostsByUser({ userId, limit, offset }) {
   return request(`/posts/user/${userId}?${params.toString()}`);
 }
 
+export async function fetchFeedPosts({ limit, offset }) {
+  const params = new URLSearchParams({
+    limit: String(limit),
+    offset: String(offset),
+  });
+
+  return request(`/posts/feed?${params.toString()}`);
+}
+
 export async function registerUser({ name, email, password, avatarData }) {
   return request("/users", {
     method: "POST",

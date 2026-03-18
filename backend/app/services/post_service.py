@@ -49,6 +49,9 @@ class PostService:
         await self._refresh_user_cache(user_id=user_id)
         return post
 
+    async def get_feed_posts(self, limit: int = 10, offset: int = 0) -> list[dict]:
+        return await self.post_repository.get_feed_posts(limit=limit, offset=offset)
+
     async def update_post(
         self,
         post_id: int,
