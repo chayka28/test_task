@@ -98,7 +98,7 @@
       <ProfileModal
         v-if="isProfileModalOpen && session?.user"
         :user="session.user"
-        :posts-count="posts.length"
+        :posts-count="ownPostsCount"
         :is-loading="isProfileSaving"
         :is-deleting="isUserDeleting"
         @close="isProfileModalOpen = false"
@@ -145,12 +145,11 @@ import {
   createPost,
   deletePost,
   deleteUserById,
-  fetchDemoUser,
+  fetchFeedPosts,
   fetchPostsByUser,
   loginUser,
   registerUser,
   seedDemoPosts,
-  seedPublicDemoPosts,
   updatePost,
   updateUserName,
 } from "../services/postsApi";
@@ -170,9 +169,8 @@ const pageSize = 12;
 
 const posts = ref([]);
 const selectedPost = ref(null);
-const viewerUserId = ref(null);
-const publicViewer = ref(null);
 const session = ref(loadSession());
+const ownPostsCount = ref(0);
 
 const isInitialLoading = ref(false);
 const isLoadingMore = ref(false);
@@ -204,7 +202,6 @@ const sortMode = ref("all");
 let toastTimerId = null;
 
 const isAuthenticated = computed(() => Boolean(session.value?.accessToken));
-const activeViewer = computed(() => session.value?.user || publicViewer.value || null);
 const isFavoritesView = computed(() => props.viewMode === "favorites");
 
 const visiblePosts = computed(() => {
@@ -274,7 +271,7 @@ const profileAvatar = computed(() => session.value?.user?.avatar_data || "");
 const avatarSeed = computed(() => session.value?.user?.id || 1);
 
 const radarCount = computed(() => Math.min(999, 120 + posts.value.length * 7));
-const tokenTotal = computed(() => 4200 + (activeViewer.value?.id || 1) * 37);
+const tokenTotal = computed(() => 4200 + (session.value?.user?.id || 1) * 37);
 const tokenUsed = computed(() => Math.min(tokenTotal.value, 680 + posts.value.length * 19));
 const estimatedTotal = computed(() => (hasMore.value ? Math.max(3000, posts.value.length * 120) : posts.value.length));
 const canManageSelectedPost = computed(() => {
@@ -287,7 +284,7 @@ const canManageSelectedPost = computed(() => {
 });
 
 async function loadNextBatch() {
-  if (!viewerUserId.value || !hasMore.value || isInitialLoading.value || isLoadingMore.value) return;
+  if (!hasMore.value || isInitialLoading.value || isLoadingMore.value) return;
 
   if (offset.value === 0) {
     isInitialLoading.value = true;
@@ -298,8 +295,7 @@ async function loadNextBatch() {
   errorText.value = "";
 
   try {
-    const nextPosts = await fetchPostsByUser({
-      userId: viewerUserId.value,
+    const nextPosts = await fetchFeedPosts({
       limit: pageSize,
       offset: offset.value,
     });
@@ -320,8 +316,6 @@ async function loadNextBatch() {
 }
 
 function onScroll() {
-  if (!viewerUserId.value) return;
-
   const viewportBottom = window.scrollY + window.innerHeight;
   const threshold = document.documentElement.scrollHeight - 500;
 
@@ -331,8 +325,6 @@ function onScroll() {
 }
 
 async function reloadFeed() {
-  if (!viewerUserId.value) return;
-
   posts.value = [];
   selectedPost.value = null;
   offset.value = 0;
@@ -340,9 +332,22 @@ async function reloadFeed() {
   await loadNextBatch();
 }
 
-async function loadPublicFeed() {
-  publicViewer.value = await fetchDemoUser();
-  viewerUserId.value = publicViewer.value.id;
+async function refreshOwnPostsCount() {
+  if (!session.value?.user?.id) {
+    ownPostsCount.value = 0;
+    return;
+  }
+
+  try {
+    const ownPosts = await fetchPostsByUser({
+      userId: session.value.user.id,
+      limit: 50,
+      offset: 0,
+    });
+    ownPostsCount.value = ownPosts.length;
+  } catch {
+    ownPostsCount.value = posts.value.filter((post) => post.user_id === session.value?.user?.id).length;
+  }
 }
 
 function openPost(post) {
@@ -352,6 +357,11 @@ function openPost(post) {
 function openPostEditor(mode, post = null) {
   if (!session.value?.accessToken) {
     handleAuthRequired(mode === "create" ? "Создание публикации" : "Редактирование публикации");
+    return;
+  }
+
+  if (mode === "edit" && post?.user_id !== session.value?.user?.id) {
+    showToast("Редактирование недоступно", "Изменять можно только свои публикации.");
     return;
   }
 
@@ -395,17 +405,16 @@ async function handleRegister(form) {
     saveSession(nextSession);
     session.value = nextSession;
     favoritePostIds.value = loadFavoritePostIds(response.user.id);
-    publicViewer.value = null;
-    viewerUserId.value = response.user.id;
 
     await seedDemoPosts({
       token: nextSession.accessToken,
-      count: 18,
+      count: 4,
       append: false,
     });
 
     isAuthModalOpen.value = false;
     await reloadFeed();
+    await refreshOwnPostsCount();
     showToast("Аккаунт создан", "Теперь доступны избранное, профиль и работа с подборкой.");
   } catch (error) {
     authErrorText.value = error.message;
@@ -434,11 +443,10 @@ async function handleLogin(form) {
     saveSession(nextSession);
     session.value = nextSession;
     favoritePostIds.value = loadFavoritePostIds(response.user.id);
-    publicViewer.value = null;
-    viewerUserId.value = response.user.id;
 
     isAuthModalOpen.value = false;
     await reloadFeed();
+    await refreshOwnPostsCount();
     showToast("Вход выполнен", "Можно продолжать работу с личной лентой.");
   } catch (error) {
     authErrorText.value = error.message;
@@ -509,6 +517,7 @@ async function handlePostEditorSubmit(payload) {
     isPostEditorOpen.value = false;
     postEditorInitialPost.value = null;
     await reloadFeed();
+    await refreshOwnPostsCount();
     selectedPost.value = nextPost;
   } catch (error) {
     showToast("Не удалось сохранить публикацию", error.message);
@@ -519,6 +528,10 @@ async function handlePostEditorSubmit(payload) {
 
 async function handleDeletePost(post) {
   if (!session.value?.accessToken || !post?.id) return;
+  if (post.user_id !== session.value?.user?.id) {
+    showToast("Удаление недоступно", "Удалять можно только свои публикации.");
+    return;
+  }
   if (!window.confirm("Удалить эту публикацию?")) return;
 
   isPostDeleting.value = true;
@@ -530,6 +543,7 @@ async function handleDeletePost(post) {
     });
     selectedPost.value = null;
     await reloadFeed();
+    await refreshOwnPostsCount();
     showToast("Публикация удалена", "Карточка больше не отображается в вашей ленте.");
   } catch (error) {
     showToast("Не удалось удалить публикацию", error.message);
@@ -540,21 +554,17 @@ async function handleDeletePost(post) {
 
 async function handleFindMoreClick() {
   try {
-    if (session.value?.accessToken) {
-      await seedDemoPosts({
-        token: session.value.accessToken,
-        count: 8,
-        append: true,
-      });
-    } else {
-      await seedPublicDemoPosts({
-        count: 8,
-        append: true,
-      });
+    if (isLoadingMore.value || isInitialLoading.value) {
+      return;
     }
 
-    await reloadFeed();
-    showToast("Подборка обновлена", "В ленту добавлены новые ролики.");
+    if (!hasMore.value) {
+      showToast("Больше публикаций нет", "Нижняя граница ленты уже достигнута.");
+      return;
+    }
+
+    await loadNextBatch();
+    showToast("Лента обновлена", "Загружена следующая порция публикаций.");
   } catch (error) {
     showToast("Не удалось загрузить новые ролики", error.message);
   }
@@ -565,13 +575,13 @@ async function handleLogout() {
   session.value = null;
   isProfileModalOpen.value = false;
   favoritePostIds.value = new Set();
+  ownPostsCount.value = 0;
 
   if (isFavoritesView.value) {
     router.push("/");
   }
 
   try {
-    await loadPublicFeed();
     await reloadFeed();
     showToast("Вы вышли из аккаунта", "На главной странице остались только функции, доступные без авторизации.");
   } catch (error) {
@@ -594,12 +604,12 @@ async function handleDeleteAccount() {
     isProfileModalOpen.value = false;
     selectedPost.value = null;
     favoritePostIds.value = new Set();
+    ownPostsCount.value = 0;
 
     if (isFavoritesView.value) {
       router.push("/");
     }
 
-    await loadPublicFeed();
     await reloadFeed();
     showToast("Аккаунт удален", "Вы вернулись в публичный режим просмотра.");
   } catch (error) {
@@ -687,11 +697,11 @@ function showToast(title, text = "") {
 async function bootstrap() {
   try {
     if (isAuthenticated.value && session.value?.user?.id) {
-      viewerUserId.value = session.value.user.id;
       favoritePostIds.value = loadFavoritePostIds(session.value.user.id);
+      await refreshOwnPostsCount();
     } else {
       favoritePostIds.value = new Set();
-      await loadPublicFeed();
+      ownPostsCount.value = 0;
     }
 
     await reloadFeed();
@@ -895,3 +905,5 @@ onBeforeUnmount(() => {
   }
 }
 </style>
+
+

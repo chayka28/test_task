@@ -13,6 +13,19 @@ PositivePostId = Annotated[int, Path(ge=1, description="Positive post id")]
 PositiveUserId = Annotated[int, Path(ge=1, description="Positive user id")]
 
 
+@router.get(
+    "/feed",
+    response_model=list[PostOut],
+    summary="Get public feed posts",
+)
+async def get_feed_posts(
+    limit: int = Query(default=10, ge=1, le=50),
+    offset: int = Query(default=0, ge=0),
+    post_service: PostService = Depends(get_post_service),
+) -> list[PostOut]:
+    return await post_service.get_feed_posts(limit=limit, offset=offset)
+
+
 @router.post(
     "",
     response_model=PostOut,

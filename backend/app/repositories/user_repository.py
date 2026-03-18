@@ -43,6 +43,17 @@ class UserRepository:
             row = await connection.fetchrow(query, email)
         return dict(row) if row else None
 
+    async def get_by_email(self, email: str) -> dict | None:
+        query = """
+            SELECT id, name, email, avatar_data, created_at, updated_at
+            FROM users
+            WHERE email = $1
+            LIMIT 1
+        """
+        async with self.pool.acquire() as connection:
+            row = await connection.fetchrow(query, email)
+        return dict(row) if row else None
+
     async def get_by_name(self, name: str) -> dict | None:
         query = """
             SELECT id, name, email, avatar_data, created_at, updated_at
