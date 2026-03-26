@@ -356,9 +356,9 @@ function isRouteActive(routeName, fallback = false) {
 .section-title {
   margin: 0 0 10px;
   color: #98a5b0;
-  font-size: 11px;
-  line-height: 1.2;
-  font-weight: 700;
+  font-size: var(--font-heading-6-size);
+  line-height: var(--font-heading-6-line);
+  font-weight: var(--font-heading-6-weight);
 }
 
 .menu-list {
@@ -367,7 +367,7 @@ function isRouteActive(routeName, fallback = false) {
 }
 
 .menu-item {
-  min-height: 44px;
+  min-height: 50px;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -394,9 +394,12 @@ function isRouteActive(routeName, fallback = false) {
 }
 
 .menu-label {
-  font-size: 12px;
-  line-height: 1.2;
-  font-weight: 500;
+  display: block;
+  flex: 1 1 auto;
+  min-height: 24px;
+  font-size: var(--font-body-medium-size);
+  line-height: var(--font-body-medium-line);
+  font-weight: var(--font-body-medium-weight);
 }
 
 .menu-badge {
@@ -552,8 +555,9 @@ function isRouteActive(routeName, fallback = false) {
   padding: 0;
   background: transparent;
   color: #8a97a0;
-  font-size: 13px;
-  line-height: 1;
+  font-size: var(--font-body-small-size);
+  line-height: var(--font-body-small-line);
+  font-weight: var(--font-body-small-weight);
   cursor: pointer;
 }
 
@@ -638,16 +642,17 @@ function isRouteActive(routeName, fallback = false) {
 .profile-name {
   margin: 0;
   color: #6b7b89;
-  font-size: 13px;
-  line-height: 1.2;
-  font-weight: 700;
+  font-size: var(--font-body-small-size);
+  line-height: var(--font-body-small-line);
+  font-weight: var(--font-body-small-weight);
 }
 
 .profile-phone {
   margin: 2px 0 0;
   color: #a2aab3;
-  font-size: 11px;
-  line-height: 1.2;
+  font-size: var(--font-caption-size);
+  line-height: var(--font-caption-line);
+  font-weight: var(--font-caption-weight);
 }
 
 .profile-action {
@@ -685,29 +690,115 @@ function isRouteActive(routeName, fallback = false) {
 }
 
 @media (max-width: 720px) {
-  .sidebar,
-  .sidebar--collapsed {
-    width: 100%;
+  .sidebar {
+    width: min(286px, calc(100vw - 28px));
     flex-basis: auto;
-    height: auto;
-    position: sticky;
-    z-index: 30;
+    height: 100vh;
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: 40;
     padding: 0 10px;
-    border-bottom: 1px solid #e5e9ef;
+    border-right: 1px solid #e5e9ef;
+    box-shadow: 0 18px 40px rgba(17, 24, 39, 0.12);
+    transform: translateX(-104%);
+    transition:
+      transform 0.28s ease,
+      width 0.28s ease;
+  }
+
+  .sidebar:not(.sidebar--collapsed) {
+    transform: translateX(0);
+  }
+
+  .sidebar--collapsed {
+    width: auto;
+    height: auto;
+    position: fixed;
+    inset: 10px auto auto 10px;
+    z-index: 30;
+    padding: 0;
+    border-right: 0;
+    border-bottom: 0;
+    background: transparent;
+    box-shadow: none;
+    transform: none;
+    overflow: visible;
   }
 
   .sidebar-scroll {
-    height: auto;
-    overflow: visible;
     padding: 10px 0 14px;
   }
 
+  .sidebar:not(.sidebar--collapsed) .sidebar-scroll {
+    height: 100%;
+    overflow-y: auto;
+  }
+
+  .sidebar--collapsed .sidebar-scroll {
+    height: auto;
+    overflow: visible;
+    padding: 0;
+  }
+
+  .logo-row {
+    min-height: 34px;
+  }
+
+  .sidebar--collapsed .logo-row {
+    width: fit-content;
+    min-height: 0;
+    padding: 10px 12px;
+    gap: 12px;
+    justify-content: flex-start;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.12);
+    backdrop-filter: blur(8px);
+    overflow: hidden;
+  }
+
+  .sidebar--collapsed .collapse-btn {
+    flex: 0 0 16px;
+    margin-left: 2px;
+  }
+
+  .sidebar--collapsed .collapsed-layout {
+    display: none;
+  }
+
+  .collapsed-layout {
+    flex: none;
+    display: grid;
+    gap: 12px;
+  }
+
   .shortcut-list {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    justify-items: center;
+    gap: 10px 6px;
+    padding-top: 10px;
+    overflow: visible;
+  }
+
+  .shortcut-item {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+  }
+
+  .collapsed-bottom {
+    margin-top: 0;
     flex-direction: row;
     justify-content: flex-start;
-    overflow-x: auto;
     gap: 10px;
-    padding: 14px 0 0;
+    padding: 0 2px 0 0;
+  }
+
+  .collapsed-avatar {
+    width: 42px;
+    height: 42px;
+    margin-left: auto;
   }
 
   .token-card,
@@ -718,8 +809,28 @@ function isRouteActive(routeName, fallback = false) {
 }
 
 @media (max-width: 560px) {
+  .sidebar {
+    width: min(272px, calc(100vw - 18px));
+  }
+
+  .sidebar--collapsed {
+    inset: 8px auto auto 8px;
+  }
+
+  .shortcut-list {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 8px 4px;
+  }
+
+  .shortcut-item,
+  .collapsed-avatar {
+    width: 40px;
+    height: 40px;
+  }
+
   .menu-label {
     font-size: 14px;
+    line-height: 24px;
   }
 
   .menu-badge {

@@ -427,8 +427,17 @@ h2 {
 
   .auth-card {
     max-height: calc(100vh - 20px);
-    padding: 24px 18px 18px;
+    padding: 54px 18px 18px;
     border-radius: 24px;
+  }
+
+  .close-btn {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    margin-left: auto;
+    display: grid;
+    background: rgba(238, 241, 245, 0.96);
   }
 
   .password-grid {

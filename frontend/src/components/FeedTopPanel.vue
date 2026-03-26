@@ -258,9 +258,9 @@ function handleRestrictedAction(label) {
   margin: 0;
   color: #ffffff;
   font-family: "Inter", Arial, sans-serif;
-  font-size: 24px;
-  line-height: 29px;
-  font-weight: 700;
+  font-size: var(--font-heading-3-size);
+  line-height: var(--font-heading-3-line);
+  font-weight: var(--font-heading-3-weight);
   letter-spacing: 0;
 }
 
@@ -281,9 +281,9 @@ function handleRestrictedAction(label) {
   align-items: center;
   gap: 8px;
   color: #303646;
-  font-size: 13px;
-  line-height: 1;
-  font-weight: 700;
+  font-size: var(--font-action-small-size);
+  line-height: var(--font-action-small-line);
+  font-weight: var(--font-action-small-weight);
 }
 
 .radar-btn img,
@@ -323,9 +323,9 @@ function handleRestrictedAction(label) {
   display: block;
   margin-bottom: 12px;
   color: #ffffff;
-  font-size: 14px;
-  line-height: 1.2;
-  font-weight: 700;
+  font-size: var(--font-heading-5-size);
+  line-height: var(--font-heading-5-line);
+  font-weight: var(--font-heading-5-semibold-weight);
 }
 
 .topic-list {
@@ -340,9 +340,9 @@ function handleRestrictedAction(label) {
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.97);
   color: #49535f;
-  font-size: 13px;
-  line-height: 1;
-  font-weight: 700;
+  font-size: var(--font-body-small-size);
+  line-height: var(--font-body-small-line);
+  font-weight: 400;
 }
 
 .topic-chip--active {
@@ -356,9 +356,9 @@ function handleRestrictedAction(label) {
 .search-label {
   margin: 0 0 11px;
   color: #ffffff;
-  font-size: 14px;
-  line-height: 1.2;
-  font-weight: 700;
+  font-size: var(--font-heading-5-size);
+  line-height: var(--font-heading-5-line);
+  font-weight: var(--font-heading-5-semibold-weight);
 }
 
 .search-shell {
@@ -398,9 +398,9 @@ function handleRestrictedAction(label) {
   gap: 10px;
   min-width: 0;
   color: #ffffff;
-  font-size: 14px;
-  line-height: 1.1;
-  font-weight: 500;
+  font-size: var(--font-heading-5-size);
+  line-height: var(--font-heading-5-line);
+  font-weight: 400;
 }
 
 .search-input input {
@@ -490,10 +490,10 @@ function handleRestrictedAction(label) {
 .results-query {
   color: #1f2632;
   font-family: "Inter", Arial, sans-serif;
-  font-size: 18px;
-  line-height: 1.2;
-  font-weight: 800;
-  letter-spacing: -0.03em;
+  font-size: var(--font-heading-4-size);
+  line-height: var(--font-heading-4-line);
+  font-weight: var(--font-heading-4-weight);
+  letter-spacing: 0;
 }
 
 .results-count {
@@ -564,7 +564,11 @@ function handleRestrictedAction(label) {
   }
 
   .search-shell {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .search-field--wide {
+    grid-column: 1 / -1;
   }
 }
 
@@ -577,14 +581,39 @@ function handleRestrictedAction(label) {
   .hero-card {
     min-height: auto;
     padding: 18px 16px 18px;
+    background-size: cover;
   }
 
   .hero-head {
     margin-top: 20px;
   }
 
+  .hero-title-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .hero-actions {
+    flex-wrap: wrap;
+  }
+
   .hero-head h2 {
-    font-size: 28px;
+    font-size: 22px;
+    line-height: 27px;
+  }
+
+  .search-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .results-head {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .filters-row {
+    flex-wrap: wrap;
   }
 
   .hero-shape--top {
@@ -608,7 +637,8 @@ function handleRestrictedAction(label) {
   }
 
   .hero-head h2 {
-    font-size: 24px;
+    font-size: 20px;
+    line-height: 24px;
   }
 
   .hero-actions,
@@ -618,16 +648,32 @@ function handleRestrictedAction(label) {
     flex-wrap: wrap;
   }
 
+  .results-radar-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
   .hint-row {
     align-items: flex-start;
   }
 
   .results-query {
     font-size: 18px;
+    line-height: 22px;
   }
 
   .results-count {
     white-space: normal;
+  }
+
+  .search-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .submit-btn,
+  .filter-btn {
+    width: 100%;
+    justify-content: center;
   }
 }
 </style>

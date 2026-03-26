@@ -14,6 +14,40 @@
   --radius-md: 12px;
   --radius-sm: 8px;
   --shadow-soft: 0 20px 60px rgba(8, 15, 52, 0.18);
+
+  --font-body-medium-size: 16px;
+  --font-body-medium-line: 24px;
+  --font-body-medium-weight: 600;
+
+  --font-heading-6-size: 14px;
+  --font-heading-6-line: 21px;
+  --font-heading-6-weight: 600;
+
+  --font-body-small-size: 14px;
+  --font-body-small-line: 21px;
+  --font-body-small-weight: 600;
+
+  --font-caption-size: 12px;
+  --font-caption-line: 14.5px;
+  --font-caption-weight: 400;
+
+  --font-heading-4-size: 20px;
+  --font-heading-4-line: 24px;
+  --font-heading-4-weight: 600;
+
+  --font-action-small-size: 12px;
+  --font-action-small-line: 16px;
+  --font-action-small-weight: 600;
+
+  --font-heading-5-size: 16px;
+  --font-heading-5-line: 24px;
+  --font-heading-5-weight: 400;
+
+  --font-heading-5-semibold-weight: 600;
+
+  --font-heading-3-size: 24px;
+  --font-heading-3-line: 29px;
+  --font-heading-3-weight: 600;
 }
 
 *,

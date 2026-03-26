@@ -13,13 +13,21 @@
         :profile-phone="profilePhone"
         :profile-avatar="profileAvatar"
         :avatar-seed="avatarSeed"
-        @toggle-sidebar="isSidebarCollapsed = !isSidebarCollapsed"
+        @toggle-sidebar="toggleSidebar"
         @toggle-creative="isCreativeExpanded = !isCreativeExpanded"
-        @open-auth="openAuthModal('register')"
-        @open-profile="isProfileModalOpen = true"
+        @open-auth="handleOpenAuthFromSidebar"
+        @open-profile="handleOpenProfileFromSidebar"
         @navigate="handleNavigate"
         @placeholder="handlePlaceholder"
       />
+
+      <button
+        v-if="isMobileLayout && !isSidebarCollapsed"
+        type="button"
+        class="sidebar-backdrop"
+        aria-label="Закрыть меню"
+        @click="isSidebarCollapsed = true"
+      ></button>
 
       <section class="content-area">
         <div class="content-stack">
@@ -536,6 +544,24 @@ function openAuthModal(mode = "register") {
   isAuthModalOpen.value = true;
 }
 
+function toggleSidebar() {
+  isSidebarCollapsed.value = !isSidebarCollapsed.value;
+}
+
+function handleOpenAuthFromSidebar() {
+  if (isMobileLayout.value) {
+    isSidebarCollapsed.value = true;
+  }
+  openAuthModal("register");
+}
+
+function handleOpenProfileFromSidebar() {
+  if (isMobileLayout.value) {
+    isSidebarCollapsed.value = true;
+  }
+  isProfileModalOpen.value = true;
+}
+
 async function handleRegister(form) {
   isAuthBusy.value = true;
   authErrorText.value = "";
@@ -811,6 +837,10 @@ async function handleNavigate(target) {
     return;
   }
 
+  if (isMobileLayout.value) {
+    isSidebarCollapsed.value = true;
+  }
+
   if (target === "feed") {
     await router.push("/");
     return;
@@ -938,8 +968,18 @@ onBeforeUnmount(() => {
 .content-area {
   position: relative;
   flex: 1;
+  min-width: 0;
   padding: 10px 12px 118px 12px;
   background: #f4f5f6;
+}
+
+.sidebar-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 35;
+  border: 0;
+  background: rgba(15, 23, 42, 0.26);
+  backdrop-filter: blur(2px);
 }
 
 .content-stack {
@@ -1038,6 +1078,11 @@ onBeforeUnmount(() => {
   font-weight: 500;
 }
 
+.counter-pill span:last-child {
+  min-width: 0;
+  white-space: nowrap;
+}
+
 .counter-ring {
   width: 20px;
   height: 20px;
@@ -1107,9 +1152,45 @@ onBeforeUnmount(() => {
   }
 }
 
-@media (max-width: 860px) {
+@media (max-width: 1260px) {
   .post-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .floating-actions {
+    left: calc(var(--sidebar-width) + 12px);
+    right: 12px;
+  }
+}
+
+@media (max-width: 860px) {
+  .post-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .floating-actions {
+    height: auto;
+    display: grid;
+    gap: 10px;
+  }
+
+  .more-btn,
+  .counter-pill {
+    position: static;
+  }
+
+  .more-btn {
+    width: min(320px, 100%);
+    justify-self: center;
+    transform: none;
+  }
+
+  .more-btn:hover {
+    transform: translateY(-1px);
+  }
+
+  .counter-pill {
+    justify-self: end;
   }
 }
 
@@ -1120,7 +1201,7 @@ onBeforeUnmount(() => {
 
   .content-area {
     width: 100%;
-    padding: 10px 10px 126px;
+    padding: 62px 10px 148px;
   }
 
   .content-stack {
@@ -1133,12 +1214,16 @@ onBeforeUnmount(() => {
 
   .floating-actions,
   .floating-actions--collapsed {
+    position: fixed;
     left: 10px;
     right: 10px;
-    bottom: 10px;
+    bottom: max(10px, env(safe-area-inset-bottom));
+    margin-top: 0;
     height: auto;
     display: grid;
-    gap: 10px;
+    gap: 12px;
+    z-index: 18;
+    pointer-events: none;
   }
 
   .more-btn,
@@ -1148,6 +1233,14 @@ onBeforeUnmount(() => {
     transform: none;
     justify-content: center;
     font-size: 14px;
+    border-radius: 18px;
+    box-shadow: 0 10px 26px rgba(15, 23, 42, 0.14);
+  }
+
+  .counter-pill {
+    min-height: 54px;
+    padding: 0 16px;
+    justify-content: center;
   }
 
   .more-btn:hover {
@@ -1164,12 +1257,32 @@ onBeforeUnmount(() => {
 
 @media (max-width: 560px) {
   .content-area {
-    padding: 8px 8px 126px;
+    padding: 56px 8px 142px;
   }
 
   .post-grid {
     grid-template-columns: 1fr;
     gap: 12px;
+  }
+
+  .counter-pill {
+    width: 100%;
+    min-height: 50px;
+    font-size: 13px;
+  }
+
+  .more-btn {
+    height: 50px;
+    padding: 0 16px;
+    font-size: 15px;
+  }
+
+  .floating-actions,
+  .floating-actions--collapsed {
+    left: 8px;
+    right: 8px;
+    bottom: max(8px, env(safe-area-inset-bottom));
+    gap: 10px;
   }
 }
 </style>

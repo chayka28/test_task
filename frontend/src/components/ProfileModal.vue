@@ -334,7 +334,16 @@ button:disabled {
 
 @media (max-width: 720px) {
   .profile-card {
-    padding: 24px 18px;
+    padding: 54px 18px 24px;
+  }
+
+  .close-btn {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    margin-left: auto;
+    display: grid;
+    background: rgba(238, 241, 245, 0.96);
   }
 
   .profile-hero {

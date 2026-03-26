@@ -433,16 +433,17 @@ onBeforeUnmount(() => {
 .author-name {
   margin: 0;
   color: #2f38c7;
-  font-size: 14px;
-  line-height: 1.1;
-  font-weight: 800;
+  font-size: var(--font-heading-6-size);
+  line-height: var(--font-heading-6-line);
+  font-weight: var(--font-heading-6-weight);
 }
 
 .author-sub {
   margin: 2px 0 0;
   color: #7d8a96;
-  font-size: 12px;
-  line-height: 1.2;
+  font-size: var(--font-caption-size);
+  line-height: var(--font-caption-line);
+  font-weight: var(--font-caption-weight);
 }
 
 .author-tool-btn {
@@ -464,9 +465,9 @@ onBeforeUnmount(() => {
 .title {
   margin: 8px 0 2px;
   color: #202b38;
-  font-size: 12px;
-  line-height: 14px;
-  font-weight: 500;
+  font-size: var(--font-caption-size);
+  line-height: var(--font-caption-line);
+  font-weight: var(--font-caption-weight);
   min-height: 14px;
   display: -webkit-box;
   -webkit-line-clamp: 1;
@@ -477,9 +478,9 @@ onBeforeUnmount(() => {
 .text {
   margin: 0;
   color: #536875;
-  font-size: 12px;
-  line-height: 15px;
-  font-weight: 500;
+  font-size: var(--font-caption-size);
+  line-height: var(--font-caption-line);
+  font-weight: var(--font-caption-weight);
   min-height: 45px;
   display: -webkit-box;
   -webkit-line-clamp: 3;
@@ -495,9 +496,9 @@ onBeforeUnmount(() => {
   display: block;
   margin: 0 0 9px;
   color: #a3aeb8;
-  font-size: 12px;
-  line-height: 1;
-  font-weight: 500;
+  font-size: var(--font-caption-size);
+  line-height: var(--font-caption-line);
+  font-weight: var(--font-caption-weight);
 }
 
 .bottom-action-btn {
