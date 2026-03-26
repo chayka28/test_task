@@ -19,8 +19,8 @@
           <span>{{ badgeToRender.label }}</span>
         </div>
 
-        <div class="media-header" :class="{ 'media-header--offset': badgeToRender }">
-          <div class="tags">
+        <div class="media-header">
+          <div class="tags" :class="{ 'tags--offset': badgeToRender }">
             <span class="tag-pill">
               <img src="/assets/icons/Vector-33.png" alt="" class="tag-icon" />
               <span>Reels</span>
@@ -316,13 +316,13 @@ onBeforeUnmount(() => {
   align-items: flex-start;
 }
 
-.media-header--offset {
-  top: 38px;
-}
-
 .tags {
   display: grid;
   gap: 6px;
+}
+
+.tags--offset {
+  margin-top: 30px;
 }
 
 .tag-pill {

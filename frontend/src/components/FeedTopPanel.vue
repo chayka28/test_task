@@ -9,20 +9,14 @@
         <span class="hero-shape hero-shape--light"></span>
       </div>
 
-      <button type="button" class="back-btn" @click="$emit('placeholder', 'Назад')">
+      <button type="button" class="back-btn" @click="$emit('back')">
         <img src="/assets/icons/Vector-29.png" alt="" class="back-arrow" />
         <span>Назад</span>
       </button>
 
-      <div class="hero-query-line">
-        <img src="/assets/icons/Vector-32.png" alt="" class="hero-query-icon" />
-        <span>бизнес история</span>
-      </div>
-
       <div class="hero-head">
         <div class="hero-title-row">
           <h2>{{ resultsTitle }}</h2>
-
           <div class="hero-actions">
             <button type="button" class="radar-btn" @click="handleRestrictedAction('Добавить в радар')">
               <img src="/assets/icons/Vector-31.png" alt="" />
@@ -178,7 +172,7 @@ defineProps({
   },
 });
 
-const emit = defineEmits(["update:query", "update:selectedTopic", "update:sortMode", "search", "placeholder"]);
+const emit = defineEmits(["update:query", "update:selectedTopic", "update:sortMode", "search", "placeholder", "back"]);
 
 const topics = ["Базы данных", "ИИ", "Чат-боты", "Программирование", "Айти", "Макбук", "Кофе"];
 
@@ -200,10 +194,10 @@ function handleRestrictedAction(label) {
 
 .hero-card {
   position: relative;
-  min-height: 342px;
+  min-height: 344px;
   overflow: hidden;
   border-radius: 20px;
-  padding: 18px 24px 23px;
+  padding: 19px 24px 22px;
   background: #6946ff url("/assets/dark-hero.png") center/100% 100% no-repeat;
 }
 
@@ -228,11 +222,11 @@ function handleRestrictedAction(label) {
   z-index: 1;
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: 9px;
   padding: 0;
   background: transparent;
   color: rgba(255, 255, 255, 0.92);
-  font-size: 14px;
+  font-size: 13px;
   line-height: 1;
   font-weight: 700;
 }
@@ -242,7 +236,6 @@ function handleRestrictedAction(label) {
   height: 12px;
 }
 
-.hero-query-line,
 .hero-head,
 .topic-row,
 .search-row {
@@ -250,42 +243,25 @@ function handleRestrictedAction(label) {
   z-index: 1;
 }
 
-.hero-query-line {
-  margin-top: 15px;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  color: rgba(255, 255, 255, 0.74);
-  font-size: 13px;
-  line-height: 1;
-  font-weight: 400;
-}
-
-.hero-query-icon {
-  width: 16px;
-  height: 16px;
-  object-fit: contain;
-}
-
 .hero-head {
-  margin-top: 12px;
+  margin-top: 36px;
 }
 
 .hero-title-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 18px;
+  justify-content: flex-start;
+  gap: 16px;
 }
 
 .hero-head h2 {
   margin: 0;
   color: #ffffff;
   font-family: "Inter", Arial, sans-serif;
-  font-size: 32px;
-  line-height: 1.12;
-  font-weight: 800;
-  letter-spacing: -0.03em;
+  font-size: 24px;
+  line-height: 29px;
+  font-weight: 700;
+  letter-spacing: 0;
 }
 
 .hero-actions,
@@ -297,15 +273,15 @@ function handleRestrictedAction(label) {
 
 .radar-btn,
 .results-radar-btn {
-  height: 38px;
-  padding: 0 15px;
+  height: 39px;
+  padding: 0 16px;
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.96);
   display: inline-flex;
   align-items: center;
   gap: 8px;
   color: #303646;
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1;
   font-weight: 700;
 }
@@ -340,12 +316,12 @@ function handleRestrictedAction(label) {
 }
 
 .topic-row {
-  margin-top: 18px;
+  margin-top: 20px;
 }
 
 .topic-caption {
   display: block;
-  margin-bottom: 11px;
+  margin-bottom: 12px;
   color: #ffffff;
   font-size: 14px;
   line-height: 1.2;
@@ -355,12 +331,12 @@ function handleRestrictedAction(label) {
 .topic-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 9px;
 }
 
 .topic-chip {
   min-height: 38px;
-  padding: 0 15px;
+  padding: 0 16px;
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.97);
   color: #49535f;
@@ -374,11 +350,11 @@ function handleRestrictedAction(label) {
 }
 
 .search-row {
-  margin-top: 16px;
+  margin-top: 17px;
 }
 
 .search-label {
-  margin: 0 0 10px;
+  margin: 0 0 11px;
   color: #ffffff;
   font-size: 14px;
   line-height: 1.2;
@@ -387,14 +363,14 @@ function handleRestrictedAction(label) {
 
 .search-shell {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 123px 151px 128px;
-  gap: 14px;
+  grid-template-columns: minmax(0, 1fr) 166px 194px 132px;
+  gap: 12px;
   align-items: start;
 }
 
 .search-field {
   display: grid;
-  gap: 8px;
+  gap: 7px;
 }
 
 .search-field--wide {
@@ -403,11 +379,11 @@ function handleRestrictedAction(label) {
 
 .search-input,
 .select-pill {
-  min-height: 52px;
+  min-height: 50px;
   border-radius: 14px;
   background: rgba(255, 255, 255, 0.12);
   border: 1px solid rgba(255, 255, 255, 0.22);
-  padding: 0 16px;
+  padding: 0 17px;
   display: flex;
   align-items: center;
   width: 100%;
@@ -422,7 +398,7 @@ function handleRestrictedAction(label) {
   gap: 10px;
   min-width: 0;
   color: #ffffff;
-  font-size: 15px;
+  font-size: 14px;
   line-height: 1.1;
   font-weight: 500;
 }
@@ -445,7 +421,7 @@ function handleRestrictedAction(label) {
   color: rgba(255, 255, 255, 0.58);
   font-size: 12px;
   line-height: 1.15;
-  padding-left: 2px;
+  padding-left: 0;
 }
 
 .search-icon,
@@ -472,16 +448,16 @@ function handleRestrictedAction(label) {
 .chevron--light {
   position: absolute;
   top: 21px;
-  right: 18px;
+  right: 16px;
 }
 
 .submit-btn {
-  min-height: 52px;
+  min-height: 50px;
   align-self: start;
   border-radius: 16px;
   background: #ffffff;
   color: #2f3644;
-  font-size: 18px;
+  font-size: 16px;
   line-height: 1;
   font-weight: 800;
   box-shadow: inset 0 0 0 1px rgba(69, 78, 90, 0.2);

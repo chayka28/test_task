@@ -144,24 +144,24 @@
             <h3>Структура</h3>
             <div class="structure-line">
               <div class="structure-step">
-                <div class="step-time"><span class="step-plus">+</span><span class="step-time-text">0-3 сек</span></div>
-                <img src="/assets/icons/Step Time Icon Container.png" alt="" class="structure-marker structure-marker--step-top" />
+                <div class="step-time"><img src="/assets/icons/Vector-8 (2).png" alt="" class="step-plus-icon" /><span class="step-time-text">0-3 сек</span></div>
+                <img src="/assets/icons/structure-dashed.png" alt="" class="structure-marker structure-marker--step-top" />
                 <div class="step-copy">
                   <h4>Шок-сравнение</h4>
                   <p>Визуальный (Девушка с предметом) + Текст на экране: "Это спасет вашу зиму"</p>
                 </div>
               </div>
               <div class="structure-step">
-                <div class="step-time"><span class="step-plus">+</span><span class="step-time-text">3-15 сек</span></div>
-                <img src="/assets/icons/Step Time Icon Container-1.png" alt="" class="structure-marker structure-marker--step-middle" />
+                <div class="step-time"><img src="/assets/icons/Vector-8 (2).png" alt="" class="step-plus-icon" /><span class="step-time-text">3-15 сек</span></div>
+                <img src="/assets/icons/structure-ring.png" alt="" class="structure-marker structure-marker--step-middle" />
                 <div class="step-copy">
                   <h4>Сюжет</h4>
                   <p>[Герой] показывает проблему → Резкая смена кадра → Решение</p>
                 </div>
               </div>
               <div class="structure-step">
-                <div class="step-time"><span class="step-plus">+</span><span class="step-time-text step-time-text--multiline">15-120<br />сек</span></div>
-                <img src="/assets/icons/Step Time Icon Container-2.png" alt="" class="structure-marker structure-marker--step-bottom" />
+                <div class="step-time"><img src="/assets/icons/Vector-8 (2).png" alt="" class="step-plus-icon" /><span class="step-time-text step-time-text--multiline">15-120<br />сек</span></div>
+                <img src="/assets/icons/structure-dot.png" alt="" class="structure-marker structure-marker--step-bottom" />
                 <div class="step-copy">
                   <h4>Финал / CTA</h4>
                   <p>Призыв: "Пиши слово \"ССЫЛКА\" в комменты"</p>
@@ -171,13 +171,13 @@
           </section>
 
           <section class="content-block">
-            <div class="block-head">
-              <h3>Хук фраза</h3>
-              <button type="button" class="copy-btn" @click="handleRestrictedAction('Скопировать блок')">
-                <img src="/assets/icons/copy-button.png" alt="" />
-              </button>
-            </div>
             <div class="block-surface grouped-hook-surface">
+              <div class="block-head block-head--sub block-head--first">
+                <h3>Хук фраза</h3>
+                <button type="button" class="copy-btn" @click="handleRestrictedAction('Скопировать блок')">
+                  <img src="/assets/icons/copy-button.png" alt="" />
+                </button>
+              </div>
               <div class="hook-entry">
                 <p class="hook-text">Одна из них — пустышка. Угадаешь какая?</p>
               </div>
@@ -832,16 +832,29 @@ function openSource() {
 }
 
 .structure-line {
-  margin-top: 14px;
+  margin-top: 16px;
+  position: relative;
   display: grid;
-  gap: 8px;
+  gap: 28px;
+}
+
+.structure-line::before {
+  content: "";
+  position: absolute;
+  left: 126px;
+  top: 18px;
+  bottom: 32px;
+  width: 2px;
+  background: #cfd3ff;
 }
 
 .structure-step {
   display: grid;
-  grid-template-columns: 92px 22px minmax(0, 1fr);
-  gap: 14px;
+  grid-template-columns: 96px 22px minmax(0, 1fr);
+  gap: 20px;
   align-items: start;
+  position: relative;
+  z-index: 1;
 }
 
 .step-time {
@@ -852,7 +865,7 @@ function openSource() {
   font-size: 13px;
   line-height: 1.08;
   font-weight: 500;
-  padding-top: 8px;
+  padding-top: 1px;
 }
 
 .step-plus {
@@ -862,6 +875,13 @@ function openSource() {
   font-size: 18px;
   line-height: 1;
   font-weight: 600;
+}
+
+.step-plus-icon {
+  width: 14px;
+  height: 14px;
+  object-fit: contain;
+  flex: 0 0 14px;
 }
 
 .step-time-text {
@@ -875,20 +895,23 @@ function openSource() {
 
 .structure-marker {
   width: 18px;
+  height: 18px;
   object-fit: contain;
   margin-top: 2px;
+  background: #ffffff;
+  border-radius: 50%;
 }
 
 .structure-marker--step-top {
-  height: 96px;
+  height: 18px;
 }
 
 .structure-marker--step-middle {
-  height: 82px;
+  height: 18px;
 }
 
 .structure-marker--step-bottom {
-  height: 46px;
+  height: 18px;
 }
 
 .step-copy h4,
@@ -904,7 +927,7 @@ function openSource() {
   margin: 0;
   color: #73808b;
   font-size: 14px;
-  line-height: 1.42;
+  line-height: 1.48;
 }
 
 .grouped-hook-surface {
@@ -929,6 +952,10 @@ function openSource() {
 .grouped-hook-surface .block-head--sub {
   margin-top: 22px;
   margin-bottom: 12px;
+}
+
+.grouped-hook-surface .block-head--first {
+  margin-top: 0;
 }
 
 .long-surface h4:not(:first-child) {

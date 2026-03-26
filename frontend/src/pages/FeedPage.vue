@@ -31,6 +31,7 @@
             :results-title="resultsTitle"
             @update:sortMode="sortMode = $event"
             @search="handleSearch"
+            @back="handleHeroBack"
             @placeholder="handlePlaceholder"
           >
             <section class="post-grid">
@@ -102,6 +103,7 @@
       <ProfileModal
         v-if="isProfileModalOpen && session?.user"
         :user="session.user"
+        :phone="profilePhone"
         :posts-count="ownPostsCount"
         :is-loading="isProfileSaving"
         :is-deleting="isUserDeleting"
@@ -158,7 +160,17 @@ import {
   updateUserName,
 } from "../services/postsApi";
 import { buildPostMetricValues, buildPostTopic, buildUserHandle } from "../services/postPresentation";
-import { clearFavoritePostIds, clearSession, loadFavoritePostIds, loadSession, saveFavoritePostIds, saveSession } from "../services/localState";
+import {
+  clearFavoritePostIds,
+  clearSession,
+  clearUserPhone,
+  loadFavoritePostIds,
+  loadSession,
+  loadUserPhone,
+  saveFavoritePostIds,
+  saveSession,
+  saveUserPhone,
+} from "../services/localState";
 
 const props = defineProps({
   viewMode: {
@@ -174,11 +186,6 @@ const props = defineProps({
 const router = useRouter();
 const pageSize = 12;
 const videoLimit = 3000;
-const leaderBadgeOrder = [
-  { label: "Просмотры", tone: "views" },
-  { label: "Лайки", tone: "likes" },
-  { label: "Комментарии", tone: "comments" },
-];
 
 const posts = ref([]);
 const selectedPost = ref(null);
@@ -249,7 +256,7 @@ const currentSource = computed(() => {
   return { type: "feed" };
 });
 
-const visiblePosts = computed(() => {
+const filteredPosts = computed(() => {
   const normalizedQuery = searchQuery.value.trim().toLowerCase();
   let result = [...posts.value];
 
@@ -277,6 +284,32 @@ const visiblePosts = computed(() => {
   }
 
   return result;
+});
+
+const leaderPosts = computed(() => {
+  const categories = ["views", "likes", "comments"];
+  const selected = [];
+  const usedIds = new Set();
+
+  categories.forEach((category) => {
+    const ranked = [...filteredPosts.value].sort((left, right) => {
+      return buildPostMetricValues(right.id)[category] - buildPostMetricValues(left.id)[category];
+    });
+
+    const leader = ranked.find((post) => !usedIds.has(post.id));
+    if (!leader) return;
+
+    selected.push({ post: leader, key: category });
+    usedIds.add(leader.id);
+  });
+
+  return selected;
+});
+
+const visiblePosts = computed(() => {
+  const leaderIds = new Set(leaderPosts.value.map((entry) => entry.post.id));
+  const remainingPosts = filteredPosts.value.filter((post) => !leaderIds.has(post.id));
+  return [...leaderPosts.value.map((entry) => entry.post), ...remainingPosts];
 });
 
 const resultsTitle = computed(() => {
@@ -333,7 +366,7 @@ const profileName = computed(() => {
 
 const profilePhone = computed(() => {
   if (isAuthenticated.value) {
-    return session.value?.user?.phone || "+7 (999) 999-99-99";
+    return session.value?.user?.phone || loadUserPhone(session.value?.user?.id) || "+7 (999) 999-99-99";
   }
 
   return "Войдите или создайте аккаунт";
@@ -349,9 +382,17 @@ const videoProgress = computed(() => Math.min(1, displayedVideoCount.value / vid
 const leaderBadgeByPostId = computed(() => {
   const badges = {};
 
-  visiblePosts.value.slice(0, 3).forEach((post, index) => {
-    if (leaderBadgeOrder[index]) {
-      badges[post.id] = leaderBadgeOrder[index];
+  leaderPosts.value.forEach((entry) => {
+    if (entry.key === "views") {
+      badges[entry.post.id] = { label: "Просмотры", tone: "views" };
+    }
+
+    if (entry.key === "likes") {
+      badges[entry.post.id] = { label: "Лайки", tone: "likes" };
+    }
+
+    if (entry.key === "comments") {
+      badges[entry.post.id] = { label: "Комментарии", tone: "comments" };
     }
   });
 
@@ -507,10 +548,15 @@ async function handleRegister(form) {
       avatarData: form.avatarData,
     });
 
+    saveUserPhone(response.user.id, form.phone);
+
     const nextSession = {
       accessToken: response.access_token,
       tokenType: response.token_type,
-      user: response.user,
+      user: {
+        ...response.user,
+        phone: form.phone,
+      },
       email: response.user.email,
     };
 
@@ -542,7 +588,10 @@ async function handleLogin(form) {
     const nextSession = {
       accessToken: response.access_token,
       tokenType: response.token_type,
-      user: response.user,
+      user: {
+        ...response.user,
+        phone: loadUserPhone(response.user.id) || "",
+      },
       email: response.user.email,
     };
 
@@ -574,7 +623,10 @@ async function handleProfileSave(payload) {
 
     const nextSession = {
       ...session.value,
-      user: updatedUser,
+      user: {
+        ...updatedUser,
+        phone: session.value?.user?.phone || loadUserPhone(updatedUser.id) || "",
+      },
       email: updatedUser.email,
     };
 
@@ -699,6 +751,7 @@ async function handleDeleteAccount() {
     const currentUserId = session.value.user.id;
     await deleteUserById(currentUserId);
     clearFavoritePostIds(currentUserId);
+    clearUserPhone(currentUserId);
     clearSession();
     session.value = null;
     isProfileModalOpen.value = false;
@@ -774,6 +827,23 @@ function handleSearch() {
   }
 
   showToast("Лента обновлена", `По текущим фильтрам показано ${visiblePosts.value.length} публикаций.`);
+}
+
+async function handleHeroBack() {
+  if (isUserPostsView.value || isOwnPostsView.value || isFavoritesView.value) {
+    await router.push("/");
+    return;
+  }
+
+  if (searchQuery.value || selectedTopic.value || sortMode.value !== "all") {
+    searchQuery.value = "";
+    selectedTopic.value = "";
+    sortMode.value = "all";
+    showToast("Фильтры сброшены", "Вы вернулись к основной ленте.");
+    return;
+  }
+
+  window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 function showToast(title, text = "") {

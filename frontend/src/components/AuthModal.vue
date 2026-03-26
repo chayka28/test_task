@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="auth-overlay" @click.self="$emit('close')">
     <div class="auth-card" role="dialog" aria-modal="true" aria-label="Авторизация">
       <button type="button" class="close-btn" aria-label="Закрыть" @click="$emit('close')">×</button>
@@ -6,9 +6,13 @@
       <BrandLogo icon-only />
 
       <p class="overline">Trendsee</p>
-      <h2>{{ mode === 'register' ? "Создайте аккаунт" : "Войдите в аккаунт" }}</h2>
+      <h2>{{ mode === 'register' ? 'Создайте аккаунт' : 'Войдите в аккаунт' }}</h2>
       <p class="text">
-        {{ mode === "register" ? "После регистрации можно сохранять избранное, менять профиль и работать со своей подборкой." : "Войдите, чтобы продолжить работу с избранным, подборками и профилем." }}
+        {{
+          mode === 'register'
+            ? 'После регистрации можно сохранять избранное, менять профиль и работать со своей подборкой.'
+            : 'Войдите, чтобы продолжить работу с избранным, подборками и профилем.'
+        }}
       </p>
 
       <div class="mode-switch">
@@ -41,6 +45,17 @@
             v-model.trim="registerForm.email"
             type="email"
             placeholder="you@trendsee.app"
+            :disabled="isLoading"
+          />
+        </label>
+
+        <label class="field">
+          <span>Телефон</span>
+          <input
+            v-model.trim="registerForm.phone"
+            type="tel"
+            inputmode="tel"
+            placeholder="+7 (999) 999-99-99"
             :disabled="isLoading"
           />
         </label>
@@ -78,7 +93,7 @@
         <p v-else-if="errorText" class="error-text">{{ errorText }}</p>
 
         <button type="submit" class="submit-btn" :disabled="isLoading">
-          {{ isLoading ? "Создаем аккаунт..." : "Создать аккаунт" }}
+          {{ isLoading ? 'Создаем аккаунт...' : 'Создать аккаунт' }}
         </button>
       </form>
 
@@ -108,7 +123,7 @@
         <p v-else-if="errorText" class="error-text">{{ errorText }}</p>
 
         <button type="submit" class="submit-btn" :disabled="isLoading">
-          {{ isLoading ? "Входим..." : "Войти" }}
+          {{ isLoading ? 'Входим...' : 'Войти' }}
         </button>
       </form>
     </div>
@@ -143,6 +158,7 @@ const mode = ref(props.initialMode);
 const registerForm = reactive({
   name: "",
   email: "",
+  phone: "",
   password: "",
   confirmPassword: "",
   accepted: false,
@@ -164,9 +180,12 @@ watch(
 const registerValidationText = computed(() => {
   if (registerForm.name && registerForm.name.length < 2) return "Имя должно содержать минимум 2 символа.";
   if (registerForm.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(registerForm.email)) return "Укажите корректный email.";
+  if (registerForm.phone && !/^[+\d\s()-]{10,20}$/.test(registerForm.phone)) return "Укажите корректный номер телефона.";
   if (registerForm.password && registerForm.password.length < 8) return "Пароль должен содержать минимум 8 символов.";
   if (registerForm.confirmPassword && registerForm.password !== registerForm.confirmPassword) return "Пароли должны совпадать.";
-  if ((registerForm.name || registerForm.email || registerForm.password) && !registerForm.accepted) return "Подтвердите согласие, чтобы продолжить.";
+  if ((registerForm.name || registerForm.email || registerForm.phone || registerForm.password) && !registerForm.accepted) {
+    return "Подтвердите согласие, чтобы продолжить.";
+  }
   return "";
 });
 
@@ -182,6 +201,7 @@ watch(
     if (previousValue && !nextValue && !props.errorText) {
       registerForm.name = "";
       registerForm.email = "";
+      registerForm.phone = "";
       registerForm.password = "";
       registerForm.confirmPassword = "";
       registerForm.accepted = false;
@@ -198,6 +218,7 @@ function submitRegister() {
     registerValidationText.value ||
     registerForm.name.length < 2 ||
     !registerForm.email ||
+    !registerForm.phone ||
     registerForm.password.length < 8 ||
     registerForm.password !== registerForm.confirmPassword ||
     !registerForm.accepted
@@ -208,6 +229,7 @@ function submitRegister() {
   emit("register", {
     name: registerForm.name,
     email: registerForm.email,
+    phone: registerForm.phone,
     password: registerForm.password,
     avatarData: registerForm.avatarData,
   });

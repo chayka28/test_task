@@ -1,5 +1,7 @@
-const SESSION_KEY = "trendsee-session";
+﻿const SESSION_KEY = "trendsee-session";
 const FAVORITES_KEY = "trendsee-favorite-posts";
+const PHONEBOOK_KEY = "trendsee-user-phones";
+
 function readJson(key, fallbackValue) {
   try {
     const rawValue = window.localStorage.getItem(key);
@@ -51,4 +53,27 @@ export function clearFavoritePostIds(userId) {
   const favoriteMap = readJson(FAVORITES_KEY, {});
   delete favoriteMap[userId];
   window.localStorage.setItem(FAVORITES_KEY, JSON.stringify(favoriteMap));
+}
+
+export function loadUserPhone(userId) {
+  if (!userId) return "";
+
+  const phonebook = readJson(PHONEBOOK_KEY, {});
+  return typeof phonebook[userId] === "string" ? phonebook[userId] : "";
+}
+
+export function saveUserPhone(userId, phone) {
+  if (!userId) return;
+
+  const phonebook = readJson(PHONEBOOK_KEY, {});
+  phonebook[userId] = phone || "";
+  window.localStorage.setItem(PHONEBOOK_KEY, JSON.stringify(phonebook));
+}
+
+export function clearUserPhone(userId) {
+  if (!userId) return;
+
+  const phonebook = readJson(PHONEBOOK_KEY, {});
+  delete phonebook[userId];
+  window.localStorage.setItem(PHONEBOOK_KEY, JSON.stringify(phonebook));
 }

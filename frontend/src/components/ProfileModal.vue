@@ -9,7 +9,7 @@
         <div class="profile-copy">
           <p class="overline">Профиль</p>
           <h2>{{ localName || user.name }}</h2>
-          <p class="subline">{{ user.email }}</p>
+          <p class="subline">{{ phone || "Номер не указан" }}</p>
           <div class="hero-badges">
             <span class="hero-badge">Личный кабинет</span>
             <span class="hero-badge">{{ postsCount }} публикаций</span>
@@ -17,7 +17,9 @@
         </div>
       </div>
 
-      <p class="profile-note">Здесь можно обновить имя, перейти к своим публикациям и управлять аккаунтом.</p>
+      <p class="profile-note">
+        Здесь можно обновить имя, перейти к своим публикациям и управлять аккаунтом.
+      </p>
 
       <div class="meta-grid">
         <div class="meta-item">
@@ -74,6 +76,10 @@ const props = defineProps({
   user: {
     type: Object,
     required: true,
+  },
+  phone: {
+    type: String,
+    default: "",
   },
   postsCount: {
     type: Number,
