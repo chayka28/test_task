@@ -1,8 +1,7 @@
-﻿<template>
+<template>
   <div class="brand" :class="{ 'brand--compact': compact }">
     <span class="brand-icon" aria-hidden="true">
-      <img class="brand-outline" src="/assets/logo/logo-outline.png" alt="" />
-      <img class="brand-center" src="/assets/logo/logo-center.png" alt="" />
+      <img class="brand-mark" src="/assets/logo/loogo.png" alt="" />
     </span>
 
     <template v-if="!iconOnly">
@@ -43,50 +42,35 @@ defineProps({
 
 .brand-icon {
   position: relative;
-  width: 31px;
-  height: 22px;
-  flex: 0 0 31px;
+  width: 30px;
+  height: 21px;
+  flex: 0 0 30px;
 }
 
-.brand-outline,
-.brand-center {
+.brand-mark {
   position: absolute;
+  inset: 0;
   display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
   pointer-events: none;
   user-select: none;
 }
 
-.brand-outline {
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  filter: brightness(0);
-}
-
-.brand-center {
-  left: 50%;
-  top: 50%;
-  width: auto;
-  height: 54%;
-  transform: translate(-50%, -48%);
-  object-fit: contain;
-  filter: brightness(0);
-}
-
 .brand-text {
-  color: #16181f;
-  font-size: 21px;
+  color: #131721;
+  font-size: 17px;
   line-height: 1;
-  font-weight: 800;
-  letter-spacing: -0.052em;
-  font-family: Inter, Arial, sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  font-family: "Unbounded", "Inter", Arial, sans-serif;
 }
 
 .brand-tag {
   border-radius: 12px;
   background: #e8edf2;
-  color: #6d7c88;
+  color: #667480;
   font-size: 10px;
   line-height: 1;
   font-weight: 700;

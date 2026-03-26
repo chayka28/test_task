@@ -29,7 +29,7 @@
             <div class="preview-meta-row">
               <time class="preview-date">{{ cardDate }}</time>
               <button type="button" class="preview-link" @click="openSource">
-                <img src="/assets/icons/external-link.png" alt="Открыть источник" />
+                <img src="/assets/icons/Vector-26.png" alt="Открыть источник" />
               </button>
             </div>
 
@@ -93,12 +93,6 @@
             <span class="chip chip-violet">Красота и здоровье</span>
           </div>
 
-          <div class="technical-row">
-            <span>user_id: {{ post.user_id }}</span>
-            <span>created_at: {{ formatDateTime(post.created_at) }}</span>
-            <span>updated_at: {{ formatDateTime(post.updated_at) }}</span>
-          </div>
-
           <section class="content-block">
             <div class="block-head">
               <h3>Транскрибация</h3>
@@ -116,7 +110,10 @@
               <p>{{ transcriptParagraphs[0] }}</p>
               <p>{{ transcriptParagraphs[1] }}</p>
               <p>{{ transcriptParagraphs[2] }}</p>
-              <button type="button" class="more-link" @click="handleRestrictedAction('Показать полный текст')">Ещё</button>
+              <button type="button" class="more-link" @click="handleRestrictedAction('Показать полный текст')">
+                <img src="/assets/icons/chevron-down-black.png" alt="" />
+                <span>Ещё</span>
+              </button>
             </div>
           </section>
 
@@ -146,22 +143,26 @@
           <section class="structure-block">
             <h3>Структура</h3>
             <div class="structure-line">
+              <div class="structure-track" aria-hidden="true"></div>
               <div class="structure-step">
-                <div class="step-time"><img src="/assets/icons/Step Time Icon Container.png" alt="" />0-3 сек</div>
+                <div class="step-time"><span class="step-plus">+</span><span class="step-time-text">0-3 сек</span></div>
+                <img src="/assets/icons/structure-dashed.png" alt="" class="structure-marker structure-marker--dashed" />
                 <div class="step-copy">
                   <h4>Шок-сравнение</h4>
                   <p>Визуальный (Девушка с предметом) + Текст на экране: "Это спасет вашу зиму"</p>
                 </div>
               </div>
               <div class="structure-step">
-                <div class="step-time"><img src="/assets/icons/Step Time Icon Container-1.png" alt="" />3-15 сек</div>
+                <div class="step-time"><span class="step-plus">+</span><span class="step-time-text">3-15 сек</span></div>
+                <img src="/assets/icons/structure-ring.png" alt="" class="structure-marker structure-marker--ring" />
                 <div class="step-copy">
                   <h4>Сюжет</h4>
                   <p>[Герой] показывает проблему → Резкая смена кадра → Решение</p>
                 </div>
               </div>
               <div class="structure-step">
-                <div class="step-time"><img src="/assets/icons/Step Time Icon Container-2.png" alt="" />15-120 сек</div>
+                <div class="step-time"><span class="step-plus">+</span><span class="step-time-text step-time-text--multiline">15-120<br />сек</span></div>
+                <img src="/assets/icons/structure-dot.png" alt="" class="structure-marker structure-marker--dot" />
                 <div class="step-copy">
                   <h4>Финал / CTA</h4>
                   <p>Призыв: "Пиши слово \"ССЫЛКА\" в комменты"</p>
@@ -177,23 +178,35 @@
                 <img src="/assets/icons/copy-button.png" alt="" />
               </button>
             </div>
-            <div class="block-surface mini-surface">Одна из них — пустышка. Угадаешь какая?</div>
+            <div class="block-surface grouped-hook-surface">
+              <div class="hook-entry">
+                <p class="hook-text">Одна из них — пустышка. Угадаешь какая?</p>
+              </div>
 
-            <div class="block-head block-head--sub">
-              <h3>Визуальный хук</h3>
-              <button type="button" class="copy-btn" @click="handleRestrictedAction('Скопировать блок')">
-                <img src="/assets/icons/copy-button.png" alt="" />
-              </button>
-            </div>
-            <div class="block-surface mini-surface">Одна из них — пустышка. Угадаешь какая?</div>
+              <div class="hook-section">
+                <div class="block-head block-head--sub">
+                  <h3>Визуальный хук</h3>
+                  <button type="button" class="copy-btn" @click="handleRestrictedAction('Скопировать блок')">
+                    <img src="/assets/icons/copy-button.png" alt="" />
+                  </button>
+                </div>
+                <div class="hook-entry">
+                  <p class="hook-text">Одна из них — пустышка. Угадаешь какая?</p>
+                </div>
+              </div>
 
-            <div class="block-head block-head--sub">
-              <h3>Текстовый хук</h3>
-              <button type="button" class="copy-btn" @click="handleRestrictedAction('Скопировать блок')">
-                <img src="/assets/icons/copy-button.png" alt="" />
-              </button>
+              <div class="hook-section">
+                <div class="block-head block-head--sub">
+                  <h3>Текстовый хук</h3>
+                  <button type="button" class="copy-btn" @click="handleRestrictedAction('Скопировать блок')">
+                    <img src="/assets/icons/copy-button.png" alt="" />
+                  </button>
+                </div>
+                <div class="hook-entry">
+                  <p class="hook-text">Одна из них — пустышка. Угадаешь какая?</p>
+                </div>
+              </div>
             </div>
-            <div class="block-surface mini-surface">Одна из них — пустышка. Угадаешь какая?</div>
           </section>
 
           <section class="content-block">
@@ -250,7 +263,6 @@
 import { computed } from 'vue';
 
 import AppAvatar from './AppAvatar.vue';
-import { formatDateTime } from '../services/dateFormatter';
 import { buildFollowers, buildMediaPalette, buildPostMetrics, buildUserHandle } from '../services/postPresentation';
 
 const props = defineProps({
@@ -344,12 +356,12 @@ function openSource() {
 }
 
 .modal-card {
-  width: min(1040px, calc(100vw - 18px));
+  width: min(1042px, calc(100vw - 12px));
   height: 100vh;
   overflow: auto;
   background: #ffffff;
-  border-radius: 18px 0 0 18px;
-  padding: 16px 20px 22px 0;
+  border-radius: 20px 0 0 20px;
+  padding: 18px 22px 28px 18px;
   position: relative;
 }
 
@@ -569,7 +581,7 @@ function openSource() {
 
 .right-column {
   padding-top: 2px;
-  padding-right: 34px;
+  padding-right: 24px;
 }
 
 .section-overline {
@@ -583,16 +595,18 @@ function openSource() {
 .modal-title {
   margin: 8px 0 0;
   color: #181d24;
+  font-family: "Inter", Arial, sans-serif;
   font-size: 22px;
-  line-height: 1.22;
+  line-height: 1.18;
   font-weight: 800;
+  letter-spacing: -0.03em;
 }
 
 .title-meta-row {
   margin-top: 14px;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
   flex-wrap: wrap;
 }
 
@@ -602,7 +616,7 @@ function openSource() {
   align-items: center;
   gap: 7px;
   color: #6c7a88;
-  font-size: 14px;
+  font-size: 15px;
   line-height: 1;
 }
 
@@ -614,7 +628,7 @@ function openSource() {
 
 .lang-copy {
   color: #7b8893;
-  font-size: 14px;
+  font-size: 15px;
   line-height: 1;
 }
 
@@ -627,12 +641,12 @@ function openSource() {
   margin-top: 14px;
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 10px;
 }
 
 .chip {
   min-height: 30px;
-  padding: 0 13px;
+  padding: 0 14px;
   border-radius: 999px;
   display: inline-flex;
   align-items: center;
@@ -649,19 +663,9 @@ function openSource() {
 .chip-yellow { background: #ffe2ba; color: #d29038; }
 .chip-violet { background: #d9d9ff; color: #5a69d8; }
 
-.technical-row {
-  margin-top: 12px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px 16px;
-  color: #9aa6b2;
-  font-size: 12px;
-  line-height: 1.2;
-}
-
 .content-block,
 .structure-block {
-  margin-top: 18px;
+  margin-top: 22px;
 }
 
 .block-head {
@@ -669,11 +673,11 @@ function openSource() {
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 
 .block-head--sub {
-  margin-top: 12px;
+  margin-top: 18px;
 }
 
 .block-head h3,
@@ -733,10 +737,14 @@ function openSource() {
 .block-surface {
   border-radius: 10px;
   background: #f3f5f8;
-  padding: 14px 16px;
+  padding: 15px 18px;
   color: #6a7987;
   font-size: 14px;
   line-height: 1.5;
+}
+
+.transcript-surface {
+  min-height: 162px;
 }
 
 .transcript-surface p,
@@ -752,7 +760,9 @@ function openSource() {
 .more-link {
   margin-top: 8px;
   margin-left: auto;
-  display: block;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   border: 0;
   background: transparent;
   color: #31353b;
@@ -761,8 +771,14 @@ function openSource() {
   cursor: pointer;
 }
 
+.more-link img {
+  width: 10px;
+  height: 6px;
+  object-fit: contain;
+}
+
 .action-row {
-  margin-top: 12px;
+  margin-top: 14px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -772,7 +788,7 @@ function openSource() {
 
 .adapt-btn {
   min-width: 178px;
-  height: 48px;
+  height: 50px;
   border: 0;
   border-radius: 12px;
   background: #3239ce;
@@ -782,7 +798,7 @@ function openSource() {
   justify-content: center;
   gap: 10px;
   color: #ffffff;
-  font-size: 16px;
+  font-size: 15px;
   line-height: 1;
   font-weight: 700;
   cursor: pointer;
@@ -817,16 +833,29 @@ function openSource() {
 }
 
 .structure-line {
-  margin-top: 10px;
+  margin-top: 12px;
+  position: relative;
   display: grid;
-  gap: 18px;
+  gap: 22px;
+  padding-left: 104px;
+}
+
+.structure-track {
+  position: absolute;
+  left: 125px;
+  top: 5px;
+  bottom: 8px;
+  width: 4px;
+  background: url("/assets/icons/structure-line-full.png") center top / 4px 240px repeat-y;
 }
 
 .structure-step {
   display: grid;
-  grid-template-columns: 90px minmax(0, 1fr);
-  gap: 12px;
+  grid-template-columns: 94px 18px minmax(0, 1fr);
+  gap: 14px;
   align-items: start;
+  position: relative;
+  z-index: 1;
 }
 
 .step-time {
@@ -839,10 +868,27 @@ function openSource() {
   font-weight: 500;
 }
 
-.step-time img {
-  width: 78px;
-  height: auto;
+.step-plus {
+  color: #7f8690;
+  font-size: 24px;
+  line-height: 1;
+  font-weight: 300;
+}
+
+.step-time-text {
+  display: inline-block;
+  line-height: 1.08;
+}
+
+.step-time-text--multiline {
+  line-height: 1.02;
+}
+
+.structure-marker {
+  width: 18px;
+  height: 18px;
   object-fit: contain;
+  margin-top: 1px;
 }
 
 .step-copy h4,
@@ -861,8 +907,24 @@ function openSource() {
   line-height: 1.45;
 }
 
-.mini-surface {
-  margin-bottom: 10px;
+.grouped-hook-surface {
+  padding-top: 14px;
+  padding-bottom: 18px;
+}
+
+.hook-entry {
+  color: #798591;
+  font-size: 14px;
+  line-height: 1.45;
+  padding-bottom: 8px;
+}
+
+.hook-text {
+  margin: 0;
+}
+
+.hook-section + .hook-section {
+  margin-top: 8px;
 }
 
 .long-surface h4:not(:first-child) {

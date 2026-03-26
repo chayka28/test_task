@@ -61,7 +61,7 @@
 
         <div class="floating-actions" :class="{ 'floating-actions--collapsed': isSidebarCollapsed }">
           <button type="button" class="more-btn" @click="handleFindMoreClick">
-            <img src="/assets/icons/lightning-white.png" alt="" />
+            <img src="/assets/icons/lightning-more.png" alt="" />
             <span>Найти еще ролики</span>
           </button>
           <div class="counter-pill">
@@ -333,7 +333,7 @@ const profileName = computed(() => {
 
 const profilePhone = computed(() => {
   if (isAuthenticated.value) {
-    return session.value?.user?.email || "Аккаунт Trendsee";
+    return session.value?.user?.phone || "+7 (999) 999-99-99";
   }
 
   return "Войдите или создайте аккаунт";
@@ -790,7 +790,7 @@ function showToast(title, text = "") {
 }
 
 function syncResponsiveLayout() {
-  const nextIsMobileLayout = window.innerWidth <= 980;
+  const nextIsMobileLayout = window.innerWidth <= 720;
 
   if (nextIsMobileLayout && !isMobileLayout.value) {
     isSidebarCollapsed.value = true;
@@ -850,23 +850,25 @@ onBeforeUnmount(() => {
 }
 
 .feed-shell {
-  width: 100%;
+  width: calc(100vw - 8px);
   max-width: none;
   min-height: 100vh;
+  margin: 0;
   display: flex;
   align-items: stretch;
   background: #f4f5f6;
-  --sidebar-width: 214px;
+  --sidebar-width: 246px;
+  --frame-half: 50vw;
 }
 
 .feed-shell--collapsed {
-  --sidebar-width: 72px;
+  --sidebar-width: 64px;
 }
 
 .content-area {
   position: relative;
   flex: 1;
-  padding: 6px 14px 112px 12px;
+  padding: 10px 12px 118px 12px;
   background: #f4f5f6;
 }
 
@@ -878,7 +880,7 @@ onBeforeUnmount(() => {
 .post-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10px;
+  gap: 14px 14px;
   align-items: start;
 }
 
@@ -903,7 +905,7 @@ onBeforeUnmount(() => {
 
 .floating-actions {
   position: fixed;
-  left: calc(var(--sidebar-width) + 24px);
+  left: calc(var(--sidebar-width) + 16px);
   right: 18px;
   bottom: 14px;
   height: 56px;
@@ -921,8 +923,8 @@ onBeforeUnmount(() => {
   left: 50%;
   bottom: 4px;
   transform: translateX(-50%);
-  width: 240px;
-  height: 48px;
+  width: 281px;
+  height: 52px;
   border: 0;
   border-radius: 16px;
   background: #2f37c6;
@@ -932,7 +934,7 @@ onBeforeUnmount(() => {
   align-items: center;
   justify-content: center;
   gap: 10px;
-  font-size: 13px;
+  font-size: 15px;
   line-height: 1;
   font-weight: 700;
   cursor: pointer;
@@ -944,24 +946,24 @@ onBeforeUnmount(() => {
 }
 
 .more-btn img {
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
 }
 
 .counter-pill {
   position: absolute;
   right: 0;
   top: 0;
-  width: 236px;
+  width: 237px;
   height: 56px;
   border-radius: 28px;
-  background: rgba(82, 82, 82, 0.92);
+  background: rgba(82, 82, 82, 0.94);
   color: #ffffff;
   padding: 0 18px;
   display: inline-flex;
   align-items: center;
   gap: 12px;
-  font-size: 14px;
+  font-size: 15px;
   line-height: 1;
   font-weight: 500;
 }
@@ -1018,7 +1020,13 @@ onBeforeUnmount(() => {
   transform: translateY(8px);
 }
 
-@media (max-width: 1280px) {
+@media (max-width: 940px) {
+  .feed-shell {
+    width: 100%;
+    max-width: none;
+    --frame-half: 50vw;
+  }
+
   .content-area {
     padding: 0 12px 104px;
   }
@@ -1029,13 +1037,13 @@ onBeforeUnmount(() => {
   }
 }
 
-@media (max-width: 1180px) {
+@media (max-width: 860px) {
   .post-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
-@media (max-width: 980px) {
+@media (max-width: 720px) {
   .feed-shell {
     flex-direction: column;
   }
@@ -1084,7 +1092,7 @@ onBeforeUnmount(() => {
   }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 560px) {
   .content-area {
     padding: 8px 8px 126px;
   }

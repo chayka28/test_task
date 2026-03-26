@@ -15,19 +15,38 @@
       </header>
 
       <template v-if="collapsed">
-        <nav class="shortcut-list" aria-label="Быстрые действия">
-          <button
-            v-for="item in shortcutItems"
-            :key="item.label"
-            type="button"
-            class="shortcut-item"
-            :class="{ 'shortcut-item--active': isRouteActive(item.route, item.isActive) }"
-            :title="item.label"
-            @click="handleMenuAction(item)"
-          >
-            <img :src="item.icon" :alt="item.label" class="shortcut-icon" />
-          </button>
-        </nav>
+        <div class="collapsed-layout">
+          <nav class="shortcut-list" aria-label="Быстрые действия">
+            <button
+              v-for="item in shortcutItems"
+              :key="item.label"
+              type="button"
+              class="shortcut-item"
+              :class="{ 'shortcut-item--active': isRouteActive(item.route, item.isActive) }"
+              :title="item.label"
+              @click="handleMenuAction(item)"
+            >
+              <img :src="item.icon" :alt="item.label" class="shortcut-icon" />
+            </button>
+          </nav>
+
+          <div class="collapsed-bottom">
+            <button
+              v-for="item in collapsedBottomItems"
+              :key="item.label"
+              type="button"
+              class="shortcut-item"
+              :title="item.label"
+              @click="handleMenuAction(item)"
+            >
+              <img :src="item.icon" :alt="item.label" class="shortcut-icon" />
+            </button>
+
+            <button type="button" class="collapsed-avatar" @click="handleProfileAction">
+              <AppAvatar :avatar="profileAvatar" :size="34" :seed="avatarSeed" alt="Профиль" />
+            </button>
+          </div>
+        </div>
       </template>
 
       <template v-else>
@@ -47,13 +66,19 @@
               <span v-if="item.badge" class="menu-badge" :class="{ 'menu-badge--soft': item.badgeSoft }">
                 {{ item.badge }}
               </span>
-              <img v-if="item.chevron" src="/assets/icons/Vector-27.png" alt="" class="menu-chevron" />
+              <img
+                v-if="item.chevron"
+                :src="item.chevronIcon || '/assets/icons/Vector-27.png'"
+                alt=""
+                class="menu-chevron"
+                :class="{ 'menu-chevron--lightning': !!item.chevronIcon }"
+              />
             </button>
           </nav>
         </section>
       </template>
 
-      <section class="token-card">
+      <section v-if="!collapsed" class="token-card">
         <div class="token-head">
           <span class="token-title">
             <img src="/assets/icons/Vector-25.png" alt="" class="token-icon" />
@@ -81,7 +106,7 @@
         </Transition>
       </section>
 
-      <button type="button" class="profile-row" :class="{ 'profile-row--collapsed': collapsed }" @click="handleProfileAction">
+      <button v-if="!collapsed" type="button" class="profile-row" :class="{ 'profile-row--collapsed': collapsed }" @click="handleProfileAction">
         <AppAvatar :avatar="profileAvatar" :size="34" :seed="avatarSeed" alt="Профиль" class="profile-avatar" />
         <div v-if="!collapsed" class="profile-meta">
           <p class="profile-name">{{ profileName }}</p>
@@ -178,7 +203,7 @@ const sections = computed(() => [
       { label: "Карусели", icon: "/assets/icons/Vector-12.png" },
       { label: "Анализ видео", icon: "/assets/icons/Vector-13.png" },
       { label: "Анализ профиля", icon: "/assets/icons/Vector-14.png" },
-      { label: "Черновик", icon: "/assets/icons/Vector-15.png", badge: "Скоро", badgeSoft: true },
+      { label: "Черновик", icon: "/assets/icons/draft-note.png", badge: "Скоро", badgeSoft: true },
       { label: "Контент план", icon: "/assets/icons/Vector-16.png", badge: "Скоро", badgeSoft: true },
     ],
   },
@@ -186,7 +211,14 @@ const sections = computed(() => [
     title: "Идеи",
     items: [
       { label: "Избранные", icon: "/assets/icons/Vector-17.png", route: "favorites" },
-      { label: "История", icon: "/assets/icons/Vector-18.png", badge: "Скоро", badgeSoft: true, chevron: true },
+      {
+        label: "История",
+        icon: "/assets/icons/Vector-18.png",
+        badge: "Скоро",
+        badgeSoft: true,
+        chevron: true,
+        chevronIcon: "/assets/icons/lightning-white.png",
+      },
       { label: "Закладки", icon: "/assets/icons/Vector-20.png", badge: "Скоро", badgeSoft: true },
     ],
   },
@@ -208,10 +240,15 @@ const shortcutItems = [
   { label: "Шпионаж", icon: "/assets/icons/Vector-7.png" },
   { label: "Анализ видео", icon: "/assets/icons/Vector-13.png" },
   { label: "Анализ профиля", icon: "/assets/icons/Vector-14.png" },
-  { label: "Черновик", icon: "/assets/icons/Vector-15.png" },
+  { label: "Черновик", icon: "/assets/icons/draft-note.png" },
   { label: "Контент план", icon: "/assets/icons/Vector-16.png" },
   { label: "Избранные", icon: "/assets/icons/Vector-17.png", route: "favorites" },
   { label: "Закладки", icon: "/assets/icons/Vector-20.png" },
+];
+
+const collapsedBottomItems = [
+  { label: "Предложить идею", icon: "/assets/icons/Vector-23.png" },
+  { label: "Поддержка", icon: "/assets/icons/Vector-24.png" },
 ];
 
 const formattedTokenValue = computed(() => {
@@ -249,13 +286,13 @@ function isRouteActive(routeName, fallback = false) {
 
 <style scoped>
 .sidebar {
-  width: 214px;
-  flex: 0 0 214px;
+  width: 246px;
+  flex: 0 0 246px;
   height: 100vh;
   position: sticky;
   top: 0;
   background: #f5f6f8;
-  padding: 0 10px;
+  padding: 0 12px;
   transition:
     width 0.28s ease,
     flex-basis 0.28s ease,
@@ -263,9 +300,9 @@ function isRouteActive(routeName, fallback = false) {
 }
 
 .sidebar--collapsed {
-  width: 72px;
-  flex-basis: 72px;
-  padding: 0 8px;
+  width: 64px;
+  flex-basis: 64px;
+  padding: 0 6px;
 }
 
 .sidebar-scroll {
@@ -273,7 +310,7 @@ function isRouteActive(routeName, fallback = false) {
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  padding: 10px 0 14px;
+  padding: 10px 0 16px;
   scrollbar-width: none;
 }
 
@@ -286,14 +323,14 @@ function isRouteActive(routeName, fallback = false) {
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  min-height: 34px;
+  min-height: 38px;
 }
 
 .collapse-btn {
   width: 16px;
   height: 16px;
   border-radius: 3px;
-  border: 1px solid #bfd7ea;
+  border: 1px solid #c7d5e3;
   background: transparent;
   padding: 0;
   display: grid;
@@ -313,32 +350,32 @@ function isRouteActive(routeName, fallback = false) {
 }
 
 .menu-section {
-  margin-top: 8px;
+  margin-top: 12px;
 }
 
 .section-title {
-  margin: 0 0 7px;
+  margin: 0 0 10px;
   color: #98a5b0;
-  font-size: 12px;
+  font-size: 11px;
   line-height: 1.2;
   font-weight: 700;
 }
 
 .menu-list {
   display: grid;
-  gap: 4px;
+  gap: 6px;
 }
 
 .menu-item {
-  min-height: 40px;
+  min-height: 44px;
   display: flex;
   align-items: center;
   gap: 12px;
   width: 100%;
   border: 0;
   background: transparent;
-  padding: 6px 10px;
-  border-radius: 12px;
+  padding: 8px 12px;
+  border-radius: 14px;
   text-align: left;
   cursor: pointer;
   color: #5d6f7d;
@@ -357,7 +394,7 @@ function isRouteActive(routeName, fallback = false) {
 }
 
 .menu-label {
-  font-size: 13px;
+  font-size: 12px;
   line-height: 1.2;
   font-weight: 500;
 }
@@ -386,12 +423,24 @@ function isRouteActive(routeName, fallback = false) {
   height: 8px;
 }
 
+.menu-chevron--lightning {
+  width: 10px;
+  height: 14px;
+  margin-right: 2px;
+}
+
+.collapsed-layout {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+
 .shortcut-list {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
-  padding-top: 22px;
+  gap: 14px;
+  padding-top: 18px;
 }
 
 .shortcut-item {
@@ -411,9 +460,30 @@ function isRouteActive(routeName, fallback = false) {
 }
 
 .shortcut-icon {
-  width: 26px;
-  height: 26px;
+  width: 24px;
+  height: 24px;
   object-fit: contain;
+}
+
+.collapsed-bottom {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  padding-bottom: 8px;
+}
+
+.collapsed-avatar {
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
 }
 
 .token-card {
@@ -539,7 +609,7 @@ function isRouteActive(routeName, fallback = false) {
 .profile-row {
   margin-top: 14px;
   width: 100%;
-  min-height: 54px;
+  min-height: 56px;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -610,7 +680,7 @@ function isRouteActive(routeName, fallback = false) {
   justify-content: center;
 }
 
-@media (max-width: 980px) {
+@media (max-width: 720px) {
   .sidebar,
   .sidebar--collapsed {
     width: 100%;
@@ -643,7 +713,7 @@ function isRouteActive(routeName, fallback = false) {
   }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 560px) {
   .menu-label {
     font-size: 14px;
   }

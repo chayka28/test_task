@@ -19,7 +19,7 @@
           <span>{{ badgeToRender.label }}</span>
         </div>
 
-        <div class="media-header">
+        <div class="media-header" :class="{ 'media-header--offset': badgeToRender }">
           <div class="tags">
             <span class="tag-pill">
               <img src="/assets/icons/Vector-33.png" alt="" class="tag-icon" />
@@ -278,15 +278,16 @@ onBeforeUnmount(() => {
   left: 8px;
   height: 24px;
   border-radius: 8px;
-  padding: 0 10px;
+  padding: 0 9px;
   display: inline-flex;
   align-items: center;
   gap: 6px;
   color: #ffffff;
-  font-size: 12px;
+  font-size: 11px;
   line-height: 1;
   font-weight: 700;
   z-index: 1;
+  max-width: calc(100% - 54px);
 }
 
 .showcase-badge img {
@@ -313,6 +314,10 @@ onBeforeUnmount(() => {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
+}
+
+.media-header--offset {
+  top: 38px;
 }
 
 .tags {

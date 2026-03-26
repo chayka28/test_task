@@ -16,7 +16,7 @@
 
       <div class="hero-query-line">
         <img src="/assets/icons/Vector-32.png" alt="" class="hero-query-icon" />
-        <span>{{ resultsTitle }}</span>
+        <span>бизнес история</span>
       </div>
 
       <div class="hero-head">
@@ -56,37 +56,43 @@
         <p class="search-label">Новый поиск</p>
 
         <div class="search-shell">
-          <label class="search-input search-input--wide">
-            <span class="input-main">
-              <img src="/assets/icons/Vector-32.png" alt="" class="search-icon search-icon--light" />
-              <input
-                :value="query"
-                type="text"
-                placeholder="Новый поиск"
-                @input="$emit('update:query', $event.target.value)"
-                @keydown.enter.prevent="handleSearch"
-              />
-            </span>
-            <span class="input-sub">Введите ключевое слово, а мы найдем для вас видео</span>
-          </label>
+          <div class="search-field search-field--wide">
+            <label class="search-input">
+              <span class="input-main">
+                <img src="/assets/icons/Vector-32.png" alt="" class="search-icon search-icon--light" />
+                <input
+                  :value="query"
+                  type="text"
+                  placeholder="Новый поиск"
+                  @input="$emit('update:query', $event.target.value)"
+                  @keydown.enter.prevent="handleSearch"
+                />
+              </span>
+            </label>
+            <span class="field-sub">Введите ключевое слово, а мы найдем для вас видео</span>
+          </div>
 
-          <button type="button" class="select-pill" @click="handleRestrictedAction('Тип видео')">
-            <span class="input-main">
-              <img src="/assets/icons/Vector-33.png" alt="" class="pill-icon" />
-              <span>Reels</span>
-            </span>
-            <span class="input-sub">Тип видео</span>
-            <img src="/assets/icons/Vector-34.png" alt="" class="chevron chevron--light" />
-          </button>
+          <div class="search-field">
+            <button type="button" class="select-pill" @click="handleRestrictedAction('Тип видео')">
+              <span class="input-main">
+                <img src="/assets/icons/Vector-33.png" alt="" class="pill-icon" />
+                <span>Reels</span>
+              </span>
+              <img src="/assets/icons/Vector-34.png" alt="" class="chevron chevron--light" />
+            </button>
+            <span class="field-sub">Тип видео</span>
+          </div>
 
-          <button type="button" class="select-pill" @click="handleRestrictedAction('Язык видео')">
-            <span class="input-main">
-              <span class="flag-ru" aria-hidden="true"></span>
-              <span>Русский</span>
-            </span>
-            <span class="input-sub">Язык видео</span>
-            <img src="/assets/icons/Vector-34.png" alt="" class="chevron chevron--light" />
-          </button>
+          <div class="search-field">
+            <button type="button" class="select-pill" @click="handleRestrictedAction('Язык видео')">
+              <span class="input-main">
+                <span class="flag-ru" aria-hidden="true"></span>
+                <span>Русский</span>
+              </span>
+              <img src="/assets/icons/Vector-34.png" alt="" class="chevron chevron--light" />
+            </button>
+            <span class="field-sub">Язык видео</span>
+          </div>
 
           <button type="button" class="submit-btn" @click="handleSearch">Найти</button>
         </div>
@@ -194,11 +200,11 @@ function handleRestrictedAction(label) {
 
 .hero-card {
   position: relative;
-  min-height: 342px;
+  min-height: 334px;
   overflow: hidden;
-  border-radius: 16px;
-  padding: 20px 18px 18px;
-  background: #6946ff url("/assets/hero-bg.svg") center/cover no-repeat;
+  border-radius: 20px;
+  padding: 18px 24px 22px;
+  background: #6946ff url("/assets/dark-hero.png") center/cover no-repeat;
 }
 
 .hero-bg {
@@ -226,7 +232,7 @@ function handleRestrictedAction(label) {
   padding: 0;
   background: transparent;
   color: rgba(255, 255, 255, 0.92);
-  font-size: 12px;
+  font-size: 14px;
   line-height: 1;
   font-weight: 700;
 }
@@ -245,14 +251,14 @@ function handleRestrictedAction(label) {
 }
 
 .hero-query-line {
-  margin-top: 18px;
+  margin-top: 16px;
   display: inline-flex;
   align-items: center;
   gap: 6px;
   color: rgba(255, 255, 255, 0.74);
   font-size: 14px;
   line-height: 1;
-  font-weight: 500;
+  font-weight: 400;
 }
 
 .hero-query-icon {
@@ -262,7 +268,7 @@ function handleRestrictedAction(label) {
 }
 
 .hero-head {
-  margin-top: 8px;
+  margin-top: 10px;
 }
 
 .hero-title-row {
@@ -275,8 +281,9 @@ function handleRestrictedAction(label) {
 .hero-head h2 {
   margin: 0;
   color: #ffffff;
-  font-size: 21px;
-  line-height: 1.18;
+  font-family: "Inter", Arial, sans-serif;
+  font-size: 24px;
+  line-height: 1.14;
   font-weight: 800;
   letter-spacing: -0.03em;
 }
@@ -290,8 +297,8 @@ function handleRestrictedAction(label) {
 
 .radar-btn,
 .results-radar-btn {
-  height: 32px;
-  padding: 0 12px;
+  height: 36px;
+  padding: 0 15px;
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.96);
   display: inline-flex;
@@ -338,9 +345,9 @@ function handleRestrictedAction(label) {
 
 .topic-caption {
   display: block;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
   color: #ffffff;
-  font-size: 15px;
+  font-size: 14px;
   line-height: 1.2;
   font-weight: 700;
 }
@@ -348,16 +355,16 @@ function handleRestrictedAction(label) {
 .topic-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 8px;
 }
 
 .topic-chip {
-  min-height: 32px;
-  padding: 0 15px;
+  min-height: 36px;
+  padding: 0 14px;
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.97);
   color: #49535f;
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1;
   font-weight: 700;
 }
@@ -380,26 +387,33 @@ function handleRestrictedAction(label) {
 
 .search-shell {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 136px 144px 122px;
-  gap: 12px;
+  grid-template-columns: minmax(0, 1fr) 129px 161px 138px;
+  gap: 14px;
+  align-items: start;
+}
+
+.search-field {
+  display: grid;
+  gap: 8px;
+}
+
+.search-field--wide {
+  min-width: 0;
 }
 
 .search-input,
 .select-pill {
-  min-height: 78px;
+  min-height: 50px;
   border-radius: 14px;
   background: rgba(255, 255, 255, 0.12);
   border: 1px solid rgba(255, 255, 255, 0.22);
-  padding: 14px 16px 12px;
-  display: grid;
-  align-content: space-between;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  width: 100%;
   position: relative;
   text-align: left;
   color: #ffffff;
-}
-
-.search-input--wide {
-  gap: 10px;
 }
 
 .input-main {
@@ -427,17 +441,18 @@ function handleRestrictedAction(label) {
   color: rgba(255, 255, 255, 0.54);
 }
 
-.input-sub {
+.field-sub {
   color: rgba(255, 255, 255, 0.58);
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.2;
+  padding-left: 4px;
 }
 
 .search-icon,
 .pill-icon {
-  width: 18px;
-  height: 18px;
-  flex: 0 0 18px;
+  width: 21px;
+  height: 21px;
+  flex: 0 0 21px;
 }
 
 .flag-ru {
@@ -456,25 +471,27 @@ function handleRestrictedAction(label) {
 
 .chevron--light {
   position: absolute;
-  top: 22px;
-  right: 16px;
+  top: 21px;
+  right: 18px;
 }
 
 .submit-btn {
-  min-height: 78px;
+  min-height: 50px;
+  align-self: start;
   border-radius: 16px;
   background: #ffffff;
   color: #2f3644;
-  font-size: 14px;
+  font-size: 16px;
   line-height: 1;
-  font-weight: 700;
+  font-weight: 800;
+  box-shadow: inset 0 0 0 1px rgba(69, 78, 90, 0.2);
 }
 
 .results-card {
-  border-radius: 16px;
+  border-radius: 22px;
   background: #ffffff;
-  padding: 14px 16px 16px;
-  box-shadow: 0 10px 26px rgba(18, 27, 52, 0.05);
+  padding: 20px 22px 20px;
+  box-shadow: 0 14px 34px rgba(18, 27, 52, 0.05);
 }
 
 .results-head {
@@ -496,14 +513,16 @@ function handleRestrictedAction(label) {
 
 .results-query {
   color: #1f2632;
-  font-size: 16px;
+  font-family: "Inter", Arial, sans-serif;
+  font-size: 18px;
   line-height: 1.2;
   font-weight: 800;
+  letter-spacing: -0.03em;
 }
 
 .results-count {
   color: #7b8794;
-  font-size: 13px;
+  font-size: 14px;
   line-height: 1.2;
   font-weight: 500;
   white-space: nowrap;
@@ -511,16 +530,16 @@ function handleRestrictedAction(label) {
 
 .hint-row {
   margin-top: 16px;
-  min-height: 42px;
+  min-height: 70px;
   border-radius: 16px;
   background: #ddd9ff;
-  padding: 13px 16px;
+  padding: 18px 20px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
   color: #5b62cc;
-  font-size: 13px;
+  font-size: 14px;
   line-height: 1.2;
 }
 
@@ -533,22 +552,22 @@ function handleRestrictedAction(label) {
 }
 
 .filters-row {
-  margin-top: 12px;
+  margin-top: 18px;
   display: flex;
   gap: 10px;
 }
 
 .filter-btn {
-  height: 40px;
-  padding: 0 13px;
-  border-radius: 12px;
+  height: 46px;
+  padding: 0 16px;
+  border-radius: 14px;
   border: 1px solid #d9dfe8;
   background: #ffffff;
   display: inline-flex;
   align-items: center;
   gap: 8px;
   color: #222b37;
-  font-size: 12px;
+  font-size: 14px;
   line-height: 1;
   font-weight: 700;
 }
@@ -558,10 +577,10 @@ function handleRestrictedAction(label) {
 }
 
 .results-body {
-  margin-top: 16px;
+  margin-top: 18px;
 }
 
-@media (max-width: 1180px) {
+@media (max-width: 860px) {
   .hero-title-row,
   .results-head {
     flex-direction: column;
@@ -573,7 +592,7 @@ function handleRestrictedAction(label) {
   }
 }
 
-@media (max-width: 980px) {
+@media (max-width: 720px) {
   .hero-card,
   .results-card {
     border-radius: 14px;
@@ -601,7 +620,7 @@ function handleRestrictedAction(label) {
   }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 560px) {
   .top-panel {
     gap: 12px;
     margin-bottom: 14px;
