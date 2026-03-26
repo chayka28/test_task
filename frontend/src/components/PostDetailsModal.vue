@@ -143,10 +143,9 @@
           <section class="structure-block">
             <h3>Структура</h3>
             <div class="structure-line">
-              <div class="structure-track" aria-hidden="true"></div>
               <div class="structure-step">
                 <div class="step-time"><span class="step-plus">+</span><span class="step-time-text">0-3 сек</span></div>
-                <img src="/assets/icons/structure-dashed.png" alt="" class="structure-marker structure-marker--dashed" />
+                <img src="/assets/icons/Step Time Icon Container.png" alt="" class="structure-marker structure-marker--step-top" />
                 <div class="step-copy">
                   <h4>Шок-сравнение</h4>
                   <p>Визуальный (Девушка с предметом) + Текст на экране: "Это спасет вашу зиму"</p>
@@ -154,7 +153,7 @@
               </div>
               <div class="structure-step">
                 <div class="step-time"><span class="step-plus">+</span><span class="step-time-text">3-15 сек</span></div>
-                <img src="/assets/icons/structure-ring.png" alt="" class="structure-marker structure-marker--ring" />
+                <img src="/assets/icons/Step Time Icon Container-1.png" alt="" class="structure-marker structure-marker--step-middle" />
                 <div class="step-copy">
                   <h4>Сюжет</h4>
                   <p>[Герой] показывает проблему → Резкая смена кадра → Решение</p>
@@ -162,7 +161,7 @@
               </div>
               <div class="structure-step">
                 <div class="step-time"><span class="step-plus">+</span><span class="step-time-text step-time-text--multiline">15-120<br />сек</span></div>
-                <img src="/assets/icons/structure-dot.png" alt="" class="structure-marker structure-marker--dot" />
+                <img src="/assets/icons/Step Time Icon Container-2.png" alt="" class="structure-marker structure-marker--step-bottom" />
                 <div class="step-copy">
                   <h4>Финал / CTA</h4>
                   <p>Призыв: "Пиши слово \"ССЫЛКА\" в комменты"</p>
@@ -356,12 +355,12 @@ function openSource() {
 }
 
 .modal-card {
-  width: min(1042px, calc(100vw - 12px));
+  width: min(1042px, calc(100vw - 10px));
   height: 100vh;
   overflow: auto;
   background: #ffffff;
   border-radius: 20px 0 0 20px;
-  padding: 18px 22px 28px 18px;
+  padding: 18px 20px 28px 18px;
   position: relative;
 }
 
@@ -387,8 +386,8 @@ function openSource() {
 
 .modal-layout {
   display: grid;
-  grid-template-columns: 194px minmax(0, 1fr);
-  gap: 28px;
+  grid-template-columns: 192px minmax(0, 1fr);
+  gap: 26px;
 }
 
 .left-column {
@@ -581,7 +580,7 @@ function openSource() {
 
 .right-column {
   padding-top: 2px;
-  padding-right: 24px;
+  padding-right: 20px;
 }
 
 .section-overline {
@@ -596,8 +595,8 @@ function openSource() {
   margin: 8px 0 0;
   color: #181d24;
   font-family: "Inter", Arial, sans-serif;
-  font-size: 22px;
-  line-height: 1.18;
+  font-size: 23px;
+  line-height: 1.2;
   font-weight: 800;
   letter-spacing: -0.03em;
 }
@@ -665,7 +664,7 @@ function openSource() {
 
 .content-block,
 .structure-block {
-  margin-top: 22px;
+  margin-top: 24px;
 }
 
 .block-head {
@@ -673,7 +672,7 @@ function openSource() {
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  margin-bottom: 12px;
+  margin-bottom: 13px;
 }
 
 .block-head--sub {
@@ -735,9 +734,9 @@ function openSource() {
 }
 
 .block-surface {
-  border-radius: 10px;
+  border-radius: 14px;
   background: #f3f5f8;
-  padding: 15px 18px;
+  padding: 16px 20px;
   color: #6a7987;
   font-size: 14px;
   line-height: 1.5;
@@ -833,46 +832,36 @@ function openSource() {
 }
 
 .structure-line {
-  margin-top: 12px;
-  position: relative;
+  margin-top: 14px;
   display: grid;
-  gap: 22px;
-  padding-left: 104px;
-}
-
-.structure-track {
-  position: absolute;
-  left: 125px;
-  top: 5px;
-  bottom: 8px;
-  width: 4px;
-  background: url("/assets/icons/structure-line-full.png") center top / 4px 240px repeat-y;
+  gap: 8px;
 }
 
 .structure-step {
   display: grid;
-  grid-template-columns: 94px 18px minmax(0, 1fr);
+  grid-template-columns: 92px 22px minmax(0, 1fr);
   gap: 14px;
   align-items: start;
-  position: relative;
-  z-index: 1;
 }
 
 .step-time {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  color: #8d98a3;
+  gap: 8px;
+  color: #8f99a8;
   font-size: 13px;
-  line-height: 1;
+  line-height: 1.08;
   font-weight: 500;
+  padding-top: 8px;
 }
 
 .step-plus {
   color: #7f8690;
-  font-size: 24px;
+  width: 11px;
+  text-align: center;
+  font-size: 18px;
   line-height: 1;
-  font-weight: 300;
+  font-weight: 600;
 }
 
 .step-time-text {
@@ -886,16 +875,27 @@ function openSource() {
 
 .structure-marker {
   width: 18px;
-  height: 18px;
   object-fit: contain;
-  margin-top: 1px;
+  margin-top: 2px;
+}
+
+.structure-marker--step-top {
+  height: 96px;
+}
+
+.structure-marker--step-middle {
+  height: 82px;
+}
+
+.structure-marker--step-bottom {
+  height: 46px;
 }
 
 .step-copy h4,
 .long-surface h4 {
   margin: 0 0 6px;
   color: #1a2027;
-  font-size: 14px;
+  font-size: 15px;
   line-height: 1.2;
   font-weight: 800;
 }
@@ -904,19 +904,18 @@ function openSource() {
   margin: 0;
   color: #73808b;
   font-size: 14px;
-  line-height: 1.45;
+  line-height: 1.42;
 }
 
 .grouped-hook-surface {
-  padding-top: 14px;
-  padding-bottom: 18px;
+  padding: 20px 22px 22px;
 }
 
 .hook-entry {
   color: #798591;
   font-size: 14px;
-  line-height: 1.45;
-  padding-bottom: 8px;
+  line-height: 1.5;
+  padding-bottom: 0;
 }
 
 .hook-text {
@@ -924,7 +923,12 @@ function openSource() {
 }
 
 .hook-section + .hook-section {
-  margin-top: 8px;
+  margin-top: 22px;
+}
+
+.grouped-hook-surface .block-head--sub {
+  margin-top: 22px;
+  margin-bottom: 12px;
 }
 
 .long-surface h4:not(:first-child) {

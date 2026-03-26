@@ -200,11 +200,11 @@ function handleRestrictedAction(label) {
 
 .hero-card {
   position: relative;
-  min-height: 334px;
+  min-height: 342px;
   overflow: hidden;
   border-radius: 20px;
-  padding: 18px 24px 22px;
-  background: #6946ff url("/assets/dark-hero.png") center/cover no-repeat;
+  padding: 18px 24px 23px;
+  background: #6946ff url("/assets/dark-hero.png") center/100% 100% no-repeat;
 }
 
 .hero-bg {
@@ -251,12 +251,12 @@ function handleRestrictedAction(label) {
 }
 
 .hero-query-line {
-  margin-top: 16px;
+  margin-top: 15px;
   display: inline-flex;
   align-items: center;
   gap: 6px;
   color: rgba(255, 255, 255, 0.74);
-  font-size: 14px;
+  font-size: 13px;
   line-height: 1;
   font-weight: 400;
 }
@@ -268,7 +268,7 @@ function handleRestrictedAction(label) {
 }
 
 .hero-head {
-  margin-top: 10px;
+  margin-top: 12px;
 }
 
 .hero-title-row {
@@ -282,8 +282,8 @@ function handleRestrictedAction(label) {
   margin: 0;
   color: #ffffff;
   font-family: "Inter", Arial, sans-serif;
-  font-size: 24px;
-  line-height: 1.14;
+  font-size: 32px;
+  line-height: 1.12;
   font-weight: 800;
   letter-spacing: -0.03em;
 }
@@ -297,7 +297,7 @@ function handleRestrictedAction(label) {
 
 .radar-btn,
 .results-radar-btn {
-  height: 36px;
+  height: 38px;
   padding: 0 15px;
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.96);
@@ -305,7 +305,7 @@ function handleRestrictedAction(label) {
   align-items: center;
   gap: 8px;
   color: #303646;
-  font-size: 13px;
+  font-size: 12px;
   line-height: 1;
   font-weight: 700;
 }
@@ -340,12 +340,12 @@ function handleRestrictedAction(label) {
 }
 
 .topic-row {
-  margin-top: 16px;
+  margin-top: 18px;
 }
 
 .topic-caption {
   display: block;
-  margin-bottom: 12px;
+  margin-bottom: 11px;
   color: #ffffff;
   font-size: 14px;
   line-height: 1.2;
@@ -359,12 +359,12 @@ function handleRestrictedAction(label) {
 }
 
 .topic-chip {
-  min-height: 36px;
-  padding: 0 14px;
+  min-height: 38px;
+  padding: 0 15px;
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.97);
   color: #49535f;
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1;
   font-weight: 700;
 }
@@ -374,7 +374,7 @@ function handleRestrictedAction(label) {
 }
 
 .search-row {
-  margin-top: 14px;
+  margin-top: 16px;
 }
 
 .search-label {
@@ -387,7 +387,7 @@ function handleRestrictedAction(label) {
 
 .search-shell {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 129px 161px 138px;
+  grid-template-columns: minmax(0, 1fr) 123px 151px 128px;
   gap: 14px;
   align-items: start;
 }
@@ -403,7 +403,7 @@ function handleRestrictedAction(label) {
 
 .search-input,
 .select-pill {
-  min-height: 50px;
+  min-height: 52px;
   border-radius: 14px;
   background: rgba(255, 255, 255, 0.12);
   border: 1px solid rgba(255, 255, 255, 0.22);
@@ -422,7 +422,7 @@ function handleRestrictedAction(label) {
   gap: 10px;
   min-width: 0;
   color: #ffffff;
-  font-size: 14px;
+  font-size: 15px;
   line-height: 1.1;
   font-weight: 500;
 }
@@ -444,8 +444,8 @@ function handleRestrictedAction(label) {
 .field-sub {
   color: rgba(255, 255, 255, 0.58);
   font-size: 12px;
-  line-height: 1.2;
-  padding-left: 4px;
+  line-height: 1.15;
+  padding-left: 2px;
 }
 
 .search-icon,
@@ -476,12 +476,12 @@ function handleRestrictedAction(label) {
 }
 
 .submit-btn {
-  min-height: 50px;
+  min-height: 52px;
   align-self: start;
   border-radius: 16px;
   background: #ffffff;
   color: #2f3644;
-  font-size: 16px;
+  font-size: 18px;
   line-height: 1;
   font-weight: 800;
   box-shadow: inset 0 0 0 1px rgba(69, 78, 90, 0.2);

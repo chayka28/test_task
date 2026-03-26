@@ -42,9 +42,9 @@ defineProps({
 
 .brand-icon {
   position: relative;
-  width: 30px;
-  height: 21px;
-  flex: 0 0 30px;
+  width: 31px;
+  height: 23px;
+  flex: 0 0 31px;
 }
 
 .brand-mark {

@@ -22,7 +22,7 @@
               :key="item.label"
               type="button"
               class="shortcut-item"
-              :class="{ 'shortcut-item--active': isRouteActive(item.route, item.isActive) }"
+              :class="{ 'shortcut-item--active': isRouteActive(item.route, item.isActive), 'shortcut-item--group-gap': item.groupGap }"
               :title="item.label"
               @click="handleMenuAction(item)"
             >
@@ -242,7 +242,7 @@ const shortcutItems = [
   { label: "Анализ профиля", icon: "/assets/icons/Vector-14.png" },
   { label: "Черновик", icon: "/assets/icons/draft-note.png" },
   { label: "Контент план", icon: "/assets/icons/Vector-16.png" },
-  { label: "Избранные", icon: "/assets/icons/Vector-17.png", route: "favorites" },
+  { label: "Избранные", icon: "/assets/icons/Vector-17.png", route: "favorites", groupGap: true },
   { label: "Закладки", icon: "/assets/icons/Vector-20.png" },
 ];
 
@@ -457,6 +457,10 @@ function isRouteActive(routeName, fallback = false) {
 .shortcut-item--active,
 .shortcut-item:hover {
   background: #ecebe7;
+}
+
+.shortcut-item--group-gap {
+  margin-top: 8px;
 }
 
 .shortcut-icon {
