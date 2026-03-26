@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="brand" :class="{ 'brand--compact': compact }">
     <span class="brand-icon" aria-hidden="true">
       <img class="brand-outline" src="/assets/logo/logo-outline.png" alt="" />
@@ -33,7 +33,7 @@ defineProps({
 .brand {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   min-width: 0;
 }
 
@@ -42,19 +42,18 @@ defineProps({
 }
 
 .brand-icon {
-  width: 34px;
-  height: 24px;
-  flex: 0 0 34px;
-  display: inline-block;
   position: relative;
+  width: 31px;
+  height: 22px;
+  flex: 0 0 31px;
 }
 
 .brand-outline,
 .brand-center {
   position: absolute;
   display: block;
-  user-select: none;
   pointer-events: none;
+  user-select: none;
 }
 
 .brand-outline {
@@ -62,34 +61,35 @@ defineProps({
   width: 100%;
   height: 100%;
   object-fit: contain;
-  filter: brightness(0) saturate(100%);
+  filter: brightness(0);
 }
 
 .brand-center {
   left: 50%;
-  top: 51%;
-  height: 56%;
+  top: 50%;
   width: auto;
-  transform: translate(-49%, -51%);
+  height: 54%;
+  transform: translate(-50%, -48%);
   object-fit: contain;
-  filter: brightness(0) saturate(100%);
+  filter: brightness(0);
 }
 
 .brand-text {
-  color: #111111;
-  font-size: 24px;
+  color: #16181f;
+  font-size: 21px;
   line-height: 1;
-  font-weight: 900;
-  letter-spacing: -0.04em;
+  font-weight: 800;
+  letter-spacing: -0.052em;
+  font-family: Inter, Arial, sans-serif;
 }
 
 .brand-tag {
   border-radius: 12px;
-  background: #dce1e5;
-  color: #6e7d89;
-  font-size: 14px;
+  background: #e8edf2;
+  color: #6d7c88;
+  font-size: 10px;
   line-height: 1;
   font-weight: 700;
-  padding: 5px 8px;
+  padding: 6px 9px;
 }
 </style>

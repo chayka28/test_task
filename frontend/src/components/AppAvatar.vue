@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="avatar-shell" :style="shellStyle">
     <img v-if="avatarVisual.kind === 'image' && !blurred" :src="avatarVisual.value" :alt="alt" class="avatar-image" />
     <div
@@ -12,15 +12,15 @@
 </template>
 
 <script setup>
-import { computed } from "vue";
+import { computed } from 'vue';
 
-import { buildMediaPalette } from "../services/postPresentation";
-import { resolveAvatarVisual } from "../services/avatarPresets";
+import { buildMediaPalette } from '../services/postPresentation';
+import { resolveAvatarVisual } from '../services/avatarPresets';
 
 const props = defineProps({
   avatar: {
     type: String,
-    default: "",
+    default: '',
   },
   seed: {
     type: Number,
@@ -32,7 +32,7 @@ const props = defineProps({
   },
   alt: {
     type: String,
-    default: "Аватар",
+    default: 'Аватар',
   },
   blurred: {
     type: Boolean,
@@ -49,7 +49,7 @@ const avatarVisual = computed(() => {
   if (props.blurred) {
     const palette = buildMediaPalette(props.seed);
     return {
-      kind: "gradient",
+      kind: 'gradient',
       value: `linear-gradient(160deg, ${palette.start} 0%, ${palette.end} 100%)`,
     };
   }
@@ -87,7 +87,7 @@ const avatarVisual = computed(() => {
 }
 
 .avatar-fill::after {
-  content: "";
+  content: '';
   position: absolute;
   inset: 8% 10% auto auto;
   width: 38%;

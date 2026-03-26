@@ -1,14 +1,23 @@
-<template>
+﻿<template>
   <section class="top-panel">
     <div class="hero-card">
       <div class="hero-bg" aria-hidden="true">
+        <span class="hero-shape hero-shape--top"></span>
+        <span class="hero-shape hero-shape--center"></span>
         <span class="hero-shape hero-shape--dark"></span>
         <span class="hero-shape hero-shape--cyan"></span>
-        <span class="hero-shape hero-shape--black"></span>
         <span class="hero-shape hero-shape--light"></span>
       </div>
 
-      <button type="button" class="back-btn" @click="$emit('placeholder', 'Назад')">← Назад</button>
+      <button type="button" class="back-btn" @click="$emit('placeholder', 'Назад')">
+        <img src="/assets/icons/Vector-29.png" alt="" class="back-arrow" />
+        <span>Назад</span>
+      </button>
+
+      <div class="hero-query-line">
+        <img src="/assets/icons/Vector-32.png" alt="" class="hero-query-icon" />
+        <span>{{ resultsTitle }}</span>
+      </div>
 
       <div class="hero-head">
         <div class="hero-title-row">
@@ -16,11 +25,12 @@
 
           <div class="hero-actions">
             <button type="button" class="radar-btn" @click="handleRestrictedAction('Добавить в радар')">
-              <img src="/assets/icons/top-plus.svg" alt="" />
+              <img src="/assets/icons/Vector-31.png" alt="" />
               <span>Добавить в радар</span>
+              <img src="/assets/icons/Vector-37.png" alt="" class="radar-target" />
             </button>
             <button type="button" class="icon-badge" @click="$emit('placeholder', 'Информация о подборке')">
-              <img src="/assets/icons/top-info.svg" alt="" />
+              <img src="/assets/icons/Vector-38.png" alt="" />
             </button>
           </div>
         </div>
@@ -48,7 +58,7 @@
         <div class="search-shell">
           <label class="search-input search-input--wide">
             <span class="input-main">
-              <img src="/assets/icons/top-search-dark.svg" alt="" class="search-icon search-icon--light" />
+              <img src="/assets/icons/Vector-32.png" alt="" class="search-icon search-icon--light" />
               <input
                 :value="query"
                 type="text"
@@ -62,11 +72,11 @@
 
           <button type="button" class="select-pill" @click="handleRestrictedAction('Тип видео')">
             <span class="input-main">
-              <img src="/assets/icons/top-reels.svg" alt="" class="pill-icon" />
+              <img src="/assets/icons/Vector-33.png" alt="" class="pill-icon" />
               <span>Reels</span>
             </span>
             <span class="input-sub">Тип видео</span>
-            <img src="/assets/icons/top-chevron.svg" alt="" class="chevron chevron--light" />
+            <img src="/assets/icons/Vector-34.png" alt="" class="chevron chevron--light" />
           </button>
 
           <button type="button" class="select-pill" @click="handleRestrictedAction('Язык видео')">
@@ -75,7 +85,7 @@
               <span>Русский</span>
             </span>
             <span class="input-sub">Язык видео</span>
-            <img src="/assets/icons/top-chevron.svg" alt="" class="chevron chevron--light" />
+            <img src="/assets/icons/Vector-34.png" alt="" class="chevron chevron--light" />
           </button>
 
           <button type="button" class="submit-btn" @click="handleSearch">Найти</button>
@@ -86,16 +96,17 @@
     <div class="results-card">
       <div class="results-head">
         <div class="results-left">
-          <img src="/assets/icons/top-search-blue.svg" alt="" class="results-search-icon" />
+          <img src="/assets/icons/Vector-35.png" alt="" class="results-search-icon" />
           <div class="results-query">{{ resultsTitle }}</div>
 
           <button type="button" class="results-radar-btn" @click="handleRestrictedAction('Добавить в радар')">
-            <img src="/assets/icons/top-plus.svg" alt="" />
+            <img src="/assets/icons/Vector-31.png" alt="" />
             <span>Добавить в радар</span>
+            <img src="/assets/icons/Vector-37.png" alt="" class="radar-target" />
           </button>
 
           <button type="button" class="results-info-btn" @click="$emit('placeholder', 'Информация о подборке')">
-            <img src="/assets/icons/top-info.svg" alt="" />
+            <img src="/assets/icons/Vector-38.png" alt="" />
           </button>
         </div>
 
@@ -104,7 +115,7 @@
 
       <div class="hint-row">
         <span>
-          Ролики собираются напрямую из поиска соц. сетей. Все видео из выдачи — актуальны и подгружаются прямо сейчас.
+          Ролики собираются напрямую из поиска соц. сети. Все видео из выдачи — актуальны и продвигаются прямо сейчас.
         </span>
         <button type="button" class="hint-close" @click="$emit('placeholder', 'Скрыть подсказку')">×</button>
       </div>
@@ -117,7 +128,7 @@
           @click="$emit('update:sortMode', 'all')"
         >
           За все время
-          <img src="/assets/icons/top-chevron.svg" alt="" class="chevron" />
+          <img src="/assets/icons/Vector-27.png" alt="" class="chevron" />
         </button>
         <button
           type="button"
@@ -126,15 +137,19 @@
           @click="$emit('update:sortMode', 'likes')"
         >
           По лайкам
-          <img src="/assets/icons/top-chevron.svg" alt="" class="chevron" />
+          <img src="/assets/icons/Vector-27.png" alt="" class="chevron" />
         </button>
+      </div>
+
+      <div class="results-body">
+        <slot />
       </div>
     </div>
   </section>
 </template>
 
 <script setup>
-const props = defineProps({
+defineProps({
   query: {
     type: String,
     default: "",
@@ -173,62 +188,21 @@ function handleRestrictedAction(label) {
 <style scoped>
 .top-panel {
   display: grid;
-  gap: 14px;
-  margin-bottom: 18px;
+  gap: 16px;
+  margin-bottom: 16px;
 }
 
 .hero-card {
   position: relative;
+  min-height: 342px;
   overflow: hidden;
   border-radius: 16px;
-  padding: 18px 16px 18px;
-  background: linear-gradient(135deg, #6c5cff 0%, #5f3ce3 42%, #7a66ff 100%);
+  padding: 20px 18px 18px;
+  background: #6946ff url("/assets/hero-bg.svg") center/cover no-repeat;
 }
 
 .hero-bg {
-  position: absolute;
-  inset: 0;
-}
-
-.hero-shape {
-  position: absolute;
-  pointer-events: none;
-}
-
-.hero-shape--dark {
-  width: 460px;
-  height: 460px;
-  border-radius: 50%;
-  top: -290px;
-  right: 180px;
-  background: rgba(25, 42, 118, 0.58);
-}
-
-.hero-shape--cyan {
-  width: 390px;
-  height: 390px;
-  border-radius: 50%;
-  left: 120px;
-  bottom: -250px;
-  background: radial-gradient(circle at 25% 25%, #8fe7ff 0%, #7fdfff 30%, #5b83f2 74%, rgba(91, 131, 242, 0.08) 100%);
-}
-
-.hero-shape--black {
-  width: 400px;
-  height: 240px;
-  right: 140px;
-  top: -4px;
-  background: radial-gradient(circle at 50% 50%, rgba(18, 12, 47, 0.98) 0%, rgba(20, 13, 52, 0.97) 62%, rgba(28, 18, 66, 0.94) 100%);
-  clip-path: ellipse(50% 44% at 50% 50%);
-}
-
-.hero-shape--light {
-  width: 520px;
-  height: 240px;
-  right: -150px;
-  bottom: -90px;
-  background: linear-gradient(180deg, rgba(192, 225, 255, 0.94) 0%, rgba(125, 181, 255, 0.72) 100%);
-  border-radius: 60% 40% 0 0;
+  display: none;
 }
 
 .back-btn,
@@ -246,13 +220,23 @@ function handleRestrictedAction(label) {
 .back-btn {
   position: relative;
   z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0;
   background: transparent;
-  color: rgba(255, 255, 255, 0.88);
+  color: rgba(255, 255, 255, 0.92);
   font-size: 12px;
   line-height: 1;
   font-weight: 700;
 }
 
+.back-arrow {
+  width: 12px;
+  height: 12px;
+}
+
+.hero-query-line,
 .hero-head,
 .topic-row,
 .search-row {
@@ -260,23 +244,41 @@ function handleRestrictedAction(label) {
   z-index: 1;
 }
 
-.hero-head {
+.hero-query-line {
   margin-top: 18px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: rgba(255, 255, 255, 0.74);
+  font-size: 14px;
+  line-height: 1;
+  font-weight: 500;
+}
+
+.hero-query-icon {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+}
+
+.hero-head {
+  margin-top: 8px;
 }
 
 .hero-title-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: 18px;
 }
 
 .hero-head h2 {
   margin: 0;
   color: #ffffff;
-  font-size: 31px;
-  line-height: 1.1;
+  font-size: 21px;
+  line-height: 1.18;
   font-weight: 800;
+  letter-spacing: -0.03em;
 }
 
 .hero-actions,
@@ -288,16 +290,17 @@ function handleRestrictedAction(label) {
 
 .radar-btn,
 .results-radar-btn {
-  height: 30px;
+  height: 32px;
   padding: 0 12px;
-  border-radius: 999px;
+  border-radius: 12px;
   background: rgba(255, 255, 255, 0.96);
-  color: #454b63;
-  font-size: 12px;
-  font-weight: 700;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+  color: #303646;
+  font-size: 13px;
+  line-height: 1;
+  font-weight: 700;
 }
 
 .radar-btn img,
@@ -306,10 +309,16 @@ function handleRestrictedAction(label) {
   height: 12px;
 }
 
+.radar-target {
+  width: 14px !important;
+  height: 14px !important;
+  opacity: 0.84;
+}
+
 .icon-badge,
 .results-info-btn {
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
   background: transparent;
   display: grid;
@@ -324,30 +333,32 @@ function handleRestrictedAction(label) {
 }
 
 .topic-row {
-  margin-top: 18px;
+  margin-top: 16px;
 }
 
 .topic-caption {
   display: block;
-  color: rgba(255, 255, 255, 0.84);
-  font-size: 13px;
+  margin-bottom: 10px;
+  color: #ffffff;
+  font-size: 15px;
+  line-height: 1.2;
   font-weight: 700;
 }
 
 .topic-list {
-  margin-top: 10px;
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 10px;
 }
 
 .topic-chip {
-  min-height: 30px;
-  padding: 0 12px;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.96);
-  color: #4b5563;
-  font-size: 12px;
+  min-height: 32px;
+  padding: 0 15px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.97);
+  color: #49535f;
+  font-size: 11px;
+  line-height: 1;
   font-weight: 700;
 }
 
@@ -356,54 +367,50 @@ function handleRestrictedAction(label) {
 }
 
 .search-row {
-  margin-top: 16px;
+  margin-top: 14px;
 }
 
 .search-label {
   margin: 0 0 10px;
   color: #ffffff;
-  font-size: 13px;
+  font-size: 14px;
+  line-height: 1.2;
   font-weight: 700;
 }
 
 .search-shell {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 142px 142px 104px;
-  gap: 10px;
+  grid-template-columns: minmax(0, 1fr) 136px 144px 122px;
+  gap: 12px;
 }
 
 .search-input,
 .select-pill {
-  min-height: 62px;
-  border-radius: 12px;
+  min-height: 78px;
+  border-radius: 14px;
   background: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  justify-content: center;
-  padding: 10px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  padding: 14px 16px 12px;
+  display: grid;
+  align-content: space-between;
   position: relative;
+  text-align: left;
+  color: #ffffff;
 }
 
 .search-input--wide {
-  justify-content: space-between;
+  gap: 10px;
 }
 
 .input-main {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  min-height: 18px;
-}
-
-.search-icon {
-  width: 18px;
-  height: 18px;
-}
-
-.search-icon--light {
-  filter: brightness(0) invert(1);
+  gap: 10px;
+  min-width: 0;
+  color: #ffffff;
+  font-size: 14px;
+  line-height: 1.1;
+  font-weight: 500;
 }
 
 .search-input input {
@@ -411,36 +418,35 @@ function handleRestrictedAction(label) {
   border: 0;
   outline: none;
   background: transparent;
-  padding: 0;
   color: #ffffff;
-  font-size: 14px;
-  line-height: 1;
+  font: inherit;
+  min-width: 0;
 }
 
 .search-input input::placeholder {
-  color: rgba(255, 255, 255, 0.8);
-}
-
-.select-pill {
-  padding-right: 28px;
-  color: #ffffff;
-  font-size: 14px;
-  font-weight: 700;
-  text-align: left;
-}
-
-.pill-icon {
-  width: 18px;
-  height: 18px;
+  color: rgba(255, 255, 255, 0.54);
 }
 
 .input-sub {
-  display: block;
-  margin-top: 9px;
   color: rgba(255, 255, 255, 0.58);
   font-size: 11px;
-  line-height: 1.1;
-  white-space: nowrap;
+  line-height: 1.2;
+}
+
+.search-icon,
+.pill-icon {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+}
+
+.flag-ru {
+  width: 20px;
+  height: 14px;
+  border-radius: 2px;
+  background:
+    linear-gradient(180deg, #ffffff 0 33%, #1e50d8 33% 66%, #db4437 66% 100%);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.24);
 }
 
 .chevron {
@@ -450,41 +456,32 @@ function handleRestrictedAction(label) {
 
 .chevron--light {
   position: absolute;
-  right: 12px;
-  top: 19px;
-  filter: brightness(0) invert(1);
-  opacity: 0.85;
-}
-
-.flag-ru {
-  width: 16px;
-  height: 12px;
-  border-radius: 2px;
-  display: inline-block;
-  background: linear-gradient(180deg, #ffffff 0 33.33%, #2749d8 33.33% 66.66%, #d43838 66.66% 100%);
+  top: 22px;
+  right: 16px;
 }
 
 .submit-btn {
-  height: 62px;
-  border-radius: 12px;
+  min-height: 78px;
+  border-radius: 16px;
   background: #ffffff;
-  color: #2b31b3;
-  font-size: 15px;
-  font-weight: 800;
+  color: #2f3644;
+  font-size: 14px;
+  line-height: 1;
+  font-weight: 700;
 }
 
 .results-card {
   border-radius: 16px;
   background: #ffffff;
-  padding: 16px;
-  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+  padding: 14px 16px 16px;
+  box-shadow: 0 10px 26px rgba(18, 27, 52, 0.05);
 }
 
 .results-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 14px;
 }
 
 .results-left {
@@ -493,66 +490,75 @@ function handleRestrictedAction(label) {
 }
 
 .results-search-icon {
-  width: 18px;
-  height: 18px;
+  width: 24px;
+  height: 24px;
 }
 
 .results-query {
-  color: #101827;
-  font-size: 22px;
+  color: #1f2632;
+  font-size: 16px;
+  line-height: 1.2;
   font-weight: 800;
 }
 
 .results-count {
   color: #7b8794;
   font-size: 13px;
-  font-weight: 600;
+  line-height: 1.2;
+  font-weight: 500;
   white-space: nowrap;
 }
 
 .hint-row {
-  margin-top: 12px;
-  border-radius: 12px;
-  background: #eef0ff;
-  color: #6b71a8;
-  padding: 12px 14px;
-  font-size: 13px;
-  line-height: 1.4;
+  margin-top: 16px;
+  min-height: 42px;
+  border-radius: 16px;
+  background: #ddd9ff;
+  padding: 13px 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+  color: #5b62cc;
+  font-size: 13px;
+  line-height: 1.2;
 }
 
 .hint-close {
   background: transparent;
-  color: #8791d0;
-  font-size: 18px;
+  color: #646ee1;
+  font-size: 20px;
   line-height: 1;
+  padding: 0;
 }
 
 .filters-row {
   margin-top: 12px;
   display: flex;
-  gap: 8px;
+  gap: 10px;
 }
 
 .filter-btn {
-  height: 34px;
-  padding: 0 12px;
-  border-radius: 10px;
-  background: #f4f6fa;
-  color: #4f5f70;
-  font-size: 12px;
-  font-weight: 700;
+  height: 40px;
+  padding: 0 13px;
+  border-radius: 12px;
+  border: 1px solid #d9dfe8;
+  background: #ffffff;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+  color: #222b37;
+  font-size: 12px;
+  line-height: 1;
+  font-weight: 700;
 }
 
 .filter-btn--active {
-  background: #e6e9ff;
-  color: #2b31b3;
+  box-shadow: inset 0 0 0 1px #c9d2df;
+}
+
+.results-body {
+  margin-top: 16px;
 }
 
 @media (max-width: 1180px) {
@@ -574,60 +580,24 @@ function handleRestrictedAction(label) {
   }
 
   .hero-card {
-    padding: 16px 14px;
+    min-height: auto;
+    padding: 18px 16px 18px;
   }
 
   .hero-head {
-    margin-top: 14px;
+    margin-top: 20px;
   }
 
   .hero-head h2 {
-    font-size: 26px;
+    font-size: 28px;
+  }
+
+  .hero-shape--top {
+    left: 240px;
   }
 
   .hero-shape--dark {
-    width: 340px;
-    height: 340px;
-    top: -220px;
-    right: 60px;
-  }
-
-  .hero-shape--cyan {
-    width: 280px;
-    height: 280px;
-    left: 40px;
-    bottom: -170px;
-  }
-
-  .hero-shape--black {
-    width: 280px;
-    height: 180px;
-    right: 40px;
-    top: 20px;
-  }
-
-  .hero-shape--light {
-    width: 360px;
-    height: 180px;
-    right: -120px;
-    bottom: -70px;
-  }
-
-  .input-sub {
-    white-space: normal;
-  }
-
-  .submit-btn {
-    width: 100%;
-  }
-
-  .hint-row {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
-  .filters-row {
-    flex-wrap: wrap;
+    right: 20px;
   }
 }
 
@@ -637,33 +607,24 @@ function handleRestrictedAction(label) {
     margin-bottom: 14px;
   }
 
-  .hero-card {
+  .hero-card,
+  .results-card {
     padding: 14px 12px;
   }
 
   .hero-head h2 {
-    font-size: 22px;
+    font-size: 24px;
   }
 
   .hero-actions,
-  .results-left {
+  .results-left,
+  .filters-row {
     width: 100%;
     flex-wrap: wrap;
   }
 
-  .radar-btn,
-  .results-radar-btn {
-    max-width: 100%;
-  }
-
-  .search-input,
-  .select-pill,
-  .submit-btn {
-    min-height: 58px;
-  }
-
-  .results-card {
-    padding: 14px 12px;
+  .hint-row {
+    align-items: flex-start;
   }
 
   .results-query {

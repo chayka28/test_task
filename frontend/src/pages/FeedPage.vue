@@ -1,6 +1,6 @@
-<template>
+﻿<template>
   <main class="feed-page">
-    <div class="feed-shell">
+    <div class="feed-shell" :class="{ 'feed-shell--collapsed': isSidebarCollapsed }">
       <FeedSidebar
         :collapsed="isSidebarCollapsed"
         :creative-expanded="isCreativeExpanded"
@@ -22,48 +22,51 @@
       />
 
       <section class="content-area">
-        <FeedTopPanel
-          v-model:query="searchQuery"
-          v-model:selectedTopic="selectedTopic"
-          :loaded-count="visiblePosts.length"
-          :sort-mode="sortMode"
-          :results-title="resultsTitle"
-          @update:sortMode="sortMode = $event"
-          @search="handleSearch"
-          @placeholder="handlePlaceholder"
-        />
-
-        <section class="post-grid">
-          <FeedPostCard
-            v-for="post in visiblePosts"
-            :key="post.id"
-            :post="post"
-            :liked="isPostLiked(post.id)"
-            :can-interact="isAuthenticated"
-            @open="openPost"
-            @open-user-posts="handleOpenUserPosts"
-            @toggle-like="toggleLike"
-            @auth-required="handleAuthRequired"
+        <div class="content-stack">
+          <FeedTopPanel
+            v-model:query="searchQuery"
+            v-model:selectedTopic="selectedTopic"
+            :loaded-count="posts.length"
+            :sort-mode="sortMode"
+            :results-title="resultsTitle"
+            @update:sortMode="sortMode = $event"
+            @search="handleSearch"
             @placeholder="handlePlaceholder"
-          />
-        </section>
+          >
+            <section class="post-grid">
+              <FeedPostCard
+                v-for="post in visiblePosts"
+                :key="post.id"
+                :post="post"
+                :liked="isPostLiked(post.id)"
+                :can-interact="isAuthenticated"
+                :leader-badge="leaderBadgeByPostId[post.id] || null"
+                @open="openPost"
+                @open-user-posts="handleOpenUserPosts"
+                @toggle-like="toggleLike"
+                @auth-required="handleAuthRequired"
+                @placeholder="handlePlaceholder"
+              />
+            </section>
 
-        <div class="state-line">
-          <LoadingIndicator v-if="isInitialLoading" label="Загружаем публикации..." />
-          <LoadingIndicator v-else-if="isLoadingMore" label="Подгружаем еще..." />
-          <p v-else-if="errorText" class="error-state">{{ errorText }}</p>
-          <p v-else-if="!visiblePosts.length" class="empty-state">{{ emptyStateText }}</p>
-          <p v-else-if="!hasMore" class="empty-state">Больше публикаций нет</p>
+            <div class="state-line">
+              <LoadingIndicator v-if="isInitialLoading" label="Загружаем публикации..." />
+              <LoadingIndicator v-else-if="isLoadingMore" label="Подгружаем еще..." />
+              <p v-else-if="errorText" class="error-state">{{ errorText }}</p>
+              <p v-else-if="!visiblePosts.length" class="empty-state">{{ emptyStateText }}</p>
+              <p v-else-if="!hasMore" class="empty-state">Больше публикаций нет</p>
+            </div>
+          </FeedTopPanel>
         </div>
 
-        <div class="floating-actions">
+        <div class="floating-actions" :class="{ 'floating-actions--collapsed': isSidebarCollapsed }">
           <button type="button" class="more-btn" @click="handleFindMoreClick">
-            <img src="/assets/icons/Vector-5.png" alt="" />
+            <img src="/assets/icons/lightning-white.png" alt="" />
             <span>Найти еще ролики</span>
           </button>
           <div class="counter-pill">
-            <img src="/assets/icons/Vector-12.png" alt="" />
-            <span>Видео: {{ visiblePosts.length }} из {{ estimatedTotal }}</span>
+            <span class="counter-ring" :style="{ '--progress': `${videoProgress * 100}%` }"></span>
+            <span>Видео: {{ displayedVideoCount }} из {{ videoLimit }}</span>
           </div>
         </div>
       </section>
@@ -170,6 +173,12 @@ const props = defineProps({
 
 const router = useRouter();
 const pageSize = 12;
+const videoLimit = 3000;
+const leaderBadgeOrder = [
+  { label: "Просмотры", tone: "views" },
+  { label: "Лайки", tone: "likes" },
+  { label: "Комментарии", tone: "comments" },
+];
 
 const posts = ref([]);
 const selectedPost = ref(null);
@@ -335,7 +344,19 @@ const avatarSeed = computed(() => session.value?.user?.id || 1);
 const radarCount = computed(() => Math.min(999, 120 + posts.value.length * 7));
 const tokenTotal = computed(() => 4200 + (session.value?.user?.id || 1) * 37);
 const tokenUsed = computed(() => Math.min(tokenTotal.value, 680 + posts.value.length * 19));
-const estimatedTotal = computed(() => (hasMore.value ? Math.max(3000, posts.value.length * 120) : posts.value.length));
+const displayedVideoCount = computed(() => Math.min(videoLimit, posts.value.length));
+const videoProgress = computed(() => Math.min(1, displayedVideoCount.value / videoLimit));
+const leaderBadgeByPostId = computed(() => {
+  const badges = {};
+
+  visiblePosts.value.slice(0, 3).forEach((post, index) => {
+    if (leaderBadgeOrder[index]) {
+      badges[post.id] = leaderBadgeOrder[index];
+    }
+  });
+
+  return badges;
+});
 const canManageSelectedPost = computed(() => {
   return Boolean(
     isAuthenticated.value &&
@@ -822,38 +843,47 @@ onBeforeUnmount(() => {
 .feed-page {
   min-height: 100vh;
   width: 100%;
+  display: flex;
+  justify-content: flex-start;
   background: #f4f5f6;
   padding: 0;
 }
 
 .feed-shell {
   width: 100%;
+  max-width: none;
   min-height: 100vh;
   display: flex;
   align-items: stretch;
-  background: #ffffff;
+  background: #f4f5f6;
+  --sidebar-width: 214px;
+}
+
+.feed-shell--collapsed {
+  --sidebar-width: 72px;
 }
 
 .content-area {
-  flex: 1;
-  background: #f8fafc;
-  padding: 8px 16px 96px;
   position: relative;
+  flex: 1;
+  padding: 6px 14px 112px 12px;
+  background: #f4f5f6;
+}
+
+.content-stack {
+  width: 100%;
+  max-width: none;
 }
 
 .post-grid {
-  margin-top: 0;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 16px;
-  justify-content: stretch;
-  justify-items: center;
-  align-content: start;
-  width: 100%;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  align-items: start;
 }
 
 .state-line {
-  margin-top: 8px;
+  margin-top: 14px;
   min-height: 30px;
 }
 
@@ -873,55 +903,88 @@ onBeforeUnmount(() => {
 
 .floating-actions {
   position: fixed;
-  right: 20px;
+  left: calc(var(--sidebar-width) + 24px);
+  right: 18px;
   bottom: 14px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  z-index: 10;
+  height: 56px;
+  z-index: 12;
+  pointer-events: none;
+}
+
+.more-btn,
+.counter-pill {
+  pointer-events: auto;
 }
 
 .more-btn {
-  height: 52px;
+  position: absolute;
+  left: 50%;
+  bottom: 4px;
+  transform: translateX(-50%);
+  width: 240px;
+  height: 48px;
   border: 0;
-  border-radius: 18px;
-  background: #2b31b3;
-  color: #ffffff;
-  padding: 0 24px;
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 16px;
-  font-weight: 700;
-  line-height: 1;
-  cursor: pointer;
-  letter-spacing: 0.2px;
-  transition: transform 0.2s ease;
-}
-
-.more-btn:hover {
-  transform: translateY(-1px);
-}
-
-.more-btn img {
-  width: 19px;
-  height: 18px;
-}
-
-.counter-pill {
-  height: 52px;
-  border-radius: 26px;
-  background: rgba(32, 32, 32, 0.78);
+  border-radius: 16px;
+  background: #2f37c6;
   color: #ffffff;
   padding: 0 20px;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 10px;
-  font-size: 15px;
+  font-size: 13px;
   line-height: 1;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s ease;
 }
 
-.counter-pill img {
+.more-btn:hover {
+  transform: translateX(-50%) translateY(-1px);
+}
+
+.more-btn img {
+  width: 16px;
+  height: 16px;
+}
+
+.counter-pill {
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 236px;
+  height: 56px;
+  border-radius: 28px;
+  background: rgba(82, 82, 82, 0.92);
+  color: #ffffff;
+  padding: 0 18px;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+  line-height: 1;
+  font-weight: 500;
+}
+
+.counter-ring {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 20px;
+  border-radius: 50%;
+  background: conic-gradient(#4250df 0 var(--progress), rgba(255, 255, 255, 0.16) var(--progress) 100%);
+  position: relative;
+}
+
+.counter-ring::after {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  border-radius: 50%;
+  background: rgba(82, 82, 82, 1);
+}
+
+.counter-pill img,
+.counter-ring img {
   width: 20px;
   height: 20px;
 }
@@ -957,12 +1020,18 @@ onBeforeUnmount(() => {
 
 @media (max-width: 1280px) {
   .content-area {
-    padding: 8px 12px 92px;
+    padding: 0 12px 104px;
   }
 
+  .floating-actions {
+    left: calc(var(--sidebar-width) + 18px);
+    right: 18px;
+  }
+}
+
+@media (max-width: 1180px) {
   .post-grid {
-    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-    gap: 14px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
@@ -973,27 +1042,38 @@ onBeforeUnmount(() => {
 
   .content-area {
     width: 100%;
-    padding: 10px 10px 120px;
+    padding: 10px 10px 126px;
+  }
+
+  .content-stack {
+    max-width: none;
   }
 
   .post-grid {
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .floating-actions {
-    right: 10px;
+  .floating-actions,
+  .floating-actions--collapsed {
     left: 10px;
+    right: 10px;
     bottom: 10px;
-    justify-content: stretch;
-    flex-direction: column;
-    align-items: stretch;
+    height: auto;
+    display: grid;
+    gap: 10px;
   }
 
   .more-btn,
   .counter-pill {
+    position: static;
     width: 100%;
+    transform: none;
     justify-content: center;
     font-size: 14px;
+  }
+
+  .more-btn:hover {
+    transform: translateY(-1px);
   }
 
   .toast-wrap {
@@ -1006,7 +1086,7 @@ onBeforeUnmount(() => {
 
 @media (max-width: 640px) {
   .content-area {
-    padding: 8px 8px 124px;
+    padding: 8px 8px 126px;
   }
 
   .post-grid {
@@ -1015,3 +1095,4 @@ onBeforeUnmount(() => {
   }
 }
 </style>
+

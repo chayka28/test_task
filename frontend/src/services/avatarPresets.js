@@ -22,7 +22,7 @@ export const avatarPresets = [
 ];
 
 export function resolveAvatarVisual(avatarValue, seed = 1) {
-  if (typeof avatarValue === "string" && avatarValue.startsWith("data:")) {
+  if (typeof avatarValue === "string" && (avatarValue.startsWith("data:") || /^https?:\/\//i.test(avatarValue))) {
     return {
       kind: "image",
       value: avatarValue,

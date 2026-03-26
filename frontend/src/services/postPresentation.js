@@ -1,46 +1,57 @@
-function seededValue(seed) {
+﻿function seededValue(seed) {
   const safeSeed = Number.isFinite(seed) ? Math.abs(seed) : 1;
   return (safeSeed * 9301 + 49297) % 233280;
 }
 
 const mediaPalettes = [
   {
-    start: "#a7936f",
-    end: "#5f4637",
-    accent: "#f7d9a1",
-    glow: "rgba(255, 210, 170, 0.48)",
-    surface: "rgba(52, 27, 16, 0.28)",
+    start: "#b59d77",
+    end: "#6f5442",
+    accent: "#f6dcc1",
+    glow: "rgba(255, 223, 197, 0.46)",
+    surface: "rgba(48, 23, 15, 0.58)",
   },
   {
-    start: "#1f2135",
-    end: "#58364f",
-    accent: "#f2d6eb",
-    glow: "rgba(191, 153, 255, 0.35)",
-    surface: "rgba(20, 18, 31, 0.34)",
+    start: "#1f2235",
+    end: "#5a3a54",
+    accent: "#f3d8e9",
+    glow: "rgba(183, 149, 255, 0.36)",
+    surface: "rgba(14, 15, 26, 0.6)",
   },
   {
-    start: "#324257",
-    end: "#111827",
-    accent: "#cfe4ff",
-    glow: "rgba(98, 173, 255, 0.34)",
-    surface: "rgba(13, 24, 41, 0.34)",
+    start: "#384f66",
+    end: "#151822",
+    accent: "#cae6ff",
+    glow: "rgba(110, 176, 255, 0.32)",
+    surface: "rgba(13, 24, 41, 0.58)",
   },
   {
-    start: "#65535d",
-    end: "#261b23",
-    accent: "#ffe0cf",
-    glow: "rgba(255, 158, 158, 0.34)",
-    surface: "rgba(39, 17, 22, 0.34)",
+    start: "#8d7f5c",
+    end: "#3a2b2c",
+    accent: "#f2d7c9",
+    glow: "rgba(255, 199, 168, 0.34)",
+    surface: "rgba(42, 20, 18, 0.58)",
   },
 ];
 
-export function formatCompactNumber(value) {
+const showcaseBadges = [
+  { label: "Просмотры", tone: "views" },
+  { label: "Лайки", tone: "likes" },
+  { label: "Комментарии", tone: "comments" },
+  null,
+];
+
+const topics = ["Базы данных", "ИИ", "Чат-боты", "Программирование", "Айти", "Макбук", "Кофе"];
+
+export function formatCompactNumber(value, options = {}) {
+  const { upperK = false } = options;
+
   if (value >= 1_000_000) {
     return `${(value / 1_000_000).toFixed(1).replace(".", ",")} млн`;
   }
 
   if (value >= 1000) {
-    return `${Math.round(value / 100) / 10}k`;
+    return `${Math.round(value / 100) / 10}${upperK ? "K" : "k"}`;
   }
 
   return String(value);
@@ -67,8 +78,9 @@ export function buildUserHandle(userName, userId) {
 
 export function buildFollowers(userId) {
   const seed = seededValue(Number(userId || 1) + 17);
-  const base = 120_000 + (seed % 380_000);
-  return formatCompactNumber(base);
+  const base = 10_500 + (seed % 420_000);
+  const compact = formatCompactNumber(base, { upperK: true });
+  return base < 100_000 ? `${compact} Подписчиков` : compact;
 }
 
 export function buildPostMetrics(postId) {
@@ -108,6 +120,9 @@ export function buildMediaPalette(postId) {
 }
 
 export function buildPostTopic(postId) {
-  const topics = ["Базы данных", "ИИ", "Чат-боты", "Программирование", "Айти", "Макбук", "Кофе"];
   return topics[Math.abs(Number(postId || 0)) % topics.length];
+}
+
+export function buildShowcaseBadge(postId) {
+  return showcaseBadges[Math.abs(Number(postId || 0)) % showcaseBadges.length];
 }

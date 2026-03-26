@@ -1,11 +1,16 @@
-<template>
+﻿<template>
   <aside class="sidebar" :class="{ 'sidebar--collapsed': collapsed }">
     <div class="sidebar-scroll">
       <header class="logo-row">
         <BrandLogo :icon-only="collapsed" :show-tag="!collapsed" compact />
 
         <button class="collapse-btn" type="button" aria-label="Свернуть меню" @click="$emit('toggle-sidebar')">
-          <span class="collapse-arrow" :class="{ 'collapse-arrow--collapsed': collapsed }">→</span>
+          <img
+            src="/assets/icons/Vector-28.png"
+            alt=""
+            class="collapse-icon"
+            :class="{ 'collapse-icon--collapsed': collapsed }"
+          />
         </button>
       </header>
 
@@ -42,7 +47,7 @@
               <span v-if="item.badge" class="menu-badge" :class="{ 'menu-badge--soft': item.badgeSoft }">
                 {{ item.badge }}
               </span>
-              <span v-if="item.chevron" class="menu-chevron">›</span>
+              <img v-if="item.chevron" src="/assets/icons/Vector-27.png" alt="" class="menu-chevron" />
             </button>
           </nav>
         </section>
@@ -51,7 +56,7 @@
       <section class="token-card">
         <div class="token-head">
           <span class="token-title">
-            <img src="/assets/icons/Vector-15.png" alt="" class="token-icon" />
+            <img src="/assets/icons/Vector-25.png" alt="" class="token-icon" />
             <span v-if="!collapsed" class="token-title-text">Токены</span>
           </span>
           <strong v-if="!collapsed" class="token-value">{{ formattedTokenValue }}</strong>
@@ -63,7 +68,7 @@
 
         <button v-if="!collapsed" type="button" class="creative-row" @click="$emit('toggle-creative')">
           <span>Creative +</span>
-          <span class="creative-arrow" :class="{ 'creative-arrow--open': creativeExpanded }">›</span>
+          <img src="/assets/icons/Vector-27.png" alt="" class="creative-arrow" :class="{ 'creative-arrow--open': creativeExpanded }" />
         </button>
 
         <Transition name="creative-panel">
@@ -82,13 +87,13 @@
           <p class="profile-name">{{ profileName }}</p>
           <p class="profile-phone">{{ profilePhone }}</p>
         </div>
-        <span v-if="!collapsed" class="profile-action">{{ isAuthenticated ? "↗" : "+" }}</span>
+        <img v-if="!collapsed" src="/assets/icons/Vector-26.png" alt="" class="profile-action" />
       </button>
 
       <div v-if="!collapsed" class="locale-row">
         <span class="locale-flag">🇷🇺</span>
         <span class="locale-code">RU</span>
-        <span class="locale-arrow">⌄</span>
+        <img src="/assets/icons/Vector-27.png" alt="" class="locale-arrow" />
       </div>
     </div>
   </aside>
@@ -153,60 +158,60 @@ const sections = computed(() => [
   {
     title: "Поиск контента",
     items: [
-      { label: "Главная", icon: "/assets/icons/home.svg", route: "feed" },
-      { label: "Видео", icon: "/assets/icons/Vector.png" },
-      { label: "Шпионаж", icon: "/assets/icons/Vector-1.png" },
-      { label: "Контент радар", icon: "/assets/icons/Vector-2.png", badge: String(props.radarCount) },
+      { label: "Главная", icon: "/assets/icons/Vector-5.png", route: "feed" },
+      { label: "Видео", icon: "/assets/icons/Vector-6.png" },
+      { label: "Шпионаж", icon: "/assets/icons/Vector-7.png" },
+      { label: "Контент радар", icon: "/assets/icons/Vector-8.png", badge: String(props.radarCount) },
     ],
   },
   {
     title: "Работа с соцсетями",
     items: [
-      { label: "Кросс-постинг", icon: "/assets/icons/Vector-3.png" },
-      { label: "Чат боты", icon: "/assets/icons/Vector-4.png" },
+      { label: "Кросс-постинг", icon: "/assets/icons/Vector-9.png" },
+      { label: "Чат боты", icon: "/assets/icons/Vector-10.png" },
     ],
   },
   {
     title: "Инструменты",
     items: [
-      { label: "ИИ-сценарий", icon: "/assets/icons/Vector-5.png" },
-      { label: "Карусели", icon: "/assets/icons/Vector-6.png" },
-      { label: "Анализ видео", icon: "/assets/icons/Vector-7.png" },
-      { label: "Анализ профиля", icon: "/assets/icons/Vector-8.png" },
-      { label: "Черновик", icon: "/assets/icons/Vector-9.png", badge: "Скоро", badgeSoft: true },
-      { label: "Контент план", icon: "/assets/icons/Vector-10.png", badge: "Скоро", badgeSoft: true },
+      { label: "ИИ-сценарий", icon: "/assets/icons/Vector-11.png" },
+      { label: "Карусели", icon: "/assets/icons/Vector-12.png" },
+      { label: "Анализ видео", icon: "/assets/icons/Vector-13.png" },
+      { label: "Анализ профиля", icon: "/assets/icons/Vector-14.png" },
+      { label: "Черновик", icon: "/assets/icons/Vector-15.png", badge: "Скоро", badgeSoft: true },
+      { label: "Контент план", icon: "/assets/icons/Vector-16.png", badge: "Скоро", badgeSoft: true },
     ],
   },
   {
     title: "Идеи",
     items: [
-      { label: "Избранные", icon: "/assets/icons/menu-favorites.png", route: "favorites" },
-      { label: "История", icon: "/assets/icons/menu-history.png", badge: "Скоро", badgeSoft: true, chevron: true },
-      { label: "Закладки", icon: "/assets/icons/menu-bookmark.png", badge: "Скоро", badgeSoft: true },
+      { label: "Избранные", icon: "/assets/icons/Vector-17.png", route: "favorites" },
+      { label: "История", icon: "/assets/icons/Vector-18.png", badge: "Скоро", badgeSoft: true, chevron: true },
+      { label: "Закладки", icon: "/assets/icons/Vector-20.png", badge: "Скоро", badgeSoft: true },
     ],
   },
   {
     title: "Еще",
     items: [
-      { label: "Обучение", icon: "/assets/icons/education.svg" },
-      { label: "Рефералы", icon: "/assets/icons/referrals.svg" },
-      { label: "Предложить идею", icon: "/assets/icons/idea.svg" },
-      { label: "Поддержка", icon: "/assets/icons/support.svg" },
+      { label: "Обучение", icon: "/assets/icons/Vector-21.png" },
+      { label: "Рефералы", icon: "/assets/icons/Vector-22.png" },
+      { label: "Предложить идею", icon: "/assets/icons/Vector-23.png" },
+      { label: "Поддержка", icon: "/assets/icons/Vector-24.png" },
     ],
   },
 ]);
 
 const shortcutItems = [
-  { label: "Главная", icon: "/assets/icons/home.svg", route: "feed" },
-  { label: "Поиск", icon: "/assets/icons/search.svg", isActive: true, route: "feed" },
-  { label: "Контент радар", icon: "/assets/icons/Vector-2.png" },
-  { label: "Идеи", icon: "/assets/icons/ghost.svg" },
-  { label: "Анализ видео", icon: "/assets/icons/Vector-7.png" },
-  { label: "Анализ профиля", icon: "/assets/icons/Vector-8.png" },
-  { label: "Черновик", icon: "/assets/icons/Vector-9.png" },
-  { label: "Контент план", icon: "/assets/icons/Vector-10.png" },
-  { label: "Избранные", icon: "/assets/icons/menu-favorites.png", route: "favorites" },
-  { label: "Закладки", icon: "/assets/icons/menu-bookmark.png" },
+  { label: "Главная", icon: "/assets/icons/Vector-5.png", route: "feed" },
+  { label: "Поиск", icon: "/assets/icons/Vector-35.png", isActive: true, route: "feed" },
+  { label: "Контент радар", icon: "/assets/icons/Vector-8.png" },
+  { label: "Шпионаж", icon: "/assets/icons/Vector-7.png" },
+  { label: "Анализ видео", icon: "/assets/icons/Vector-13.png" },
+  { label: "Анализ профиля", icon: "/assets/icons/Vector-14.png" },
+  { label: "Черновик", icon: "/assets/icons/Vector-15.png" },
+  { label: "Контент план", icon: "/assets/icons/Vector-16.png" },
+  { label: "Избранные", icon: "/assets/icons/Vector-17.png", route: "favorites" },
+  { label: "Закладки", icon: "/assets/icons/Vector-20.png" },
 ];
 
 const formattedTokenValue = computed(() => {
@@ -244,13 +249,13 @@ function isRouteActive(routeName, fallback = false) {
 
 <style scoped>
 .sidebar {
-  width: 252px;
-  flex: 0 0 252px;
+  width: 214px;
+  flex: 0 0 214px;
   height: 100vh;
   position: sticky;
   top: 0;
   background: #f5f6f8;
-  padding: 10px 12px 12px;
+  padding: 0 10px;
   transition:
     width 0.28s ease,
     flex-basis 0.28s ease,
@@ -258,9 +263,9 @@ function isRouteActive(routeName, fallback = false) {
 }
 
 .sidebar--collapsed {
-  width: 84px;
-  flex-basis: 84px;
-  padding-inline: 10px;
+  width: 72px;
+  flex-basis: 72px;
+  padding: 0 8px;
 }
 
 .sidebar-scroll {
@@ -268,6 +273,7 @@ function isRouteActive(routeName, fallback = false) {
   overflow-y: auto;
   display: flex;
   flex-direction: column;
+  padding: 10px 0 14px;
   scrollbar-width: none;
 }
 
@@ -279,40 +285,41 @@ function isRouteActive(routeName, fallback = false) {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: 10px;
+  min-height: 34px;
 }
 
 .collapse-btn {
-  border: 1px solid #bad9ec;
-  border-radius: 4px;
-  width: 22px;
-  height: 22px;
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  border: 1px solid #bfd7ea;
+  background: transparent;
+  padding: 0;
   display: grid;
   place-items: center;
-  background: transparent;
   cursor: pointer;
-  padding: 0;
 }
 
-.collapse-arrow {
-  color: #7a8a97;
-  font-size: 12px;
-  line-height: 1;
-  transition: transform 0.24s ease;
+.collapse-icon {
+  width: 12px;
+  height: 12px;
+  object-fit: contain;
+  transition: transform 0.22s ease;
 }
 
-.collapse-arrow--collapsed {
+.collapse-icon--collapsed {
   transform: rotate(180deg);
 }
 
-.menu-section + .menu-section {
-  margin-top: 4px;
+.menu-section {
+  margin-top: 8px;
 }
 
 .section-title {
-  margin: 18px 0 8px;
-  color: #95a2ad;
-  font-size: 14px;
+  margin: 0 0 7px;
+  color: #98a5b0;
+  font-size: 12px;
   line-height: 1.2;
   font-weight: 700;
 }
@@ -323,103 +330,98 @@ function isRouteActive(routeName, fallback = false) {
 }
 
 .menu-item {
-  border: 0;
-  border-radius: 12px;
-  background: transparent;
-  color: #526878;
+  min-height: 40px;
   display: flex;
   align-items: center;
   gap: 12px;
-  min-height: 40px;
-  padding: 8px 10px;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  padding: 6px 10px;
+  border-radius: 12px;
   text-align: left;
   cursor: pointer;
-  transition: background 0.2s ease;
+  color: #5d6f7d;
 }
 
-.menu-item:hover {
-  background: #eceef2;
-}
-
+.menu-item:hover,
 .menu-item--active {
-  background: #eceef2;
+  background: rgba(236, 239, 243, 0.9);
 }
 
 .menu-icon {
-  width: 20px;
-  height: 20px;
+  width: 24px;
+  height: 24px;
+  flex: 0 0 24px;
   object-fit: contain;
-  flex: 0 0 20px;
 }
 
 .menu-label {
-  font-size: 15px;
-  line-height: 1.25;
+  font-size: 13px;
+  line-height: 1.2;
   font-weight: 500;
-  margin-right: auto;
-  white-space: nowrap;
 }
 
 .menu-badge {
+  margin-left: auto;
+  min-width: 34px;
+  padding: 5px 9px;
   border-radius: 999px;
-  background: #d7dbff;
-  color: #3640cb;
-  font-size: 11px;
+  background: #d8d7ff;
+  color: #4f59d7;
+  font-size: 10px;
   line-height: 1;
   font-weight: 700;
-  padding: 4px 8px;
+  text-align: center;
 }
 
 .menu-badge--soft {
-  background: #e4e7eb;
-  color: #6d7680;
+  background: #eceff2;
+  color: #7f8d99;
 }
 
 .menu-chevron {
-  color: #838b92;
-  font-size: 20px;
-  line-height: 1;
+  margin-left: auto;
+  width: 12px;
+  height: 8px;
 }
 
 .shortcut-list {
-  margin-top: 16px;
-  display: grid;
-  gap: 18px;
-  justify-items: center;
-  padding-top: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding-top: 22px;
 }
 
 .shortcut-item {
-  width: 42px;
-  height: 42px;
+  width: 44px;
+  height: 44px;
   border: 0;
   border-radius: 14px;
   background: transparent;
   display: grid;
   place-items: center;
   cursor: pointer;
-  transition: background 0.2s ease;
 }
 
+.shortcut-item--active,
 .shortcut-item:hover {
-  background: #eceef2;
-}
-
-.shortcut-item--active {
   background: #ecebe7;
 }
 
 .shortcut-icon {
-  width: 22px;
-  height: 22px;
+  width: 26px;
+  height: 26px;
   object-fit: contain;
 }
 
 .token-card {
   margin-top: auto;
-  border-radius: 14px;
+  border-radius: 16px;
   background: #ffffff;
-  padding: 12px 14px;
+  padding: 10px 12px;
+  box-shadow: 0 8px 20px rgba(23, 32, 56, 0.04);
 }
 
 .token-head {
@@ -427,25 +429,32 @@ function isRouteActive(routeName, fallback = false) {
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  color: #191c2b;
-  font-size: 14px;
-  font-weight: 700;
 }
 
 .token-title {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+  color: #171a21;
+  font-size: 13px;
+  line-height: 1;
+  font-weight: 800;
 }
 
 .token-icon {
-  width: 10px;
-  height: 11px;
-  flex: 0 0 10px;
+  width: 14px;
+  height: 14px;
+}
+
+.token-value {
+  color: #1b1d26;
+  font-size: 13px;
+  line-height: 1;
+  font-weight: 500;
 }
 
 .token-bar {
-  margin-top: 9px;
+  margin-top: 10px;
   height: 8px;
   border-radius: 999px;
   background: #d9dde2;
@@ -456,33 +465,32 @@ function isRouteActive(routeName, fallback = false) {
   display: block;
   height: 100%;
   border-radius: inherit;
-  background: #2b31b3;
+  background: #2f37c6;
 }
 
 .creative-row {
   margin-top: 12px;
   width: 100%;
-  border: 0;
-  background: transparent;
-  color: #8a96a0;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 14px;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: #8a97a0;
+  font-size: 13px;
   line-height: 1;
   cursor: pointer;
-  padding: 0;
 }
 
 .creative-arrow {
-  font-size: 22px;
-  line-height: 1;
-  color: #8a96a0;
+  width: 12px;
+  height: 8px;
   transition: transform 0.22s ease;
 }
 
 .creative-arrow--open {
-  transform: rotate(90deg);
+  transform: rotate(-90deg);
 }
 
 .creative-panel-enter-active,
@@ -509,7 +517,7 @@ function isRouteActive(routeName, fallback = false) {
 
 .creative-copy {
   margin: 0;
-  color: #7b8794;
+  color: #7f8b95;
   font-size: 13px;
   line-height: 1.2;
 }
@@ -519,31 +527,34 @@ function isRouteActive(routeName, fallback = false) {
   width: 100%;
   height: 38px;
   border: 0;
-  border-radius: 13px;
-  background: #f0f1f4;
-  color: #2b31b3;
+  border-radius: 14px;
+  background: #f3f4f6;
+  color: #2f37c6;
   font-size: 14px;
   line-height: 1;
   font-weight: 700;
   cursor: pointer;
 }
 
-
 .profile-row {
   margin-top: 14px;
+  width: 100%;
+  min-height: 54px;
   display: flex;
   align-items: center;
-  gap: 8px;
-  width: 100%;
+  gap: 10px;
+  padding: 8px 10px 8px 8px;
   border: 0;
-  background: transparent;
-  padding: 0;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 8px 20px rgba(23, 32, 56, 0.04);
   text-align: left;
   cursor: pointer;
 }
 
 .profile-row--collapsed {
   justify-content: center;
+  padding-inline: 0;
 }
 
 .profile-meta {
@@ -552,41 +563,47 @@ function isRouteActive(routeName, fallback = false) {
 
 .profile-name {
   margin: 0;
-  color: #5d6f7d;
-  font-size: 14px;
-  font-weight: 700;
+  color: #6b7b89;
+  font-size: 13px;
   line-height: 1.2;
+  font-weight: 700;
 }
 
 .profile-phone {
   margin: 2px 0 0;
-  color: #9aa5b2;
-  font-size: 12px;
+  color: #a2aab3;
+  font-size: 11px;
   line-height: 1.2;
 }
 
 .profile-action {
   margin-left: auto;
-  color: #8e98a6;
-  font-size: 18px;
+  width: 16px;
+  height: 16px;
 }
 
 .locale-row {
   margin-top: 10px;
   display: flex;
   align-items: center;
-  gap: 6px;
-  color: #6d7c89;
+  gap: 7px;
+  padding-left: 4px;
+  color: #6a7988;
   font-size: 12px;
   line-height: 1;
 }
 
 .locale-flag {
-  font-size: 14px;
+  font-size: 16px;
+}
+
+.locale-arrow {
+  width: 12px;
+  height: 8px;
 }
 
 .sidebar--collapsed .token-card {
-  padding-inline: 10px;
+  padding: 12px 10px;
 }
 
 .sidebar--collapsed .token-head {
@@ -600,30 +617,23 @@ function isRouteActive(routeName, fallback = false) {
     flex-basis: auto;
     height: auto;
     position: sticky;
-    top: 0;
     z-index: 30;
-    border-right: 0;
-    border-bottom: 1px solid #e8edf2;
+    padding: 0 10px;
+    border-bottom: 1px solid #e5e9ef;
   }
 
   .sidebar-scroll {
+    height: auto;
     overflow: visible;
-    padding: 12px 12px 14px;
+    padding: 10px 0 14px;
   }
 
   .shortcut-list {
-    grid-template-columns: repeat(7, 40px);
+    flex-direction: row;
     justify-content: flex-start;
     overflow-x: auto;
-    padding-bottom: 2px;
-  }
-
-  .shortcut-list::-webkit-scrollbar {
-    display: none;
-  }
-
-  .menu-section {
-    margin-bottom: 12px;
+    gap: 10px;
+    padding: 14px 0 0;
   }
 
   .token-card,
@@ -634,17 +644,13 @@ function isRouteActive(routeName, fallback = false) {
 }
 
 @media (max-width: 640px) {
-  .sidebar-scroll {
-    padding: 10px 10px 12px;
+  .menu-label {
+    font-size: 14px;
   }
 
-  .logo-row {
-    margin-bottom: 10px;
-  }
-
-  .shortcut-list {
-    gap: 8px;
-    grid-template-columns: repeat(6, 40px);
+  .menu-badge {
+    font-size: 11px;
+    padding-inline: 8px;
   }
 }
 </style>

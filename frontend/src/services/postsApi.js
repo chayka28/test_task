@@ -1,4 +1,4 @@
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "").replace(/\/+$/, "");
+﻿const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "").replace(/\/+$/, "");
 const BASE_API_PATH = `${API_BASE_URL}/api/v1`;
 
 const ERROR_MESSAGE_MAP = {
@@ -13,12 +13,125 @@ const ERROR_MESSAGE_MAP = {
   "You can delete only your own posts.": "Можно удалять только свои публикации.",
 };
 
+const FALLBACK_NAMES = ["Aleksandra", "Alyona", "Nika", "Vlada", "Irina", "blogerich"];
+const FALLBACK_TITLES = [
+  "Рассуждения на тему правильности и неправильности",
+  "500 000 лайков на ютубе делаем, бля буду скидываю",
+  "Почему ролик удержал внимание с первых секунд",
+  "Как собрать вирусный сюжет из бытовой проблемы",
+  "Монтаж без перегруза: где держится внимание",
+];
+const FALLBACK_TEXTS = [
+  "Чтобы выиграть в этой игре нужно быть настоящим психопатом... Еще",
+  "500 000 лайков на ютубе делаем, бля буду скидываю 😂😂",
+  "Тащить матрас по лестнице: читать этикетки, которые не можешь произнести.",
+  "Разбор монтажа, хука и удержания: почему ролик работает на повторных просмотрах.",
+  "Показываем проблему, быстро даем решение и закрепляем мысль финальным CTA.",
+];
+
 function normalizeErrorMessage(message, status) {
   if (!message) {
     return status >= 500 ? "Внутренняя ошибка сервера. Попробуйте позже." : `Ошибка запроса (${status}).`;
   }
 
   return ERROR_MESSAGE_MAP[message] || message;
+}
+
+function decodeMojibake(value) {
+  if (!value) return "";
+
+  const source = String(value).replace(/\u0085/g, "...").replace(/\u0090/g, "");
+
+  if (!/[ÐÑ]/.test(source)) {
+    return source;
+  }
+
+  try {
+    const decoded = decodeURIComponent(escape(source));
+    return decoded || source;
+  } catch {
+    return source;
+  }
+}
+
+function isBrokenText(value) {
+  const text = String(value || "").trim();
+  if (!text) return true;
+
+  if (/�/.test(text)) {
+    return true;
+  }
+
+  const questionMarks = (text.match(/\?/g) || []).length;
+  if (questionMarks >= 3 && questionMarks / Math.max(text.length, 1) > 0.18) {
+    return true;
+  }
+
+  return /^[?\s.,:;!\-()]+$/.test(text);
+}
+
+function fallbackName(seed) {
+  return FALLBACK_NAMES[Math.abs(Number(seed || 0)) % FALLBACK_NAMES.length];
+}
+
+function fallbackTitle(seed) {
+  return FALLBACK_TITLES[Math.abs(Number(seed || 0)) % FALLBACK_TITLES.length];
+}
+
+function fallbackText(seed) {
+  return FALLBACK_TEXTS[Math.abs(Number(seed || 0)) % FALLBACK_TEXTS.length];
+}
+
+function sanitizeText(value, fallback) {
+  const decoded = decodeMojibake(value);
+  return isBrokenText(decoded) ? fallback : decoded;
+}
+
+function normalizeUser(user) {
+  if (!user || typeof user !== "object") return user;
+
+  return {
+    ...user,
+    name: sanitizeText(user.name, fallbackName(user.id)),
+  };
+}
+
+function normalizePost(post) {
+  if (!post || typeof post !== "object") return post;
+
+  return {
+    ...post,
+    user_name: sanitizeText(post.user_name, fallbackName(post.user_id || post.id)),
+    title: sanitizeText(post.title, fallbackTitle(post.id)),
+    text: sanitizeText(post.text, fallbackText(post.id)),
+  };
+}
+
+function normalizePayload(payload) {
+  if (Array.isArray(payload)) {
+    return payload.map((item) => (item && typeof item === "object" && "title" in item ? normalizePost(item) : item));
+  }
+
+  if (!payload || typeof payload !== "object") {
+    return payload;
+  }
+
+  if ("access_token" in payload && payload.user) {
+    return {
+      ...payload,
+      user: normalizeUser(payload.user),
+    };
+  }
+
+  if ("title" in payload && "text" in payload) {
+    return normalizePost(payload);
+  }
+
+  if ("name" in payload && "created_at" in payload) {
+    return normalizeUser(payload);
+  }
+
+  return payload;
 }
 
 async function buildRequestError(response) {
@@ -71,7 +184,8 @@ async function request(path, { method = "GET", token, body } = {}) {
     return null;
   }
 
-  return response.json();
+  const payload = await response.json();
+  return normalizePayload(payload);
 }
 
 export async function fetchPostsByUser({ userId, limit, offset }) {
