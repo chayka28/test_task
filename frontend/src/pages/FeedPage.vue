@@ -91,6 +91,7 @@
         @close="selectedPost = null"
         @edit="openPostEditor('edit', $event)"
         @delete="handleDeletePost"
+        @copied="handleCopied"
         @placeholder="handlePlaceholder"
       />
     </Transition>
@@ -800,6 +801,10 @@ async function handleDeleteAccount() {
 
 function handlePlaceholder(label) {
   showToast(`${label} недоступно`, "Функция пока недоступна.");
+}
+
+function handleCopied(label) {
+  showToast("Скопировано", `Блок «${label}» добавлен в буфер обмена.`);
 }
 
 function handleAuthRequired(reason) {

@@ -113,11 +113,11 @@
         <div class="results-count">Загружено: {{ loadedCount }} видео</div>
       </div>
 
-      <div class="hint-row">
+      <div v-if="isHintVisible" class="hint-row">
         <span>
           Ролики собираются напрямую из поиска соц. сети. Все видео из выдачи — актуальны и продвигаются прямо сейчас.
         </span>
-        <button type="button" class="hint-close" @click="$emit('placeholder', 'Скрыть подсказку')">×</button>
+        <button type="button" class="hint-close" @click="isHintVisible = false">×</button>
       </div>
 
       <div class="filters-row">
@@ -149,7 +149,9 @@
 </template>
 
 <script setup>
-defineProps({
+import { ref, watch } from "vue";
+
+const props = defineProps({
   query: {
     type: String,
     default: "",
@@ -173,8 +175,16 @@ defineProps({
 });
 
 const emit = defineEmits(["update:query", "update:selectedTopic", "update:sortMode", "search", "placeholder", "back"]);
+const isHintVisible = ref(true);
 
 const topics = ["Базы данных", "ИИ", "Чат-боты", "Программирование", "Айти", "Макбук", "Кофе"];
+
+watch(
+  () => props.resultsTitle,
+  () => {
+    isHintVisible.value = true;
+  },
+);
 
 function handleSearch() {
   emit("search");
@@ -275,8 +285,8 @@ function handleRestrictedAction(label) {
 .results-radar-btn {
   height: 39px;
   padding: 0 16px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.96);
+  border-radius: 14px;
+  background: #ffffff;
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -284,6 +294,13 @@ function handleRestrictedAction(label) {
   font-size: var(--font-action-small-size);
   line-height: var(--font-action-small-line);
   font-weight: var(--font-action-small-weight);
+  box-shadow:
+    inset 0 0 0 1px rgba(34, 43, 55, 0.08),
+    0 1px 2px rgba(18, 27, 52, 0.06);
+}
+
+.results-radar-btn {
+  flex: 0 0 auto;
 }
 
 .radar-btn img,
@@ -454,13 +471,15 @@ function handleRestrictedAction(label) {
 .submit-btn {
   min-height: 50px;
   align-self: start;
-  border-radius: 16px;
+  border-radius: 20px;
   background: #ffffff;
-  color: #2f3644;
+  color: #222b37;
   font-size: 16px;
-  line-height: 1;
-  font-weight: 800;
-  box-shadow: inset 0 0 0 1px rgba(69, 78, 90, 0.2);
+  line-height: 24px;
+  font-weight: 600;
+  box-shadow:
+    inset 0 0 0 1px rgba(34, 43, 55, 0.14),
+    0 2px 4px rgba(18, 27, 52, 0.06);
 }
 
 .results-card {
@@ -650,6 +669,7 @@ function handleRestrictedAction(label) {
 
   .results-radar-btn {
     width: 100%;
+    max-width: 186px;
     justify-content: center;
   }
 

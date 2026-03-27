@@ -101,7 +101,7 @@
                   <img src="/assets/icons/Vector-5 (2).png" alt="" />
                   <span>Переведено</span>
                 </button>
-                <button type="button" class="copy-btn" @click="handleRestrictedAction('Скопировать блок')">
+                <button type="button" class="copy-btn" @click="copyContent('Транскрибация', transcriptText)">
                   <img src="/assets/icons/copy-button.png" alt="" />
                 </button>
               </div>
@@ -174,7 +174,7 @@
             <div class="block-surface grouped-hook-surface">
               <div class="block-head block-head--sub block-head--first">
                 <h3>Хук фраза</h3>
-                <button type="button" class="copy-btn" @click="handleRestrictedAction('Скопировать блок')">
+                <button type="button" class="copy-btn" @click="copyContent('Хук фраза', hookPhraseText)">
                   <img src="/assets/icons/copy-button.png" alt="" />
                 </button>
               </div>
@@ -185,7 +185,7 @@
               <div class="hook-section">
                 <div class="block-head block-head--sub">
                   <h3>Визуальный хук</h3>
-                  <button type="button" class="copy-btn" @click="handleRestrictedAction('Скопировать блок')">
+                  <button type="button" class="copy-btn" @click="copyContent('Визуальный хук', visualHookText)">
                     <img src="/assets/icons/copy-button.png" alt="" />
                   </button>
                 </div>
@@ -197,7 +197,7 @@
               <div class="hook-section">
                 <div class="block-head block-head--sub">
                   <h3>Текстовый хук</h3>
-                  <button type="button" class="copy-btn" @click="handleRestrictedAction('Скопировать блок')">
+                  <button type="button" class="copy-btn" @click="copyContent('Текстовый хук', textHookText)">
                     <img src="/assets/icons/copy-button.png" alt="" />
                   </button>
                 </div>
@@ -211,7 +211,7 @@
           <section class="content-block">
             <div class="block-head">
               <h3>Рабочие приемы</h3>
-              <button type="button" class="copy-btn" @click="handleRestrictedAction('Скопировать блок')">
+              <button type="button" class="copy-btn" @click="copyContent('Рабочие приемы', workingTechniquesText)">
                 <img src="/assets/icons/copy-button.png" alt="" />
               </button>
             </div>
@@ -237,7 +237,7 @@
           <section class="content-block">
             <div class="block-head">
               <h3>Воронка / Маркетинг</h3>
-              <button type="button" class="copy-btn" @click="handleRestrictedAction('Скопировать блок')">
+              <button type="button" class="copy-btn" @click="copyContent('Воронка / Маркетинг', funnelText)">
                 <img src="/assets/icons/copy-button.png" alt="" />
               </button>
             </div>
@@ -283,7 +283,7 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(['close', 'placeholder', 'edit', 'delete']);
+const emit = defineEmits(['close', 'placeholder', 'edit', 'delete', 'copied']);
 
 const palette = computed(() => buildMediaPalette(props.post.id));
 const metricRows = computed(() => buildPostMetrics(props.post.id));
@@ -322,6 +322,44 @@ const transcriptParagraphs = computed(() => {
     'Первая — ты намазал под SPF слишком много всего: сыворотка, крем, база... сверху SPF — и оно начинает конфликтовать. Чем больше слоёв, тем выше шанс, что всё свернётся в катышки....',
   ];
 });
+const transcriptText = computed(() => transcriptParagraphs.value.join("\n\n"));
+const hookPhraseText = computed(() => "Одна из них — пустышка. Угадаешь какая?");
+const visualHookText = computed(() => "Одна из них — пустышка. Угадаешь какая?");
+const textHookText = computed(() => "Одна из них — пустышка. Угадаешь какая?");
+const workingTechniquesText = computed(() =>
+  [
+    "2. Суть видео",
+    "Приём: \"кому подходит / кому нет\" двумя блоками.",
+    "Почему сработало: это формат \"диагноз → лечение → решение\". Люди сохраняют не эмоции, а инструкцию. И это \"обзор\", а не философия.",
+    "",
+    "3. Монтаж",
+    "Приём: смена планов каждые 1-2 секунды: лицо → продукт крупно → рука (демо) → снова лицо.",
+    "Почему сработало: вертикалки смотрят на автопилоте. Частая смена планов держит внимание даже без звука.",
+    "Приём: все доказательства — через B-roll вставки на 0.3-0.8 сек (катышки, блеск, этикетка, нанесение).",
+    "Почему сработало: речь в кадре быстро утомляет. B-roll делает ощущение \"я реально тестировал\".",
+    "",
+    "4. Реплики",
+    "Приём: \"триггер доверия\" одной фразой: \"Я не продаю этот SPF, мне пох, скажу как есть.\"",
+    "Почему сработало: снимает защиту \"мне впаривают\".",
+    "Приём: \"вилка выбора\" в середине: \"Если кожа жирная — делай так. Если сухая — так.\"",
+    "Почему сработало: персонализация без долгого объяснения = удержание.",
+  ].join("\n"),
+);
+const funnelText = computed(() =>
+  [
+    "CTA голос/визуал",
+    "Почему сработало: зритель узнаёт свой баг мгновенно. Это не \"мнение\", а физический факт в кадре, мозг цепляется.",
+    "",
+    "Триггер",
+    "Почему сработало: зритель узнаёт свой баг мгновенно. Это не \"мнение\", а физический факт в кадре, мозг цепляется.",
+    "",
+    "Куда ведет",
+    "Почему сработало: зритель узнаёт свой баг мгновенно. Это не \"мнение\", а физический факт в кадре, мозг цепляется.",
+    "",
+    "Лид-магнит",
+    "Почему сработало: зритель узнаёт свой баг мгновенно. Это не \"мнение\", а физический факт в кадре, мозг цепляется.",
+  ].join("\n"),
+);
 
 function shortText(text, maxLength) {
   if (!text) return '';
@@ -331,6 +369,28 @@ function shortText(text, maxLength) {
 
 function handleRestrictedAction(label) {
   emit('placeholder', label);
+}
+
+async function copyContent(label, content) {
+  try {
+    if (navigator?.clipboard?.writeText) {
+      await navigator.clipboard.writeText(content);
+    } else {
+      const textarea = document.createElement('textarea');
+      textarea.value = content;
+      textarea.setAttribute('readonly', '');
+      textarea.style.position = 'absolute';
+      textarea.style.left = '-9999px';
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+    }
+
+    emit('copied', label);
+  } catch {
+    emit('placeholder', 'Копирование');
+  }
 }
 
 function openSource() {
